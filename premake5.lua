@@ -1,7 +1,7 @@
 workspace "engine"
     version = "0.0.2"
 
-    projectname = "sandbox"
+    projectname = "launcher"
 
     architecture "x64"
 
