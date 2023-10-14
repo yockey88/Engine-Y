@@ -5,10 +5,6 @@ class Launcher : public YE::App {
         Launcher() : YE::App() {}
         virtual ~Launcher() {}
 
-        virtual std::string Initialize() {
-            std::cout << ProjectName() << std::endl;
-        }
-
         virtual void RenderGui() {
             ImGui::Begin("EngineY Launcher");
             ImGui::Text("Hello World!");

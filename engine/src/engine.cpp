@@ -48,7 +48,9 @@ namespace YE {
         std::vector<std::string> extensions = { "yproj" , ".ysc" , ".ys" , ".y" };
         std::filesystem::path path = project_name;
         path /= file_name;
+        std::cout << path << std::endl;
         for (uint32_t i = 0; i < extensions.size(); ++i) {
+            std::cout << path << std::endl;
             path.replace_extension(extensions[i]);
             if (std::filesystem::exists(path))
                 return path;
@@ -108,6 +110,7 @@ namespace YE {
         }
 
         std::filesystem::path project_path = FindProjectFile();
+        std::cout << project_path << std::endl;
         if (project_path.empty()) {
             YE_ERROR("Project file missing");
             return;
