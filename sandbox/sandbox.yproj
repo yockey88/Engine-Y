@@ -1,0 +1,88 @@
+project sandbox {
+    author: "Y" , 
+    version: 0.1 ,
+    description: "Sandbox for engine development" ,
+    resources: "/resources" // \todo expand preprocessor to support -> #project_root ++ "\resources"
+}
+
+node<scene> test_scene {
+    node<camera> main_camera {
+        position: { 0 , 5 , 5 };
+        front: { 0 , -1 , -1 };
+    }
+    node<entity> ent0 {
+        node<script> _ {
+            object: "UserEntity";
+        }
+        node<physics_body> _ {
+            body_type: "dynamic";
+        }
+        node<box_collider> _;
+        node<transform> _ {
+            position: { 0 , 5 , 0 };
+        }
+        node<textured_renderable> _ {
+            mesh: "cube";
+            texture: { 
+                "container" ,
+                "container_specular"
+            };
+            shader: "container_shader";
+        }
+    }
+    node<entity> floor {
+        node<transform> _ {
+            position: { 0 , -1 , 0 };
+            rotation: { 0 , 0 , 0 };
+            scale:    { 30 , 0.5 , 30 };
+        }
+        node<textured_renderable> _ {
+            mesh: "cube";
+            texture: { 
+                "container" ,
+                "container_specular"
+            };
+            shader: "container_shader";
+        }
+        node<physics_body> _ {
+            body_type: "static";
+        }
+        node<box_collider> _;
+    }
+    node<entity> light {
+        node<transform> _ {
+            position: { -3 , 3 , 0 };
+            scale: { 0.2 , 0.2 , 0.2 };
+        }
+        node<renderable> _ {
+            mesh: "cube";
+            shader: "light_shader";
+        }
+        node<point_light> _ {
+            ambient: { 0.2 , 0.2 , 0.2 };
+            diffuse: { 1 , 0 , 0 };
+            specular: { 1 , 1 , 1 };
+            constant: 1;
+            linear: 0.09;
+            quadratic: 0.032;
+        }
+    }
+    node<entity> light2 {
+        node<transform> _ {
+            position: { 3 , 3 , 0 };
+            scale: { 0.2 , 0.2 , 0.2 };
+        }
+        node<renderable> _ {
+            mesh: "cube";
+            shader: "light_shader";
+        }
+        node<point_light> _ {
+            ambient: { 0.2 , 0.2 , 0.2 };
+            diffuse: { 0 , 0 , 1 };
+            specular: { 1 , 1 , 1 };
+            constant: 1;
+            linear: 0.09;
+            quadratic: 0.032;
+        }
+    }
+}
