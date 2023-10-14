@@ -1,3 +1,6 @@
-project _ {
-    name: "Engine Y Project Selector/Creator";
+project sandbox {
+    author: "Y" , 
+    version: 0.1 ,
+    description: "Launcher to select or create a project" ,
+    resources: "/resources"
 }
