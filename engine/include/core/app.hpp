@@ -19,7 +19,6 @@ namespace YE {
 
             virtual WindowConfig GetWindowConfig();
 
-            virtual void PreInitialize() {}
             virtual void Initialize() {}
             virtual void Update(float dt) {}
             virtual void Draw() {}

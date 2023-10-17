@@ -27,11 +27,31 @@ class Launcher : public YE::App {
                 } ,
                 "editor-keys"
             );
+
+            if (!std::filesystem::exists("projects")) {
+                std::filesystem::create_directory("projects");
+            }
         }
 
         virtual void DrawGui() {
-            ImGui::Begin("EngineY Launcher");
-            ImGui::Text("Hello World!");
+            if (ImGui::Begin("Engine Y Project Launcher")) {
+                for (auto& entry : std::filesystem::directory_iterator("projects")) {
+                    if (!entry.is_directory()) continue;
+                    if (ImGui::Button(entry.path().filename().string().c_str())) {
+                        std::string project_name = entry.path().filename().string();
+                        // EngineY::LoadProject(project_name);
+                        ImGui::Text("%s" , project_name.c_str());
+                    }
+                }
+
+                if (ImGui::BeginCombo("Create Project" , "Select")) {
+                    if (ImGui::Selectable("Empty Project")) {
+                        ImGui::OpenPopup("Create Project");
+                    }
+                    ImGui::EndCombo();
+                }
+
+            }
             ImGui::End();
         }
 };
