@@ -1,6 +1,9 @@
 #include "EngineY.hpp"
 
 class Launcher : public YE::App {
+    bool project_config_open = false;
+    char project_name[256] = { 0 };
+
     public:
         Launcher() : YE::App() {}
         virtual ~Launcher() {}
@@ -46,9 +49,27 @@ class Launcher : public YE::App {
 
                 if (ImGui::BeginCombo("Create Project" , "Select")) {
                     if (ImGui::Selectable("Empty Project")) {
-                        ImGui::OpenPopup("Create Project");
+                        project_config_open = true;
                     }
                     ImGui::EndCombo();
+                }
+
+                if (project_config_open) {
+                    std::string project_path = "projects/";
+                    if (ImGui::BeginChild("Project Builder")) {
+                        ImGui::InputText("Project Name" , project_name , 256);
+
+                        if (ImGui::Button("Create")) {
+                            project_path += project_name;
+                            if (std::filesystem::exists(project_path)) {
+                                YE_WARN("Project already exists!");
+                            } else {
+                                std::filesystem::create_directory(project_path);
+                            }
+                            project_config_open = false;
+                        }
+                        ImGui::EndChild();
+                    }
                 }
 
             }

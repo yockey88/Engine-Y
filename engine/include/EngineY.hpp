@@ -27,6 +27,7 @@
 #include <SDL.h>
 #include <glad/glad.h>
 #include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
 #include <magic_enum/magic_enum.hpp>
 
 #ifdef YE_PLATFORM_WIN
