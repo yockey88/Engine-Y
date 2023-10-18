@@ -1,7 +1,6 @@
 #include "EngineY.hpp"
 
 class Sandbox : public YE::App {
-
     public:
         Sandbox() {}
         virtual ~Sandbox() override {}
@@ -25,7 +24,14 @@ class Sandbox : public YE::App {
 
         virtual void Draw() override {}
         
-        virtual void DrawGui() override {}
+        virtual void DrawGui() override {
+            if (ImGui::Begin("Testing")) {
+                if (ImGui::Button("Create Window")) {
+                    YE_INFO("Creating window");
+                }
+            }
+            ImGui::End();
+        }
 
         virtual void Shutdown() override {}
 };

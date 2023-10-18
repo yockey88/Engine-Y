@@ -106,7 +106,7 @@ namespace YE {
             YE_ERROR("Application is null");
             return;
         }
-
+#if 0
         std::filesystem::path project_path = FindProjectFile();
         if (project_path.empty()) {
             YE_ERROR("Project file missing");
@@ -120,7 +120,7 @@ namespace YE {
 
         YE::YScriptParser parser(tokens);
         project_ast = parser.Parse();
-        
+#endif        
         app_loaded = true;
     }
 
