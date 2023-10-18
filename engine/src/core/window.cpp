@@ -40,14 +40,14 @@ namespace YE {
         SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES , config.gl_multisample_samples);
 
         SDL_SetWindowMinimumSize(window , 200 , 200);
-        
+    }
+
+    void Window::InitializeOpenGL() {
         gl_context = SDL_GL_CreateContext(window);
         YE_CRITICAL_ASSERTION(gl_context != nullptr , "Failed to create OpenGL context");
 
         SDL_GL_SetSwapInterval(1);
-    }
 
-    void Window::InitializeOpenGL() {
         int glad_init = gladLoadGLLoader(SDL_GL_GetProcAddress);
         YE_CRITICAL_ASSERTION(glad_init != 0 , "GLAD failed to initialize");
 

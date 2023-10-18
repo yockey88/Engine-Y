@@ -1,6 +1,8 @@
 #ifndef YE_WINDOW_MANAGER_HPP
 #define YE_WINDOW_MANAGER_HPP
 
+#include "window.hpp"
+
 namespace YE {
 
     class WindowManager {
@@ -16,6 +18,9 @@ namespace YE {
 
         public:
             static WindowManager* Instance();
+
+            void Initialize();
+            void OpenWindow(const WindowConfig& config);
 
             void Cleanup();
     };

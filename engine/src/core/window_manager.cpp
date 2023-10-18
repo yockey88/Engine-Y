@@ -11,6 +11,11 @@ namespace YE {
         return singleton;
     }
 
+    void WindowManager::OpenWindow(const WindowConfig& config) {
+        Window* window = new Window(config);
+        window->Open();
+    }
+
     void WindowManager::Cleanup() {
         delete singleton;
         singleton = nullptr;
