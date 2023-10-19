@@ -63,7 +63,7 @@ namespace YE {
         }
     }
 
-    void Gui::Initialize(Window* window) {
+    void Gui::Initialize(Window* main_window) {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO();
@@ -71,15 +71,24 @@ namespace YE {
 
         io.ConfigWindowsResizeFromEdges = true;
         io.ConfigWindowsMoveFromTitleBarOnly = true;
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable | 
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | // ImGuiConfigFlags_ViewportsEnable | 
                           ImGuiConfigFlags_NavEnableKeyboard;
 
-        SDL_Window* win = window->GetSDLWindow();
-        SDL_GLContext gl_context = window->GetGLContext();
+        SDL_Window* win = main_window->GetSDLWindow();
+        SDL_GLContext gl_context = main_window->GetGLContext();
         ImGui_ImplSDL2_InitForOpenGL(win , gl_context);
         ImGui_ImplOpenGL3_Init("#version 460");
 
         gui_state = ynew GuiState;
+    }
+
+    void Gui::PushWindow(Window* window , UUID32 id) {
+        if (windows.find(id) != windows.end()) {
+            YE_WARN("Failed to push window :: [{0}] | Window already exists" , id.uuid);
+            return;
+        }
+
+        windows[id] = window;
     }
 
     void Gui::Update() {
@@ -104,11 +113,11 @@ namespace YE {
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         ImGuiIO& io = ImGui::GetIO();
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            SDL_GL_MakeCurrent(window , gl_context);
-        }
+        // if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        //     ImGui::UpdatePlatformWindows();
+        //     ImGui::RenderPlatformWindowsDefault();
+        //     SDL_GL_MakeCurrent(window , gl_context);
+        // }
     }
 
     void Gui::Shutdown() {

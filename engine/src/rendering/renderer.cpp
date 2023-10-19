@@ -10,6 +10,7 @@
 #include "core/app.hpp"
 #include "core/hash.hpp"
 #include "core/window.hpp"
+#include "core/window_manager.hpp"
 #include "event/event_manager.hpp"
 #include "scene/scene.hpp"
 #include "scene/components.hpp"
@@ -31,8 +32,9 @@ namespace YE {
     }
     
     void Renderer::BeginRender() {
-        window->Clear();
-        gui->BeginRender(window->GetSDLWindow());
+        window_manager->ClearWindows();
+
+        gui->BeginRender(main_window->GetSDLWindow());
 
         glPolygonMode(GL_FRONT_AND_BACK , scene_render_mode);
 
@@ -73,11 +75,11 @@ namespace YE {
         if (framebuffer_active)
             framebuffers[active_framebuffer]->Draw();
 
-        gui->Render(window);
+        gui->Render(main_window);
         app_handle->DrawGui();
-        gui->EndRender(window->GetSDLWindow() , window->GetGLContext());
+        gui->EndRender(main_window->GetSDLWindow() , main_window->GetGLContext());
 
-        window->SwapBuffers();
+        window_manager->SwapWindowBuffers();
     }
 
     Renderer* Renderer::Instance() {
@@ -98,31 +100,17 @@ namespace YE {
         if (!CheckID(id , name , PostRenderCallbacks)) return;
         PostRenderCallbacks[id] = callback;
     }
-
-    void Renderer::Initialize(App* app) {
-        app_handle = app;
-        window = ynew Window(app->GetWindowConfig());
-        gui = ynew Gui;
-    }
     
-    void Renderer::OpenWindow() {
-        window->Open();
-        EventManager::Instance()->RegisterWindowResizedCallback(
-            [window = window , fbs = &framebuffers](WindowResized* event) -> bool {
-                window->HandleResize({ event->Width() , event->Height() });
+    void Renderer::Initialize(App* app) {
+        app_handle = app; 
+        gui = ynew Gui;
 
-                UUID32 id = Renderer::Instance()->ActiveFramebuffer();
-                if (fbs->find(id) != fbs->end())
-                    (*fbs)[id]->HandleResize({ event->Width() , event->Height() });
+        window_manager = WindowManager::Instance();
+        window_manager->Initialize(gui);
+    }
 
-                return true;
-            } ,
-            "default-window-resize"
-        );
-        gui->Initialize(window);
-
-        window->Clear();
-        window->SwapBuffers();
+    void Renderer::OpenWindow(const WindowConfig& config) {
+        main_window = window_manager->OpenWindow(config);
     }
 
     void Renderer::PushFramebuffer(const std::string& name , Framebuffer* framebuffer) {
@@ -140,7 +128,7 @@ namespace YE {
         framebuffers[id] = framebuffer;
     }
 
-    void Renderer::SubmitRenderCmnd(std::unique_ptr<RenderCommand>& cmnd) {
+    void Renderer::SubmitRenderCmnd(std::unique_ptr<RenderCommand>& cmnd /* , const std::string& target_window */) {
         commands.push(std::move(cmnd));
     }
 
@@ -236,9 +224,9 @@ namespace YE {
             cb();
     }
     
-    void Renderer::CloseWindow() {
+    void Renderer::CloseWindow(const std::string& name) {
         gui->Shutdown();
-        window->Close();
+        window_manager->CloseWindows();
     }
     
     void Renderer::Cleanup() {
@@ -254,9 +242,7 @@ namespace YE {
             ydelete fb;
         framebuffers.clear();
 
-        YE_CRITICAL_ASSERTION(window != nullptr , "Attempted to cleanup renderer without initializing it");
-        ydelete window;
-
+        window_manager->Cleanup();
         if (singleton != nullptr) ydelete singleton;
     }
 

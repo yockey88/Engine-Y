@@ -22,6 +22,8 @@ namespace components {
 
 }
 
+    struct WindowConfig;
+
     class App;
     class Window;
     class Gui;
@@ -29,6 +31,8 @@ namespace components {
     class Framebuffer;
     class Scene;
     class Camera;
+
+    class WindowManager;
 
     using RenderQueue = std::queue<std::unique_ptr<RenderCommand>>;
     using VertexMap = std::unordered_map<UUID32 , VertexArray*>;
@@ -51,11 +55,12 @@ namespace components {
 
         static Renderer* singleton;
 
-        Window* window = nullptr;
+        App* app_handle = nullptr;
+
+        WindowManager* window_manager = nullptr;
+        Window* main_window = nullptr;
         Gui* gui = nullptr;
         Camera* render_camera = nullptr;
-
-        App* app_handle = nullptr;
         
         RenderQueue commands;
         RenderQueue debug_commands;
@@ -77,11 +82,15 @@ namespace components {
         bool debug_rendering = false;
         bool framebuffer_active = false;
 
+        FramebufferMap* FramebufferMap() { return &framebuffers; } // for windows
+
         bool CheckID(UUID32 id , const std::string& name , const RenderCallbackMap& map);
         
         void BeginRender();
         void Execute();
         void EndRender();
+
+        friend class Window;
 
         Renderer() {}
         ~Renderer() {}
@@ -99,10 +108,11 @@ namespace components {
             void RegisterPostRenderCallback(std::function<void()> callback , const std::string& name);
 
             void Initialize(App* app);
-            void OpenWindow();
+
+            void OpenWindow(const WindowConfig& config);
             
             void PushFramebuffer(const std::string& name , Framebuffer* framebuffer);
-            void SubmitRenderCmnd(std::unique_ptr<RenderCommand>& cmnd);
+            void SubmitRenderCmnd(std::unique_ptr<RenderCommand>& cmnd /* , const std::string& target_window */);
             void SubmitDebugRenderCmnd(std::unique_ptr<RenderCommand>& cmnd);
 
             /// \todo implement these functions so we can stop submitting render commands every frame that can persist between frames
@@ -126,10 +136,10 @@ namespace components {
 
             void Render();
 
-            void CloseWindow();
+            void CloseWindow(const std::string& name);
             void Cleanup();
             
-            inline Window* ActiveWindow() { return window; }
+            inline Window* ActiveWindow() { return main_window; }
             inline UUID32 ActiveFramebuffer() const { return active_framebuffer; }
             inline bool DebugRendering() const { return debug_rendering; }
             inline bool FramebufferActive() const { return framebuffer_active; }

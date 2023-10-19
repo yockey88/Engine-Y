@@ -76,10 +76,9 @@ namespace YE {
         script_engine->LoadProjectModules();
 
         renderer->Initialize(app);
-        renderer->OpenWindow();
+        renderer->OpenWindow(app->GetWindowConfig());
 
         resource_handler->Load();
-       
     }
     
     void Engine::Update(float dt) {
@@ -167,7 +166,7 @@ namespace YE {
 
         resource_handler->Offload();
 
-        renderer->CloseWindow();
+        renderer->CloseWindow("main-window");
         script_engine->Shutdown();
         physics_engine->Cleanup();
 
