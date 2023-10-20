@@ -34,8 +34,6 @@ namespace YE {
     void Renderer::BeginRender() {
         window_manager->ClearWindows();
 
-        gui->BeginRender(main_window->GetSDLWindow());
-
         glPolygonMode(GL_FRONT_AND_BACK , scene_render_mode);
 
         if (framebuffer_active)
@@ -75,10 +73,6 @@ namespace YE {
         if (framebuffer_active)
             framebuffers[active_framebuffer]->Draw();
 
-        gui->Render(main_window);
-        app_handle->DrawGui();
-        gui->EndRender(main_window->GetSDLWindow() , main_window->GetGLContext());
-
         window_manager->SwapWindowBuffers();
     }
 
@@ -103,7 +97,6 @@ namespace YE {
     
     void Renderer::Initialize(App* app) {
         app_handle = app; 
-        gui = ynew Gui;
 
         window_manager = WindowManager::Instance();
         window_manager->Initialize(gui);
@@ -225,7 +218,6 @@ namespace YE {
     }
     
     void Renderer::CloseWindow(const std::string& name) {
-        gui->Shutdown();
         window_manager->CloseWindows();
     }
     
