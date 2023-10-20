@@ -38,7 +38,6 @@ namespace YE {
             Window* WindowByID(UUID32 id);
 
             void ClearWindows();
-            void BeginRenderGui();
             void SwapWindowBuffers();
 
             void CloseWindow(const std::string& name);

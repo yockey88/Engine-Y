@@ -77,6 +77,10 @@ namespace YE {
         InitializeSDL2();
         InitializeOpenGL();
 
+        UUID32 window_id = Hash::FNV32(config.title);
+        std::string win_resize_callback_name = "window-resize-callback-" + std::to_string(window_id.uuid);
+        std::string win_close_callback_name = "window-close-callback-" + std::to_string(window_id.uuid);
+
         FramebufferMap* framebuffers = Renderer::Instance()->FramebufferMap();
         EventManager::Instance()->RegisterWindowResizedCallback(
             [window = this , fbs = framebuffers](WindowResized* event) -> bool {
@@ -88,7 +92,17 @@ namespace YE {
 
                 return true;
             } ,
-            "main-window-resize"
+            win_resize_callback_name
+        );
+
+        EventManager::Instance()->RegisterWindowClosedCallback(
+            [window = this](WindowClosed* event) -> bool {
+                uint32_t win_id = SDL_GetWindowID(window->GetSDLWindow());
+                if (event->WindowID() == win_id)
+                    window->Close();
+                return true;
+            } ,
+            win_close_callback_name
         );
     }
 

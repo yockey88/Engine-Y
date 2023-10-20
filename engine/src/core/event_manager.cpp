@@ -285,23 +285,27 @@ namespace YE {
         std::unique_ptr<Event> event = nullptr;
         while (SDL_PollEvent(&e)) {
             switch (e.type) {
-                case SDL_WINDOWEVENT:
-                    if (e.window.event == SDL_WINDOWEVENT_RESIZED)
+                case SDL_WINDOWEVENT: {
+                    uint32_t id = e.window.windowID;
+                    if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
+                        glm::ivec2 old_size = Renderer::Instance()->ActiveWindow()->GetSize();
                         DispatchEvent(ynew WindowResized( 
                             { e.window.data1 , e.window.data2 } ,
-                            Renderer::Instance()->ActiveWindow()->GetSize()
+                            old_size ,
+                            id
                         ));
+                    }
                     if (e.window.event == SDL_WINDOWEVENT_MINIMIZED)
-                        DispatchEvent(ynew WindowMinimized);
+                        DispatchEvent(ynew WindowMinimized(id));
                     if (e.window.event == SDL_WINDOWEVENT_CLOSE)
-                        DispatchEvent(ynew WindowClosed);
-                break;
+                        DispatchEvent(ynew WindowClosed(id));
+                } break;
                 case SDL_QUIT:
                     DispatchEvent(ynew ShutdownEvent);
                 break;
                 default: break;
             }
-            ImGui_ImplSDL2_ProcessEvent(&e);
+            // ImGui_ImplSDL2_ProcessEvent(&e);
         }
     }
 

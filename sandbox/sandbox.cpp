@@ -18,20 +18,35 @@ class Sandbox : public YE::App {
             return config;
         }
 
-        virtual void Initialize() override {}
+        virtual void Initialize() override {
+            EngineY::EventManager()->RegisterKeyPressedCallback(
+                [&](YE::KeyPressed* event) -> bool {
+                    if (event->Key() == YE::Keyboard::Key::YE_ESCAPE) 
+                        EngineY::DispatchEvent(ynew YE::ShutdownEvent());
+                    if (event->Key() == YE::Keyboard::Key::YE_W) {
+                        YE::WindowConfig config;
+                        config.title = "Test Window";
+                        config.size.x = 800;
+                        config.size.y = 600;
+
+                        config.clear_color = { 0.6f , 0.6f , 0.8f , 1.f };
+                        config.fullscreen = false;
+                        config.vsync = false;
+                        config.rendering_to_screen = true;
+                        config.flags |= SDL_WINDOW_RESIZABLE;
+                        EngineY::Renderer()->OpenWindow(config);
+                    }
+                    return true;
+                } ,
+                "key-callback"
+            );
+        }
         
         virtual void Update(float dt) override {}
 
         virtual void Draw() override {}
         
-        virtual void DrawGui() override {
-            if (ImGui::Begin("Testing")) {
-                if (ImGui::Button("Create Window")) {
-                    YE_INFO("Creating window");
-                }
-            }
-            ImGui::End();
-        }
+        virtual void DrawGui() override { }
 
         virtual void Shutdown() override {}
 };

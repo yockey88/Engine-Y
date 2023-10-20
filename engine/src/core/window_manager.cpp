@@ -15,10 +15,7 @@ namespace YE {
         return singleton;
     }
 
-    void WindowManager::Initialize(Gui* gui) { 
-        YE_CRITICAL_ASSERTION(gui != nullptr , "Attempting to initialize window manager with null GUI");
-        gui_handle = gui; 
-    }
+    void WindowManager::Initialize(Gui* gui) {}
 
     Window* WindowManager::OpenWindow(const WindowConfig& config) {
         std::string win_title = config.title;
@@ -33,12 +30,6 @@ namespace YE {
             return nullptr;
         }
         windows[id] = window;
-
-        if (gui_handle->WindowCount() == 0) {
-            gui_handle->Initialize(window);
-        } else {
-            gui_handle->PushWindow(window , id);
-        }
 
         window->Clear();
         window->SwapBuffers();

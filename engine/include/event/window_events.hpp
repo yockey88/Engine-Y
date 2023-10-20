@@ -13,16 +13,19 @@ namespace YE {
     class WindowResized : public Event {
         glm::ivec2 size;
         glm::ivec2 old_size;
+        uint32_t window_id;
 
         public:
-            WindowResized(const glm::ivec2& size , const glm::ivec2& old_size)
-                : size(size) , old_size(old_size) {}
+            WindowResized(const glm::ivec2& size , const glm::ivec2& old_size , uint32_t window_id = 0)
+                : size(size) , old_size(old_size) , window_id(window_id) {}
 
             inline uint32_t Width() const { return size.x; }
             inline uint32_t Height() const { return size.y; }
 
             inline uint32_t OldWidth() const { return old_size.x; }
             inline uint32_t OldHeight() const { return old_size.y; }
+            
+            inline uint32_t WindowID() const { return window_id; }
 
             virtual std::string ToString() const override {
                 std::stringstream ss;
@@ -35,16 +38,24 @@ namespace YE {
     };
 
     class WindowMinimized : public Event {
+        uint32_t window_id;
+
         public:
-            WindowMinimized() {}
+            WindowMinimized(uint32_t window_id = 0) : window_id(window_id) {}
+
+            inline uint32_t WindowID() const { return window_id; }
 
             EVENT_TYPE(WINDOW_MINIMIZE)
             EVENT_CATEGORY(EventCategory::WINDOW_EVENT | EventCategory::APPLICATION_EVENT)
     };
 
     class WindowClosed : public Event {
+        uint32_t window_id;
+
         public:
-            WindowClosed() {}
+            WindowClosed(uint32_t window_id = 0) : window_id(window_id) {}
+            
+            inline uint32_t WindowID() const { return window_id; }
 
             EVENT_TYPE(WINDOW_CLOSE)
             EVENT_CATEGORY(EventCategory::WINDOW_EVENT | EventCategory::APPLICATION_EVENT)
