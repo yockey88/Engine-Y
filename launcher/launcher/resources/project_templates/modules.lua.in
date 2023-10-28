@@ -8,15 +8,15 @@ project (projectname .. "_modules")
     language "C#"
     dotnetframework "4.7.2"
 
-    targetdir(binaries .. "/%{cfg.buildcfg}/" .. projectname)
-    objdir(objectdir .. "/%{cfg.buildcfg}/" .. projectname)
+    targetdir(binaries .. "/" .. projectname)
+    objdir(objectdir .. "/" .. projectname)
 
     files {
         projectname .. "/modules/**.cs"
     }
 
     libdirs {
-        binaries .. "modules"
+        binaries .. "modules.dll"
     }
 
     links {

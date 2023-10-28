@@ -25,7 +25,6 @@ namespace YE {
     Engine::Engine() {
         logger = Logger::Instance();
         logger->OpenLog();
-        Filesystem::Initialize();
         
         task_manager = TaskManager::Instance();
         resource_handler = ResourceHandler::Instance();
@@ -33,8 +32,6 @@ namespace YE {
         renderer = Renderer::Instance(); 
         script_engine = ScriptEngine::Instance();
         physics_engine = PhysicsEngine::Instance();
-
-        Systems::Initialize();
     }
 
     Engine* Engine::singleton = nullptr;
@@ -57,7 +54,7 @@ namespace YE {
         return std::filesystem::path();
     }
 
-    void Engine::InitializeSubSytems() {
+    void Engine::InitializeSubSytems() { 
         task_manager->DispatchTask([&](){ 
             stats = ynew EngineStats;
             for (uint32_t i = 0; i < kFrameTimeBufferSize; ++i) 
@@ -78,8 +75,9 @@ namespace YE {
         renderer->Initialize(app);
         renderer->OpenWindow();
 
-        resource_handler->Load();
-       
+        Systems::Initialize();
+        
+        resource_handler->Load(); 
     }
     
     void Engine::Update(float dt) {
@@ -130,6 +128,8 @@ namespace YE {
     }
 
     void Engine::Initialize() {
+        Filesystem::Initialize(app->ProjectName());
+        app->PreInitialize();
         this->InitializeSubSytems();
 
         if (app_config.use_project_file && app_loaded) {

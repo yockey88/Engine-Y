@@ -82,11 +82,11 @@ workspace "<projectname>"
         
         libdirs {
             binaries .. "/engine" ,
-            "%{externals.glad}/bin/%{cfg.buildcfg}/glad" ,
-            "%{externals.spdlog}/bin/%{cfg.buildcfg}/spdlog" ,
-            "%{externals.imgui}/bin/%{cfg.buildcfg}/imgui" ,
-            "%{externals.imguizmo}/bin/%{cfg.buildcfg}/imguizmo" ,
-            "%{externals.react}/bin/%{cfg.buildcfg}/reactphysics3d" ,
+            binaries .. "/glad" ,
+            binaries .. "/spdlog" ,
+            binaries .. "/imgui" ,
+            binaries .. "/imguizmo" ,
+            binaries .. "/reactphysics3d" ,
             "%{externals.sdl2}/lib/x64" ,
             "%{externals.mono}/lib/%{cfg.buildcfg}" ,
             "%{externals.assimp}/lib/%{cfg.buildcfg}"

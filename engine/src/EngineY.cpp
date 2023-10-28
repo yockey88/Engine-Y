@@ -3,17 +3,6 @@
 #include <queue>
 #include <thread>
 
-int YE2Entry(int argc , char* argv[]) {
-    YE::Engine* engine = YE::Engine::Instance();
-    engine->RegisterApplication(CreateApp()); 
-    if (engine->AppLoaded()) {
-        engine->Initialize();
-        engine->Run();
-        engine->Shutdown();
-    }
-    return 0;
-}  
-
 namespace EngineY {
     /// Getters ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     YE::Window* Window() {

@@ -4,7 +4,10 @@ class Launcher : public YE::App {
     bool app_data_found = false;
     bool project_explorer_open = false;
     bool project_builder_open = false;
+
+    char author_buffer[256] = { 0 };
     char project_name[256] = { 0 };
+    char description_buffer[256] = { 0 };
 
     std::filesystem::path engine_folder;
     std::filesystem::path project_folder;
@@ -16,7 +19,8 @@ class Launcher : public YE::App {
     void ProjectBuilder();
    
     public:
-        Launcher() : YE::App() {}
+        Launcher() 
+            : YE::App("launcher") {}
         virtual ~Launcher() {}
 
         virtual YE::EngineConfig GetEngineConfig() override {
@@ -37,6 +41,10 @@ class Launcher : public YE::App {
             config.rendering_to_screen = true;
             config.flags |= SDL_WINDOW_RESIZABLE;
             return config;
+        }
+
+        virtual void PreInitialize() override {
+            YE::Filesystem::OverrideResourcePath("launcher/launcher/resources");
         }
 
         virtual bool Initialize() override {
@@ -83,10 +91,6 @@ class Launcher : public YE::App {
             ImGui::End();   
         }
 };
-
-YE::App* CreateApp() {
-    return ynew Launcher();
-}
 
 void Launcher::BuildProject(const std::string& name) {
 #if YE_PLATFORM_WIN
@@ -136,12 +140,18 @@ void Launcher::BuildProject(const std::string& name) {
     std::filesystem::path monoposixhelper_dll = engine_folder / "external" / "mono" / "bin" / "Debug" / "MonoPosixHelper.dll";
     std::filesystem::path monoposixhelper_pdb = engine_folder / "external" / "mono" / "bin" / "Debug" / "MonoPosixHelper.pdb";
 
+    std::filesystem::path modules_dll = engine_folder / "bin" / "Debug" / "modules" / "modules.dll";
+    std::filesystem::path modules_pdb = engine_folder / "bin" / "Debug" / "modules" / "modules.pdb";
+
     std::filesystem::copy_file(assimp_dll , engine_folder / "bin" / "Debug" / project_name / "assimp-vc143-mtd.dll" , std::filesystem::copy_options::overwrite_existing);
     std::filesystem::copy_file(assimp_pdb , engine_folder / "bin" / "Debug" / project_name / "assimp-vc143-mtd.pdb" , std::filesystem::copy_options::overwrite_existing);
     std::filesystem::copy_file(monosgen_dll , engine_folder / "bin" / "Debug" / project_name / "mono-2.0-sgen.dll" , std::filesystem::copy_options::overwrite_existing);
     std::filesystem::copy_file(monosgen_pdb , engine_folder / "bin" / "Debug" / project_name / "mono-2.0-sgen.pdb" , std::filesystem::copy_options::overwrite_existing);
     std::filesystem::copy_file(monoposixhelper_dll , engine_folder / "bin" / "Debug" / project_name / "MonoPosixHelper.dll" , std::filesystem::copy_options::overwrite_existing);
     std::filesystem::copy_file(monoposixhelper_pdb , engine_folder / "bin" / "Debug" / project_name / "MonoPosixHelper.pdb" , std::filesystem::copy_options::overwrite_existing);
+
+    std::filesystem::copy_file(modules_dll , engine_folder / "bin" / "Debug" / project_name / "modules.dll" , std::filesystem::copy_options::overwrite_existing);
+    std::filesystem::copy_file(modules_pdb , engine_folder / "bin" / "Debug" / project_name / "modules.pdb" , std::filesystem::copy_options::overwrite_existing);
 
     std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 }
@@ -150,22 +160,28 @@ void Launcher::LaunchProject(const std::string& project_name) {
     EngineY::EventManager()->DispatchEvent(ynew YE::ShutdownEvent);
 
 #if YE_PLATFORM_WIN
-    std::string proj_executable = engine_folder.string() + "\\" + "bin\\Debug\\" + project_name + "\\" + project_name + ".exe";
-    std::wstring wproj_executable(proj_executable.begin() , proj_executable.end());
+    // std::string proj_executable = engine_folder.string() + "\\" + "bin\\Debug\\" + project_name + "\\" + project_name + ".exe";
+    // std::string cmd = fmt::format(
+    //     "cmd /c start {}" ,
+    //     proj_executable
+    // );
 
-    STARTUPINFO start_info;
-    PROCESS_INFORMATION process_info;
-    ZeroMemory(&start_info , sizeof(start_info));
-    start_info.cb = sizeof(start_info);
-    ZeroMemory(&process_info , sizeof(process_info));
+    // std::system(cmd.c_str());
 
-    CreateProcess(
-        wproj_executable.c_str() , 
-        nullptr , nullptr , nullptr , 
-        false , 0 , 
-        nullptr , nullptr , 
-        &start_info , &process_info
-    );
+    // std::wstring wproj_executable(proj_executable.begin() , proj_executable.end());
+    // STARTUPINFO start_info;
+    // PROCESS_INFORMATION process_info;
+    // ZeroMemory(&start_info , sizeof(start_info));
+    // start_info.cb = sizeof(start_info);
+    // ZeroMemory(&process_info , sizeof(process_info));
+
+    // CreateProcess(
+    //     wproj_executable.c_str() , 
+    //     nullptr , nullptr , nullptr , 
+    //     false , 0 , 
+    //     nullptr , nullptr , 
+    //     &start_info , &process_info
+    // );
 #endif
 }
 
@@ -209,10 +225,11 @@ bool Launcher::GenerateProjectDirectory(const std::string& project_name) {
     std::filesystem::path template_dir = YE::Filesystem::GetResPath();
     template_dir /= "project_templates";
 
-    std::stringstream premake , modules , project_cpp;
+    std::stringstream premake , modules , project_cpp , yproj_file;
     std::ifstream premake_template{ (template_dir / "premake5.lua.in").string() };
     std::ifstream module_template{ (template_dir / "modules.lua.in").string() };
     std::ifstream proj_template{ (template_dir / "project.cpp.in").string() };
+    std::ifstream yproj_template{ (template_dir / "project.yproj.in").string() };
 
     if (!premake_template.is_open()) {
         YE_ERROR("Failed to open premake5.lua.in");
@@ -238,9 +255,18 @@ bool Launcher::GenerateProjectDirectory(const std::string& project_name) {
         proj_template.close();
     }
 
+    if (!yproj_template.is_open()) {
+        YE_ERROR("Failed to open project.yproj.in");
+        return false;
+    } else {
+        yproj_file << yproj_template.rdbuf();
+        yproj_template.close();
+    }
+
     std::string premake_str = premake.str();
     std::string modules_str = modules.str();
     std::string project_cpp_str = project_cpp.str();
+    std::string yproj_str = yproj_file.str();
 
     {
         std::ofstream module_file{ (proj_path / "modules.lua").string() };
@@ -264,9 +290,32 @@ bool Launcher::GenerateProjectDirectory(const std::string& project_name) {
     project_cpp_str = std::regex_replace(project_cpp_str , std::regex("<projectname>") , project_name);
 
     {
-        std::ofstream project_cpp_file{ (code_path / ("src\\" + project_name + ".cpp")).string() };
+        std::ofstream project_cpp_file{ (code_path / (project_name + ".cpp")).string() };
         project_cpp_file << project_cpp_str;
         project_cpp_file.close();
+    }
+
+
+    std::string description{ description_buffer };
+    if (description == "") {
+        yproj_str = std::regex_replace(yproj_str , std::regex("<description>") , "No description provided");
+    } else {
+        yproj_str = std::regex_replace(yproj_str , std::regex("<description>") , description);
+    }
+
+    std::string author{ author_buffer };
+    if (author == "") {
+        yproj_str = std::regex_replace(yproj_str , std::regex("<author>") , "No author provided");
+    } else {
+        yproj_str = std::regex_replace(yproj_str , std::regex("<author>") , author);
+    }
+
+    yproj_str = std::regex_replace(yproj_str , std::regex("<projectname>") , project_name);
+
+    {
+        std::ofstream yproj_file{ (proj_path / (project_name + ".yproj")).string() };
+        yproj_file << yproj_str;
+        yproj_file.close();
     }
 
     return true;
@@ -288,3 +337,5 @@ void Launcher::ProjectBuilder() {
         ImGui::EndPopup();
     }
 }
+
+DECLARE_APP(Launcher);

@@ -5,6 +5,12 @@ ret = 0;
 
 if globals.IsWindows():
     ret = subprocess.call(["cmd.exe" , "/c" , "premake\\premake5" , "vs2022"])
+    if (ret != 0):
+        sys.exit(ret)
+        
+    ret = subprocess.call(["cmd.exe" , "/c" , "premake\\premake5" , "--file=launcher\\premake5.lua" , "vs2022"])
+    if (ret != 0):
+        sys.exit(ret)
 
 if globals.IsLinux():
     ret = subprocess.call(["premake/premake5.linux" , "gmake2"])
