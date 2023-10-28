@@ -12,6 +12,7 @@ namespace YE {
     std::string Filesystem::script_engine_mono_config_path = MONO_CONFIG_PATH;
     std::string Filesystem::internal_modules_path = PROJECT_BIN;
     std::string Filesystem::project_modules_path = PROJECT_BIN;
+    std::string Filesystem::engine_core_path = "%APPDATA%\\EngineY";
     std::string Filesystem::engine_respath = ENGINE_RESOURCES_DIR;
     std::string Filesystem::engine_modulepath = "";
     std::string Filesystem::engine_shaderpath = "";

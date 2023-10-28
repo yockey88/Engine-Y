@@ -107,30 +107,40 @@ namespace YE {
             return;
         }
 
-        std::filesystem::path project_path = FindProjectFile();
-        if (project_path.empty()) {
-            YE_ERROR("Project file missing");
-            return;
+        app_config = app->GetEngineConfig();
+
+        if (app_config.use_project_file) {
+            std::filesystem::path project_path = FindProjectFile();
+            if (project_path.empty()) {
+                YE_ERROR("Project file missing");
+                return;
+            }
+
+            YE::YScriptLexer lexer(project_path.string());
+
+            auto [src , tokens] = lexer.Lex();
+            project_file_src = src;
+
+            YE::YScriptParser parser(tokens);
+            project_ast = parser.Parse();
         }
 
-        YE::YScriptLexer lexer(project_path.string());
-
-        auto [src , tokens] = lexer.Lex();
-        project_file_src = src;
-
-        YE::YScriptParser parser(tokens);
-        project_ast = parser.Parse();
         
         app_loaded = true;
     }
 
     void Engine::Initialize() {
         this->InitializeSubSytems();
-        
-        YE::YS::Interpreter interpreter(project_ast);
-        project_scene_graph = interpreter.BuildScene();
 
-        app->Initialize();
+        if (app_config.use_project_file && app_loaded) {
+            YE::YS::Interpreter interpreter(project_ast);
+            project_scene_graph = interpreter.BuildScene();
+        }
+
+        if (!app->Initialize()) {
+            YE_ERROR("Failed to initialize application");
+            return;
+        }
         running = true;
     }
     

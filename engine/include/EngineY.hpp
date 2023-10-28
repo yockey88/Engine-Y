@@ -23,6 +23,7 @@
 #include <deque>
 #include <atomic>
 #include <future>
+#include <regex>
 
 #include <SDL.h>
 #include <glad/glad.h>
@@ -31,6 +32,8 @@
 #include <magic_enum/magic_enum.hpp>
 
 #ifdef YE_PLATFORM_WIN
+    #include <ShlObj.h>
+    #include <minwindef.h>
 #ifdef YE_DEBUG_BUILD
     #include "platform/win_crash_handler.hpp"
 #endif

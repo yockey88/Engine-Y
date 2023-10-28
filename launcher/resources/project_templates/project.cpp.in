@@ -1,0 +1,11 @@
+#include "EngineY.hpp"
+
+class <projectname> : public YE::App {
+    public:
+        <projectname>() : YE::App() {}
+        virtual ~<projectname>() override {} 
+};
+
+YE::App* CreateApp() {
+    return ynew <projectname>;
+}

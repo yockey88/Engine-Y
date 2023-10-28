@@ -13,6 +13,7 @@ namespace YE {
         static std::string internal_modules_path;
         static std::string project_modules_path;
 
+        static std::string engine_core_path;
         static std::string engine_respath;
         static std::string engine_modulepath;
         static std::string engine_shaderpath;
