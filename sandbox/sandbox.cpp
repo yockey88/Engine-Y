@@ -4,6 +4,8 @@
 #include "test_native_script.hpp"
 
 class Sandbox : public YE::App {
+    YE::TextEditor text_editor;
+    bool editor_open = false;
 
     public:
         Sandbox() {}
@@ -25,8 +27,21 @@ class Sandbox : public YE::App {
         virtual void Initialize() override {
             EngineY::RegisterKeyPressCallback(
                 [&](YE::KeyPressed* event) -> bool {
-                    if (event->Key() == YE::Keyboard::Key::YE_ESCAPE)
+                    if (event->Key() == YE::Keyboard::Key::YE_ESCAPE && !editor_open)
                         EngineY::DispatchEvent(ynew YE::ShutdownEvent);
+                    if (event->Key() == YE::Keyboard::Key::YE_F1) {
+                        if (editor_open) {
+                            text_editor.Shutdown();
+                            editor_open = false;
+                        } else {
+                            text_editor.Initialize(
+                                YE::Filesystem::GetCWD() ,
+                                Zep::NVec2f(1.f , 1.f)
+                            );
+                            text_editor.LoadFile(YE::Filesystem::GetCWD() + "\\sandbox\\sandbox.yproj");
+                            editor_open = true;
+                        }
+                    }
                     return true;
                 } ,
                 "editor-keys"
@@ -34,15 +49,19 @@ class Sandbox : public YE::App {
         }
         
         virtual void Update(float dt) override {
+            text_editor.Update();
         }
 
         virtual void Draw() override {
         }
         
         virtual void DrawGui() override {
+            text_editor.Draw();
         }
 
         virtual void Shutdown() override {
+            if (editor_open)
+                text_editor.Shutdown();
         }
 };
 

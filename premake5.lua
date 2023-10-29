@@ -42,6 +42,7 @@ workspace "engine"
     include "external/imgui-docking"
     include "external/imguizmo"
     include "external/ReactPhysics3d"
+    include "external/zep"
 
     include "modules"
 
@@ -78,7 +79,7 @@ workspace "engine"
             "%{externals.assimp}/include" ,
             "%{externals.react}/include" ,
             "%{externals.magic_enum}" ,
-            "%{externals.zep}/include"
+            "%{externals.zep}/include" ,
         }
         
         libdirs {
@@ -111,7 +112,8 @@ workspace "engine"
             "imgui" ,
             "imguizmo" ,
             "mono-2.0-sgen" ,
-            "reactphysics3d"
+            "reactphysics3d" ,
+            "zep"
         }
 
         filter { "system:windows" , "configurations:*" }
@@ -213,7 +215,7 @@ workspace "engine"
             "%{externals.assimp}/include" ,
             "%{externals.react}/include" ,
             "%{externals.magic_enum}" ,
-            "%{externals.zep}/include"
+            "%{externals.zep}/include" ,
         }
         
         libdirs {
@@ -233,7 +235,8 @@ workspace "engine"
             "imgui" ,
             "imguizmo" ,
             "mono-2.0-sgen" ,
-            "reactphysics3d"
+            "reactphysics3d" ,
+            "zep"
         }
 
         filter { "system:windows" , "configurations:*" }

@@ -17,7 +17,6 @@ if globals.IsWindows():
     ret = subprocess.call(["cmd.exe" , "/c" , VS_BUILD_PATH , "{}.sln".format(globals.MAIN_NAME) , "/property:Configuration={}".format(CONFIG)])
     if (ret != 0):
         sys.exit(ret)
-    ret = subprocess.call(["cmd.exe" , "/c" , VS_BUILD_PATH , "{}.sln".format(globals.MAIN_NAME) , "/property:Configuration={}".format(CONFIG)])
 
 if globals.IsLinux():
     ret = subprocess.call(["make" , "config={}".format(CONFIG)])
