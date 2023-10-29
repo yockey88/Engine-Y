@@ -82,7 +82,6 @@ workspace "engine"
         }
         
         libdirs {
-            "%{externals.zep}/bin/%{cfg.buildcfg}/zep" ,
             "%{externals.sdl2}/lib/x64" ,
             "%{externals.mono}/lib/%{cfg.buildcfg}" ,
             "%{externals.assimp}/lib/%{cfg.buildcfg}" 
@@ -140,7 +139,6 @@ workspace "engine"
             }
             links {
                 "assimp-vc143-mtd" ,
-                "Zep-debug"
             }
             buildoptions {
                 "/Zi" ,
@@ -160,7 +158,6 @@ workspace "engine"
             }
             links {
                 "assimp-vc143-mt" ,
-                "Zep-debug" -- need to change when I build zep release
             }
 
     if not (os.isdir(projectname .. "/resources"))
@@ -220,7 +217,6 @@ workspace "engine"
         }
         
         libdirs {
-            "%{externals.zep}/bin/%{cfg.buildcfg}/zep" ,
             "%{externals.sdl2}/lib/x64" ,
             "%{externals.mono}/lib/%{cfg.buildcfg}" ,
             "%{externals.assimp}/lib/%{cfg.buildcfg}"
@@ -260,7 +256,6 @@ workspace "engine"
             }
             links {
                 "assimp-vc143-mtd" ,
-                "Zep-debug"
             }
     
         filter "configurations:Release"
@@ -269,5 +264,4 @@ workspace "engine"
             optimize "on"
             links {
                 "assimp-vc143-mt" ,
-                "Zep-debug" -- need to change when I build zep release
             }

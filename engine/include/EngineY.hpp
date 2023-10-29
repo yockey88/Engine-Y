@@ -46,6 +46,7 @@
 #include "core/tasks.hpp"
 #include "core/task_manager.hpp"
 #include "core/resource_handler.hpp"
+#include "core/text_editor.hpp"
 #include "parsing/yscript/node_builder.hpp"
 #include "parsing/shader/shader_parser.hpp"
 #include "event/events.hpp"

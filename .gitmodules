@@ -1,0 +1,6 @@
+[submodule "external/entt"]
+	path = external/entt
+	url = https://github.com/skypjack/entt.git
+[submodule "external/zep"]
+	path = external/zep
+	url = https://github.com/Rezonality/zep.git
