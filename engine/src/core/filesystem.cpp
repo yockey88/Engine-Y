@@ -8,33 +8,50 @@
 #include "log.hpp"
 
 namespace YE {
+    std::string Filesystem::bin_dir = BIN_DIR;
     std::string Filesystem::script_engine_mono_path = MONO_DLLS_PATH;
     std::string Filesystem::script_engine_mono_config_path = MONO_CONFIG_PATH;
-    std::string Filesystem::internal_modules_path = PROJECT_BIN;
-    std::string Filesystem::project_modules_path = PROJECT_BIN;
+    
+    std::string Filesystem::internal_modules_path = MODULES_PATH; 
+    std::string Filesystem::project_modules_path = "";
+
+    std::string Filesystem::engine_core_path = "%APPDATA%\\EngineY";
     std::string Filesystem::engine_respath = ENGINE_RESOURCES_DIR;
     std::string Filesystem::engine_modulepath = "";
     std::string Filesystem::engine_shaderpath = "";
     std::string Filesystem::engine_texturepath = "";
     std::string Filesystem::engine_modelpath = "";
-    std::string Filesystem::respath = PROJECT_RESOURCES_DIR;
-    std::string Filesystem::modulepath = PROJECT_MODULES;
+    
+    std::string Filesystem::project_directory = PROJECTS_DIR;
+    std::string Filesystem::project_code_dir = "";
+    std::string Filesystem::project_bin = "";
+    std::string Filesystem::respath = "";
+    std::string Filesystem::modulepath = "";
+    
     std::string Filesystem::shaderpath = "";
     std::string Filesystem::texturepath = "";
     std::string Filesystem::modelpath = "";
 
-    void Filesystem::Initialize() {
+    void Filesystem::Initialize(const std::string& project_name) {
 
-        internal_modules_path = internal_modules_path + "/modules.dll";
-        project_modules_path = project_modules_path + "/" + PROJECT_NAME + "_modules.dll";
+        project_directory = project_directory + "/" + project_name;
+        project_code_dir = project_directory + "/" + project_name;
+        project_bin = bin_dir + "/" + project_name;
+
+        internal_modules_path = project_bin + "/modules.dll";
+        project_modules_path = project_bin + "/" + project_name + "_modules.dll";
+
         engine_modulepath = engine_respath + "/modules";
         engine_shaderpath = engine_respath + "/shaders";
         engine_texturepath = engine_respath + "/textures";
         engine_modelpath = engine_respath + "/models";
-        
+
+        respath = project_code_dir + "/resources";    
         shaderpath = respath + "/shaders";
         texturepath = respath + "/textures";
         modelpath = respath + "/models";
+
+        modulepath = project_directory + "/modules";
     }
 
     bool Filesystem::FileExists(const std::string& path) {
@@ -80,6 +97,17 @@ namespace YE {
         file.close();
 
         return buffer;
+    }
+
+    void Filesystem::OverrideResourcePath(const std::string& path) {
+        if (!std::filesystem::exists(path)) {
+            YE_ERROR("Attempting to override resource path with nonexistent path :: [{0}]" , path);
+            return;
+        }        
+        respath = path;       
+        shaderpath = respath + "/shaders";
+        texturepath = respath + "/textures";
+        modelpath = respath + "/models";
     }
 
 }

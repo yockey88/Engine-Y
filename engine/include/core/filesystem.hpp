@@ -8,28 +8,35 @@
 namespace YE {
 
     class Filesystem {
+        static std::string bin_dir;
         static std::string script_engine_mono_path;
         static std::string script_engine_mono_config_path;
         static std::string internal_modules_path;
         static std::string project_modules_path;
 
+        static std::string engine_core_path;
         static std::string engine_respath;
         static std::string engine_modulepath;
         static std::string engine_shaderpath;
         static std::string engine_texturepath;
         static std::string engine_modelpath;
 
+        static std::string project_directory;
+        static std::string project_code_dir;
+        static std::string project_bin;
         static std::string respath;
         static std::string modulepath;
         static std::string shaderpath;
         static std::string texturepath;
         static std::string modelpath;
         public:
-            static void Initialize();
+            static void Initialize(const std::string& project_name);
             static bool FileExists(const std::string& path);
             static void ReadFileAsCStr(char* buffer , const std::string& path);
             static std::string ReadFileAsStr(const std::string& path);
             static std::vector<char> ReadFileAsSBytes(const std::string& path);
+
+            static void OverrideResourcePath(const std::string& path);
 
             inline static std::filesystem::path GetCWDPath() { return std::filesystem::current_path(); }
             inline static std::string GetCWD() { return std::filesystem::current_path().string(); }

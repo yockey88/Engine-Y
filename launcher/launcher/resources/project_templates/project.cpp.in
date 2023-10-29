@@ -1,0 +1,12 @@
+#include "EngineY.hpp"
+
+class <projectname> : public YE::App {
+    public:
+        <projectname>() 
+            : YE::App("<projectname>") {}
+        virtual ~<projectname>() override {}
+        
+        virtual bool Initialize() override { return true; }
+};
+
+DECLARE_APP(<projectname>);

@@ -23,13 +23,17 @@
 #include <deque>
 #include <atomic>
 #include <future>
+#include <regex>
 
 #include <SDL.h>
 #include <glad/glad.h>
 #include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
 #include <magic_enum/magic_enum.hpp>
 
 #ifdef YE_PLATFORM_WIN
+    #include <ShlObj.h>
+    #include <minwindef.h>
 #ifdef YE_DEBUG_BUILD
     #include "platform/win_crash_handler.hpp"
 #endif
@@ -150,4 +154,19 @@ namespace EngineY {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-#endif
+#define DECLARE_APP(X)                               \
+    YE::App* CreateApp() {                           \
+        return ynew X;                               \
+    }                                                \
+    int YE2Entry(int argc , char* argv[]) {          \
+        YE::Engine* engine = YE::Engine::Instance(); \
+        engine->RegisterApplication(CreateApp());    \
+        if (engine->AppLoaded()) {                   \
+            engine->Initialize();                    \
+            engine->Run();                           \
+            engine->Shutdown();                      \
+        }                                            \
+        return 0;                                    \
+    }
+
+#endif // !YE_HPP 
