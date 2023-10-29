@@ -35,6 +35,7 @@ workspace "engine"
     externals["assimp"] = "external/assimp"
     externals["react"] = "external/ReactPhysics3d"
     externals["magic_enum"] = "external/magic_enum"
+    externals["zep"] = "external/zep"
  
     include "external/glad"
     include "external/spdlog-1.11.0"
@@ -76,10 +77,12 @@ workspace "engine"
             "%{externals.imguizmo}" ,
             "%{externals.assimp}/include" ,
             "%{externals.react}/include" ,
-            "%{externals.magic_enum}"
+            "%{externals.magic_enum}" ,
+            "%{externals.zep}/include"
         }
         
         libdirs {
+            "%{externals.zep}/bin/%{cfg.buildcfg}/zep" ,
             "%{externals.sdl2}/lib/x64" ,
             "%{externals.mono}/lib/%{cfg.buildcfg}" ,
             "%{externals.assimp}/lib/%{cfg.buildcfg}" 
@@ -136,7 +139,8 @@ workspace "engine"
                 "YE_DEBUG_BUILD" 
             }
             links {
-                "assimp-vc143-mtd"
+                "assimp-vc143-mtd" ,
+                "Zep-debug"
             }
             buildoptions {
                 "/Zi" ,
@@ -155,7 +159,8 @@ workspace "engine"
                 "/verbose:quiet"
             }
             links {
-                "assimp-vc143-mt"
+                "assimp-vc143-mt" ,
+                "Zep-debug" -- need to change when I build zep release
             }
 
     if not (os.isdir(projectname .. "/resources"))
@@ -210,10 +215,12 @@ workspace "engine"
             "%{externals.imguizmo}" ,
             "%{externals.assimp}/include" ,
             "%{externals.react}/include" ,
-            "%{externals.magic_enum}"
+            "%{externals.magic_enum}" ,
+            "%{externals.zep}/include"
         }
         
         libdirs {
+            "%{externals.zep}/bin/%{cfg.buildcfg}/zep" ,
             "%{externals.sdl2}/lib/x64" ,
             "%{externals.mono}/lib/%{cfg.buildcfg}" ,
             "%{externals.assimp}/lib/%{cfg.buildcfg}"
@@ -252,7 +259,8 @@ workspace "engine"
                 "YE_DEBUG_BUILD" 
             }
             links {
-                "assimp-vc143-mtd"
+                "assimp-vc143-mtd" ,
+                "Zep-debug"
             }
     
         filter "configurations:Release"
@@ -260,5 +268,6 @@ workspace "engine"
             symbols "off"
             optimize "on"
             links {
-                "assimp-vc143-mt"
+                "assimp-vc143-mt" ,
+                "Zep-debug" -- need to change when I build zep release
             }
