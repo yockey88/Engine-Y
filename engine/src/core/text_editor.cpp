@@ -3,16 +3,24 @@
 #include <imgui/imgui.h>
 
 #include "log.hpp"
+#include "core/filesystem.hpp"
 
 namespace YE {
-
-    void TextEditor::Initialize(const std::string& path , Zep::NVec2f pixel_scale) {
+        
+    Zep::Msg TextEditor::MsgIdFromString(const std::string& message) {
+        if (message == "RequestQuit") return Zep::Msg::RequestQuit;
+        YE_CRITICAL_ASSERTION(false , "Unknown or Unimplemented Message :: {}" , message);
+    }
+ 
+    void TextEditor::Initialize(const glm::vec2& pixel_scale) {
         zep = std::make_unique<ZepWrapper>(
-            std::filesystem::path(path) , 
-            Zep::NVec2f(pixel_scale.x , pixel_scale.y) ,
+            std::filesystem::path(Filesystem::GetCWD()) , pixel_scale ,
             [&](std::shared_ptr<Zep::ZepMessage> message) -> void {
                 if (message->str != "") 
                     YE_INFO("Editor Message :: {}" , message->str);
+                
+                if (message->str == "RequestQuit" || message->str == ":wq")
+                    show = false;
             }
         );
 
@@ -34,21 +42,29 @@ namespace YE {
         zep->GetEditor().InitWithFileOrDir(path.string());
     }
 
+    void TextEditor::Notify(const std::string& message) {
+        if (zep == nullptr)
+            return;
+
+        Zep::Msg id = MsgIdFromString(message);
+        zep->GetEditor().Notify(std::make_shared<Zep::ZepMessage>(id , message));
+    }
+
     void TextEditor::Update() {
         if (zep != nullptr)
             zep->GetEditor().RefreshRequired();
     }
 
-    void TextEditor::Draw() {
+    bool TextEditor::Draw(const glm::ivec2& size) {
         if (zep == nullptr)
-            return;
+            return false;
 
-        bool show = true;
+        if (!show)
+            return false;
 
-        ImGui::SetNextWindowSize(ImVec2(640 , 480) , ImGuiCond_FirstUseEver);
         if (!ImGui::Begin("Editor" , &show , ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar)) {
             ImGui::End();
-            return;
+            return false;
         }
 
         auto min = ImGui::GetCursorScreenPos();
@@ -76,6 +92,8 @@ namespace YE {
         }
         
         ImGui::End();
+
+        return true;
     }
 
     void TextEditor::Shutdown() {

@@ -35,6 +35,7 @@ workspace "launcher"
     externals["assimp"] = externals_folder .. "/assimp"
     externals["react"] = externals_folder .. "/ReactPhysics3d"
     externals["magic_enum"] = externals_folder .. "/magic_enum"
+    externals["zep"] = externals_folder .. "/zep"
 
     include "modules"
 
@@ -72,7 +73,8 @@ workspace "launcher"
             "%{externals.imguizmo}" ,
             "%{externals.assimp}/include" ,
             "%{externals.react}/include" ,
-            "%{externals.magic_enum}"
+            "%{externals.magic_enum}" ,
+            "%{externals.zep}/include"
         }
         
         libdirs {
@@ -82,6 +84,7 @@ workspace "launcher"
             "%{externals.imgui}/bin/%{cfg.buildcfg}/imgui" ,
             "%{externals.imguizmo}/bin/%{cfg.buildcfg}/imguizmo" ,
             "%{externals.react}/bin/%{cfg.buildcfg}/reactphysics3d" ,
+            "%{externals.zep}/bin/%{cfg.buildcfg}/zep" ,
             "%{externals.sdl2}/lib/x64" ,
             "%{externals.mono}/lib/%{cfg.buildcfg}" ,
             "%{externals.assimp}/lib/%{cfg.buildcfg}"
@@ -97,7 +100,8 @@ workspace "launcher"
             "imgui" ,
             "imguizmo" ,
             "mono-2.0-sgen" ,
-            "reactphysics3d"
+            "reactphysics3d" ,
+            "zep"
         }
 
         filter { "system:windows" , "configurations:*" }

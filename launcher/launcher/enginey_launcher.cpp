@@ -4,6 +4,8 @@ class Launcher : public YE::App {
     bool app_data_found = false;
     bool project_explorer_open = false;
     bool project_builder_open = false;
+    bool project_config_open = false;
+    bool editor_open = false;
 
     char author_buffer[256] = { 0 };
     char project_name[256] = { 0 };
@@ -12,10 +14,15 @@ class Launcher : public YE::App {
     std::filesystem::path engine_folder;
     std::filesystem::path project_folder;
 
+    std::string project_name_str;
+
+    std::unique_ptr<YE::TextEditor> editor = nullptr;
+
     void BuildProject(const std::string& project_name);
     void LaunchProject(const std::string& project_name);
     void ProjectExplorer();
-    bool GenerateProjectDirectory(const std::string& project_name); 
+    bool GenerateProjectDirectory(const std::string& project_name);
+    void ConfigureProject(); 
     void ProjectBuilder();
    
     public:
@@ -50,7 +57,7 @@ class Launcher : public YE::App {
         virtual bool Initialize() override {
             EngineY::RegisterKeyPressCallback(
                 [&](YE::KeyPressed* event) -> bool {
-                    if (event->Key() == YE::Keyboard::Key::YE_ESCAPE)
+                    if (event->Key() == YE::Keyboard::Key::YE_ESCAPE && !editor_open)
                         EngineY::DispatchEvent(ynew YE::ShutdownEvent);
                     return true;
                 } ,
@@ -79,16 +86,25 @@ class Launcher : public YE::App {
             return true;
         }
 
+        virtual void Update() {
+            if (editor != nullptr)
+                editor->Update();            
+        }
+
         virtual void DrawGui() {
-            if (ImGui::Begin("Engine Y Project Launcher")) {
-                if (ImGui::Button("Open Project")) ImGui::OpenPopup("Project Explorer");
-                ImGui::SameLine();
-                if (ImGui::Button("Create Project")) ImGui::OpenPopup("Project Creator"); 
-                
-                ProjectExplorer();
-                ProjectBuilder(); 
+            if (!project_config_open) { 
+                if (ImGui::Begin("Engine Y Project Launcher")) {
+                    if (ImGui::Button("Open Project")) ImGui::OpenPopup("Project Explorer");
+                    ImGui::SameLine();
+                    if (ImGui::Button("Create Project")) ImGui::OpenPopup("Project Creator"); 
+
+                    ProjectExplorer();
+                    ProjectBuilder(); 
+                }
+                ImGui::End();  
+            } else {
+                ConfigureProject();
             }
-            ImGui::End();   
         }
 };
 
@@ -268,6 +284,8 @@ bool Launcher::GenerateProjectDirectory(const std::string& project_name) {
     std::string project_cpp_str = project_cpp.str();
     std::string yproj_str = yproj_file.str();
 
+    project_name_str = project_name;
+
     {
         std::ofstream module_file{ (proj_path / "modules.lua").string() };
         module_file << modules_str;
@@ -320,7 +338,49 @@ bool Launcher::GenerateProjectDirectory(const std::string& project_name) {
 
     return true;
 }
-    
+
+void Launcher::ConfigureProject() {
+    YE_CRITICAL_ASSERTION(editor != nullptr , "Editor is null");
+    if (ImGui::Begin("Project Configuration" , &project_config_open)) {
+        ImGui::Text("Project Build Configuration");
+        for (const auto& entry : std::filesystem::directory_iterator(project_folder / project_name)) {
+            if (entry.is_directory()) continue;
+            std::string file_name = entry.path().filename().string();
+            if (ImGui::Button(file_name.c_str())) {
+                editor->Initialize({ 1.0f , 1.0f });
+                editor->LoadFile(entry.path());
+                editor_open = true;
+            }
+        }
+        ImGui::Separator();
+        ImGui::Text("Project Configuration");
+        for (const auto& entry : std::filesystem::directory_iterator(project_folder / project_name / project_name)) {
+            if (entry.is_directory()) continue;
+            std::string file_name = entry.path().filename().string();
+            if (ImGui::Button(file_name.c_str())) {
+                editor->Initialize({ 1.0f , 1.0f });
+                editor->LoadFile(entry.path());
+                editor_open = true;
+            }
+        }
+
+        if (ImGui::Button("Confirm" , { 100 , 25 })) {
+            project_config_open = false;
+            editor_open = false;
+            editor->Notify("RequestQuit");
+            editor->Shutdown();
+
+            // BuildProject(project_name);
+            // LaunchProject(project_name);
+
+            EngineY::DispatchEvent(ynew YE::ShutdownEvent);
+        }
+    }
+    ImGui::End();
+
+    editor_open = editor->Draw({ 640 , 480 });
+}
+
 void Launcher::ProjectBuilder() {
     ImGuiWindowFlags flags = ImGuiWindowFlags_Popup | ImGuiWindowFlags_Modal  | ImGuiWindowFlags_NoCollapse;
     if (ImGui::BeginPopupModal("Project Creator" , nullptr , flags)) {
@@ -329,10 +389,10 @@ void Launcher::ProjectBuilder() {
         if (ImGui::Button("Create")) {
             std::string proj_name{ project_name };
             if (GenerateProjectDirectory(proj_name)) {
-                ImGui::CloseCurrentPopup();
-                BuildProject(proj_name);
-                LaunchProject(proj_name);
-            } else { }
+                editor = std::make_unique<YE::TextEditor>();
+                project_config_open = true;
+            } 
+            ImGui::CloseCurrentPopup();
         }
         ImGui::EndPopup();
     }
