@@ -1,5 +1,5 @@
 MAIN_NAME = "engine"
-EXE_NAME = "sandbox"
+EXE_NAME = "launcher"
 MODULE_NAME = "modules"
 
 TOOLS_DIR = "tools"

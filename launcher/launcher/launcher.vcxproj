@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7748346B-6315-8F76-8C2E-7D1E785AC404}</ProjectGuid>
+    <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>launcher</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>..\..\bin\Debug\launcher\</OutDir>
+    <IntDir>..\..\bin-obj\Debug\launcher\Debug\launcher\</IntDir>
+    <TargetName>launcher</TargetName>
+    <TargetExt>.exe</TargetExt>
+    <ExternalIncludePath>..\..\engine\include;..\..\external\SDL2-2.24.2\include;..\..\external\glad\include;..\..\external\glm-master;..\..\external\spdlog-1.11.0\include;..\..\external\entt;..\..\external\stb;..\..\external\mono\include;..\..\external\imgui-docking;..\..\external\imguizmo;..\..\external\assimp\include;..\..\external\ReactPhysics3d\include;..\..\external\magic_enum;$(ExternalIncludePath)</ExternalIncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>..\..\bin\Release\launcher\</OutDir>
+    <IntDir>..\..\bin-obj\Release\launcher\Release\launcher\</IntDir>
+    <TargetName>launcher</TargetName>
+    <TargetExt>.exe</TargetExt>
+    <ExternalIncludePath>..\..\engine\include;..\..\external\SDL2-2.24.2\include;..\..\external\glad\include;..\..\external\glm-master;..\..\external\spdlog-1.11.0\include;..\..\external\entt;..\..\external\stb;..\..\external\mono\include;..\..\external\imgui-docking;..\..\external\imguizmo;..\..\external\assimp\include;..\..\external\ReactPhysics3d\include;..\..\external\magic_enum;$(ExternalIncludePath)</ExternalIncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;YE_PLATFORM_WIN;YE_DEBUG_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ExternalWarningLevel>Level3</ExternalWarningLevel>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>engine.lib;SDL2.lib;glad.lib;spdlog.lib;imgui.lib;imguizmo.lib;mono-2.0-sgen.lib;reactphysics3d.lib;assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\bin\Debug\engine;..\..\external\glad\bin\Debug\glad;..\..\external\spdlog-1.11.0\bin\Debug\spdlog;..\..\external\imgui-docking\bin\Debug\imgui;..\..\external\imguizmo\bin\Debug\imguizmo;..\..\external\ReactPhysics3d\bin\Debug\reactphysics3d;..\..\external\SDL2-2.24.2\lib\x64;..\..\external\mono\lib\Debug;..\..\external\assimp\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <EntryPointSymbol>WinMainCRTStartup</EntryPointSymbol>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;YE_PLATFORM_WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ExternalWarningLevel>Level3</ExternalWarningLevel>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>engine.lib;SDL2.lib;glad.lib;spdlog.lib;imgui.lib;imguizmo.lib;mono-2.0-sgen.lib;reactphysics3d.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\bin\Release\engine;..\..\external\glad\bin\Release\glad;..\..\external\spdlog-1.11.0\bin\Release\spdlog;..\..\external\imgui-docking\bin\Release\imgui;..\..\external\imguizmo\bin\Release\imguizmo;..\..\external\ReactPhysics3d\bin\Release\reactphysics3d;..\..\external\SDL2-2.24.2\lib\x64;..\..\external\mono\lib\Release;..\..\external\assimp\lib\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <EntryPointSymbol>WinMainCRTStartup</EntryPointSymbol>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="enginey_launcher.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="modules\launcher_modules.csproj">
+      <Project>{8FDE0E02-7BD7-2D54-A409-13D990610D60}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

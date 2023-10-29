@@ -9,17 +9,27 @@
 
 namespace YE {
 
-    class App {
+    struct EngineConfig {
         std::string project_name;
+        std::string project_file_src;
 
+        bool use_project_file = false;
+    };
+
+    class App {
         protected:
+            std::string project_name;
+
         public:
-            App();
+            App(const std::string& project_name)
+                : project_name(project_name) {}
             virtual ~App() {}
 
+            virtual EngineConfig GetEngineConfig() { return EngineConfig(); }
             virtual WindowConfig GetWindowConfig();
 
-            virtual void Initialize() {}
+            virtual void PreInitialize() {}
+            virtual bool Initialize() { return false; }
             virtual void Update(float dt) {}
             virtual void Draw() {}
             virtual void DrawGui() {}

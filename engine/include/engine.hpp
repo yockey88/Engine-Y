@@ -7,6 +7,7 @@
 #include <filesystem>
 
 #include "log.hpp"
+#include "core/app.hpp"
 #include "core/timer.hpp"
 #include "core/defines.hpp"
 #include "core/UUID.hpp"
@@ -14,7 +15,6 @@
 
 namespace YE {
 
-    class App;
     class Logger;
     class ScriptEngine;
     class PhysicsEngine;
@@ -47,6 +47,7 @@ namespace YE {
         time::FrameRateEnforcer<kTargetFps> frame_rate;
 
         App* app = nullptr;
+        EngineConfig app_config;
         ProjectAst project_ast; // invalid after initialization
         /* SceneGraph* */ Scene* project_scene_graph = nullptr;
         std::string project_file_src;
