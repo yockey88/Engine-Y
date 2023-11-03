@@ -7,6 +7,7 @@
 
 #include "log.hpp"
 #include "engine.hpp"
+#include "core/filesystem.hpp"
 #include "event/event_manager.hpp"
 
 namespace YE {
@@ -78,6 +79,8 @@ namespace YE {
         SDL_GLContext gl_context = window->GetGLContext();
         ImGui_ImplSDL2_InitForOpenGL(win , gl_context);
         ImGui_ImplOpenGL3_Init("#version 460");
+
+        io.IniFilename = YE::Filesystem::GetGuiIniPathCStr();        
 
         gui_state = ynew GuiState;
     }

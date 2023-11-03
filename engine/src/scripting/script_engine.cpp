@@ -564,6 +564,11 @@ namespace YE {
         internal_modules_path = Filesystem::GetInternalModulesPath();
         project_modules_path = Filesystem::GetProjectModulesPath();
 
+        YE_CRITICAL_ASSERTION(std::filesystem::exists(mono_path) , "Failed to find mono path: {0}" , mono_path);
+        YE_CRITICAL_ASSERTION(std::filesystem::exists(mono_config_path) , "Failed to find mono config path: {0}" , mono_config_path);
+        YE_CRITICAL_ASSERTION(std::filesystem::exists(internal_modules_path) , "Failed to find internal modules path: {0}" , internal_modules_path);
+        YE_CRITICAL_ASSERTION(std::filesystem::exists(project_modules_path) , "Failed to find project modules path: {0}" , project_modules_path);
+
         root_domain_name = "YERootScriptDomain";
         app_domain_name = "YEAppScriptDomain";
         std::string current_dir = Filesystem::GetCWD();

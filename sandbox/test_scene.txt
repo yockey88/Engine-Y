@@ -1,0 +1,874 @@
+/////// Example .yproj
+void CameraKeyboardCallback(YE::Camera* camera , float dt) {
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_W)) camera->SetPosition(camera->Position() + camera->Front() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_S)) camera->SetPosition(camera->Position() - camera->Front() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_A)) camera->SetPosition(camera->Position() - camera->Right() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_D)) camera->SetPosition(camera->Position() + camera->Right() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_LSHIFT)) camera->SetPosition(camera->Position() + camera->Up() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_LCTRL)) camera->SetPosition(camera->Position() - camera->Up() * camera->Speed());
+
+    camera->Recalculate();
+}
+
+void CameraMouseCallback(YE::Camera* camera , float dt) {
+    YE::Mouse::SnapToCenter();
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+
+    camera->SetLastMouse(camera->Mouse());
+    
+    int x, y;
+    SDL_GetGlobalMouseState(&x, &y);
+    camera->SetMousePos({ 
+        static_cast<float>(x) , 
+        static_cast<float>(y) 
+    });
+
+    camera->SetDeltaMouse({ 
+        camera->Mouse().x - camera->LastMouse().x ,
+        camera->LastMouse().y - camera->Mouse().y
+    });
+
+    glm::vec3 front = camera->Front();
+
+    int relx , rely;
+    SDL_GetRelativeMouseState(&relx , &rely);
+    camera->SetYaw(camera->Yaw() + (relx * camera->Sensitivity()));
+    camera->SetPitch(camera->Pitch() - (rely * camera->Sensitivity()));
+
+    if (camera->ConstrainPitch()) {
+
+        if (camera->Pitch() > 89.0f) camera->SetPitch(89.0f);
+        if (camera->Pitch() < -89.0f) camera->SetPitch(-89.0f);
+
+    }
+
+    front.x = cos(glm::radians(camera->Yaw())) * cos(glm::radians(camera->Pitch()));
+    front.y = sin(glm::radians(camera->Pitch()));
+    front.z = sin(glm::radians(camera->Yaw())) * cos(glm::radians(camera->Pitch()));
+    camera->SetFront(glm::normalize(front));
+
+    camera->SetRight(glm::normalize(glm::cross(camera->Front() , camera->WorldUp())));
+    camera->SetUp(glm::normalize(glm::cross(camera->Right() , camera->Front())));
+
+    camera->Recalculate();
+}
+
+class Sandbox : public YE::App {
+    bool scene_controls = true;
+
+    YE::Scene* scene = nullptr;
+    bool scene_created = false;
+
+    public:
+        Sandbox() {}
+        virtual ~Sandbox() override {}
+
+        virtual YE::WindowConfig GetWindowConfig() override {
+            YE::WindowConfig config;
+            config.title = "Engine Y";
+            config.size.x = 1920;
+            config.size.y = 1080;
+            config.clear_color = { 0.1f , 0.1f , 0.1f , 1.f };
+            config.fullscreen = false;
+            config.vsync = false;
+            config.rendering_to_screen = true;
+            config.flags |= SDL_WINDOW_RESIZABLE;
+            return config;
+        }
+
+        virtual void Initialize() override {
+            EngineY::RegisterKeyPressCallback(
+                [&](YE::KeyPressed* event) -> bool {
+                    if (event->Key() == YE::Keyboard::Key::YE_ESCAPE)
+                        EngineY::DispatchEvent(ynew YE::ShutdownEvent);
+                    if (event->Key() == YE::Keyboard::Key::YE_F1)
+                        EngineY::ScriptReload();
+                    return true;
+                } ,
+                "editor-keys"
+            );
+
+            scene = EngineY::ProjectSceneGraph();
+
+            if (scene != nullptr) {
+                scene->LoadScene();
+                scene->Start();
+
+                YE::Camera* camera = scene->GetCamera("main_camera");
+                if (camera != nullptr) {
+                    // camera->RegisterKeyboardCallback(CameraKeyboardCallback);
+                    // camera->RegisterMouseCallback(CameraMouseCallback);
+                }
+                scene_created = true;
+            }
+        }
+        
+        virtual void Update(float dt) override {
+            if (scene_created) {
+                scene->Update(dt);
+            }
+        }
+
+        virtual void Draw() override {
+            if (scene_created) {
+                scene->Draw();
+            }
+        }
+        
+        virtual void DrawGui() override {
+            if (ImGui::Begin("Scene Controls" , &scene_controls , ImGuiWindowFlags_MenuBar)) {
+                if (ImGui::Button("Destroy Scene")) {
+                    if (scene_created) {
+                        scene->UnloadScene();
+                        scene->Shutdown();
+                        ydelete scene;
+                        scene_created = false;
+                    }
+                }
+
+                if (scene_created) {
+                    ImGui::TextColored({ 0.f , 1.f , 0.f , 1.f } , scene->SceneName().c_str());
+
+                    for (auto& [id , ent] : (*scene->Entities())) {
+                        auto& id = ent->GetComponent<YE::components::ID>();
+                        auto& transform = ent->GetComponent<YE::components::Transform>();
+
+                        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
+                        if (ImGui::TreeNodeEx((void*)id.id.uuid , flags , id.name.c_str())) {
+                            ImGui::Selectable(id.name.c_str() , false);
+                            ImGui::Text("[%llu]" , id.id.uuid);
+                            ImGui::Text("Position :: [%f , %f , %f]" , transform.position.x , transform.position.y , transform.position.z);
+                            ImGui::Text("Rotation :: [%f , %f , %f]" , transform.rotation.x , transform.rotation.y , transform.rotation.z);
+                            ImGui::Text("Scale :: [%f , %f , %f]" , transform.scale.x , transform.scale.y , transform.scale.z);
+                            ImGui::Separator();
+
+                            ImGui::TreePop();
+                        }
+                    }
+                }
+            }
+            ImGui::End();
+        }
+
+        virtual void Shutdown() override {
+            if (scene_created) {
+                scene->UnloadScene();
+                scene->Shutdown();
+                ydelete scene;
+            }
+        }
+};
+
+YE::App* CreateApp() {
+    return ynew Sandbox;
+}
+node<scene> test_scene {
+    node<camera> main_camera {
+        position: { 0 , 5 , 5 };
+        front: { 0 , -1 , -1 };
+    }
+    node<entity> ent0 {
+        node<script> _ {
+            object: "UserEntity";
+        }
+        node<physics_body> _ {
+            body_type: "dynamic";
+        }
+        node<box_collider> _;
+        node<transform> _ {
+            position: { 0 , 5 , 0 };
+        }
+        node<textured_renderable> _ {
+            mesh: "cube";
+            texture: { 
+                "container" ,
+                "container_specular"
+            };
+            shader: "container_shader";
+        }
+    }
+    node<entity> floor {
+        node<transform> _ {
+            position: { 0 , -1 , 0 };
+            rotation: { 0 , 0 , 0 };
+            scale:    { 30 , 0.5 , 30 };
+        }
+        node<textured_renderable> _ {
+            mesh: "cube";
+            texture: { 
+                "container" ,
+                "container_specular"
+            };
+            shader: "container_shader";
+        }
+        node<physics_body> _ {
+            body_type: "static";
+        }
+        node<box_collider> _;
+    }
+    node<entity> light {
+        node<transform> _ {
+            position: { -3 , 3 , 0 };
+            scale: { 0.2 , 0.2 , 0.2 };
+        }
+        node<renderable> _ {
+            mesh: "cube";
+            shader: "light_shader";
+        }
+        node<point_light> _ {
+            ambient: { 0.2 , 0.2 , 0.2 };
+            diffuse: { 1 , 0 , 0 };
+            specular: { 1 , 1 , 1 };
+            constant: 1;
+            linear: 0.09;
+            quadratic: 0.032;
+        }
+    }
+    node<entity> light2 {
+        node<transform> _ {
+            position: { 3 , 3 , 0 };
+            scale: { 0.2 , 0.2 , 0.2 };
+        }
+        node<renderable> _ {
+            mesh: "cube";
+            shader: "light_shader";
+        }
+        node<point_light> _ {
+            ambient: { 0.2 , 0.2 , 0.2 };
+            diffuse: { 0 , 0 , 1 };
+            specular: { 1 , 1 , 1 };
+            constant: 1;
+            linear: 0.09;
+            quadratic: 0.032;
+        }
+    }
+}
+
+////// Hot reload script example
+
+void CameraKeyboardCallback(YE::Camera* camera , float dt) {
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_W)) camera->SetPosition(camera->Position() + camera->Front() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_S)) camera->SetPosition(camera->Position() - camera->Front() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_A)) camera->SetPosition(camera->Position() - camera->Right() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_D)) camera->SetPosition(camera->Position() + camera->Right() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_LSHIFT)) camera->SetPosition(camera->Position() + camera->Up() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_LCTRL)) camera->SetPosition(camera->Position() - camera->Up() * camera->Speed());
+
+    camera->Recalculate();
+}
+
+void CameraMouseCallback(YE::Camera* camera , float dt) {
+    YE::Mouse::SnapToCenter();
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+
+    camera->SetLastMouse(camera->Mouse());
+    
+    int x, y;
+    SDL_GetGlobalMouseState(&x, &y);
+    camera->SetMousePos({ 
+        static_cast<float>(x) , 
+        static_cast<float>(y) 
+    });
+
+    camera->SetDeltaMouse({ 
+        camera->Mouse().x - camera->LastMouse().x ,
+        camera->LastMouse().y - camera->Mouse().y
+    });
+
+    glm::vec3 front = camera->Front();
+
+    int relx , rely;
+    SDL_GetRelativeMouseState(&relx , &rely);
+    camera->SetYaw(camera->Yaw() + (relx * camera->Sensitivity()));
+    camera->SetPitch(camera->Pitch() - (rely * camera->Sensitivity()));
+
+    if (camera->ConstrainPitch()) {
+
+        if (camera->Pitch() > 89.0f) camera->SetPitch(89.0f);
+        if (camera->Pitch() < -89.0f) camera->SetPitch(-89.0f);
+
+    }
+
+    front.x = cos(glm::radians(camera->Yaw())) * cos(glm::radians(camera->Pitch()));
+    front.y = sin(glm::radians(camera->Pitch()));
+    front.z = sin(glm::radians(camera->Yaw())) * cos(glm::radians(camera->Pitch()));
+    camera->SetFront(glm::normalize(front));
+
+    camera->SetRight(glm::normalize(glm::cross(camera->Front() , camera->WorldUp())));
+    camera->SetUp(glm::normalize(glm::cross(camera->Right() , camera->Front())));
+
+    camera->Recalculate();
+}
+
+class Sandbox : public YE::App {
+
+    std::vector<float> fb_verts;
+    std::vector<uint32_t> fb_indices;
+    std::vector<uint32_t> fb_layout;
+
+    YE::VertexArray* cube_vao = nullptr;
+    YE::Shader* fb_shader = nullptr;
+    YE::Camera* camera = nullptr;
+    YE::Framebuffer* framebuffer = nullptr;
+    YE::Material container_material;
+
+    YE::Scene scene;
+
+    bool main_camera_active = true;
+    bool framebuffer_active = false;
+    bool scene_controls = true;
+    bool camera_controls = true;
+
+    public:
+        Sandbox() {}
+        virtual ~Sandbox() override {}
+
+        virtual YE::WindowConfig GetWindowConfig() override {
+            YE::WindowConfig config;
+            
+            config.title = "Engine Y";
+            
+            config.size.x = 1920;
+            config.size.y = 1080;
+
+            config.clear_color = { 0.1f , 0.1f , 0.1f , 1.f };
+
+            config.fullscreen = false;
+            config.vsync = false;
+            config.rendering_to_screen = true;
+
+            config.flags |= SDL_WINDOW_RESIZABLE;
+
+            return config;
+        }
+        
+        virtual void LoadResources() override {}
+
+        virtual void Initialize() override {
+            ADD_SCRIPT_FUNCTION(EditorCalls , EditorLog);
+
+            cube_vao = ynew YE::VertexArray(cube_verts , {});
+            cube_vao->Upload();
+
+            fb_shader = EngineY::GetShader("framebuffer0");
+
+            fb_verts = {
+                 1.f ,  1.f , 1.f , 1.f ,
+                 1.f , -1.f , 1.f , 0.f ,
+                -1.f , -1.f , 0.f , 0.f ,
+                -1.f ,  1.f , 0.f , 1.f
+            };
+
+            fb_indices = {
+                0 , 1 , 3 ,
+                1 , 2 , 3
+            };
+
+            fb_layout = {
+                2 , 2
+            };
+
+            glm::ivec2 win_size = EngineY::Window()->GetSize();
+            framebuffer = ynew YE::Framebuffer(fb_verts , fb_indices , fb_layout , win_size);
+            framebuffer->SetBufferType({
+                YE::BufferBit::COLOR_BUFFER ,
+                YE::BufferBit::DEPTH_BUFFER ,
+                YE::BufferBit::STENCIL_BUFFER
+            });
+            framebuffer->Create();
+            framebuffer->AttachShader(fb_shader);
+
+            EngineY::RegisterKeyPressCallback(
+                [&](YE::KeyPressed* event) -> bool {
+                    if (event->Key() == YE::Keyboard::Key::YE_ESCAPE)
+                        EngineY::DispatchEvent(ynew YE::ShutdownEvent);
+                    if (event->Key() == YE::Keyboard::Key::YE_R && 
+                            !YE::Keyboard::Pressed(YE::Keyboard::Key::YE_LCTRL))
+                        EngineY::ShaderReload();
+                    if (event->Key() == YE::Keyboard::Key::YE_F1)
+                        EngineY::ScriptReload();
+                    if (event->Key() == YE::Keyboard::Key::YE_C) {
+                        if (main_camera_active) {
+                            YE::Mouse::FreeCursor();
+                            camera->UnregisterMouseCallback();
+                            camera->UnregisterKeyboardCallback();
+                        } else {
+                            camera->RegisterMouseCallback(CameraMouseCallback);
+                            camera->RegisterKeyboardCallback(CameraKeyboardCallback);
+                        }
+                        main_camera_active = !main_camera_active;
+                    }
+                    return true;
+                } ,
+                "editor-keys"
+            );
+
+            EngineY::Renderer()->PushFramebuffer("editor-fb" , framebuffer);
+            EngineY::Renderer()->ActivateFramebuffer("editor-fb");
+
+            scene.InitializeScene("test-scene");
+
+            camera = scene.AttachCamera("main-camera");
+            camera->SetFront({ 0.f , 0.f , -1.f });
+            camera->SetUp({ 0.f , 1.f , 0.f });
+            camera->SetRight({ 1.f , 0.f , 0.f });
+            camera->SetPosition({ 0.f , 0.f , 3.f });
+            camera->Recalculate();
+            camera->RegisterMouseCallback(CameraMouseCallback);
+            camera->RegisterKeyboardCallback(CameraKeyboardCallback);
+        
+            container_material.shininess = 32.f;
+
+            YE::Entity* cube = scene.CreateEntity("cube");
+
+            auto& id = cube->GetComponent<YE::components::ID>();
+
+            auto& cube_transform = cube->GetComponent<YE::components::Transform>();
+            cube_transform.position = glm::vec3(0.f);
+            cube_transform.rotation = glm::vec3(1.f , 0.3f , 0.5f);
+            cube_transform.scale = glm::vec3(1.f);
+
+            auto& cube_renderable = cube->AddComponent<YE::components::TexturedRenderable>();
+            cube_renderable.vao = cube_vao;
+            cube_renderable.shader_name = "container_shader";
+            cube_renderable.textures = { 
+                EngineY::GetTexture("container") ,
+                EngineY::GetTexture("container_specular")
+            };
+
+            std::vector<ParamHandle> params = { &id.id.uuid };
+            auto& script = cube->AddComponent<YE::components::Script>("UserEntity" , params);
+
+            YE::Entity* light = scene.CreateEntity("point_light");
+
+            auto& light_id = light->GetComponent<YE::components::ID>();
+
+            auto& light_transform = light->GetComponent<YE::components::Transform>();
+            light_transform.position = glm::vec3(0.f , 5.f , 0.f);
+            light_transform.scale = glm::vec3(0.2f);
+            
+            auto& renderable = light->AddComponent<YE::components::Renderable>();
+            renderable.vao = cube_vao;
+            renderable.shader_name = "light_shader";
+
+            auto& light_light = light->AddComponent<YE::components::PointLight>();
+            light_light.position = light_transform.position;
+            light_light.diffuse = glm::vec3(1.f);
+            light_light.ambient = glm::vec3(0.1f);
+            light_light.specular = glm::vec3(1.f);
+            light_light.constant_attenuation = 1.f;
+            light_light.linear_attenuation = 0.09f;
+            light_light.quadratic_attenuation = 0.032f;
+
+            scene.LoadScene();
+            scene.Start();
+        }
+        
+        virtual void Update(float dt) override {
+            YE::Shader* container_shader = EngineY::GetShader("container_shader");
+            YE::Camera* active_camera = scene.ActiveCamera();
+            
+            auto& light_transform = scene.GetEntity("point_light")->GetComponent<YE::components::Transform>();
+            auto& light = scene.GetEntity("point_light")->GetComponent<YE::components::PointLight>();
+
+            container_shader->Bind();
+            container_shader->SetUniformVec3("plight.position" , light.position);
+            container_shader->SetUniformVec3("plight.diffuse" , light.diffuse);
+            container_shader->SetUniformVec3("plight.ambient" , light.ambient);
+            container_shader->SetUniformVec3("plight.specular" , light.specular);
+            container_shader->SetUniformFloat("plight.constant" , light.constant_attenuation);
+            container_shader->SetUniformFloat("plight.linear" , light.linear_attenuation);
+            container_shader->SetUniformFloat("plight.quadratic" , light.quadratic_attenuation);
+            container_shader->Unbind();
+
+            container_shader->Bind();
+            container_shader->SetUniformFloat("material.shininess" , container_material.shininess);
+            container_shader->Unbind();
+
+            scene.Update(dt);
+        }
+
+        virtual void Draw() override {
+            scene.Draw();
+        }
+        
+        virtual void DrawGui() override {
+            bool show_scene_controls = true;
+            if (ImGui::Begin("Scene Controls" , &scene_controls , ImGuiWindowFlags_MenuBar)) {
+                if (ImGui::BeginMenuBar()) {
+                    if (ImGui::Button("Fill"))
+                        scene.SetRenderMode(YE::RenderMode::FILL);
+                    if (ImGui::Button("Wireframe"))
+                        scene.SetRenderMode(YE::RenderMode::LINE);
+                    if (ImGui::Button("Point"))
+                        scene.SetRenderMode(YE::RenderMode::POINT);
+
+                    ImGui::EndMenuBar();
+                }
+
+                ImGui::TextColored({ 0.f , 1.f , 0.f , 1.f } , scene.SceneName().c_str());
+
+                for (auto& [id , ent] : (*scene.Entities())) {
+                    auto& id = ent->GetComponent<YE::components::ID>();
+                    auto& transform = ent->GetComponent<YE::components::Transform>();
+
+                    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
+                    if (ImGui::TreeNodeEx((void*)id.id.uuid , flags , id.name.c_str())) {
+                        ImGui::Selectable(id.name.c_str() , false);
+                        ImGui::Text("[%llu]" , id.id.uuid);
+                        ImGui::Text("Position :: [%f , %f , %f]" , transform.position.x , transform.position.y , transform.position.z);
+                        ImGui::Text("Rotation :: [%f , %f , %f]" , transform.rotation.x , transform.rotation.y , transform.rotation.z);
+                        ImGui::Text("Scale :: [%f , %f , %f]" , transform.scale.x , transform.scale.y , transform.scale.z);
+                        ImGui::Separator();
+
+                        ImGui::TreePop();
+                    }
+                }
+
+                auto& transform = scene.GetEntity("point_light")->GetComponent<YE::components::Transform>();
+                auto& light = scene.GetEntity("point_light")->GetComponent<YE::components::PointLight>();
+
+                ImGui::Text("Point Light Position :: [%f , %f , %f]" , transform.position.x , transform.position.y , transform.position.z);
+                ImGui::DragFloat3("Point Light Position" , &transform.position.x , 0.1f);
+                ImGui::Separator();
+                ImGui::Text("Point Light Ambient :: [%f , %f , %f]" , light.ambient.x , light.ambient.y , light.ambient.z);
+                ImGui::ColorEdit3("Point Light Ambient" , &light.ambient.x);
+                ImGui::Separator();
+                ImGui::Text("Point Light Diffuse :: [%f , %f , %f]" , light.diffuse.x , light.diffuse.y , light.diffuse.z);
+                ImGui::ColorEdit3("Point Light Diffuse" , &light.diffuse.x);
+                ImGui::Separator();
+                ImGui::Text("Point Light Specular :: [%f , %f , %f]" , light.specular.x , light.specular.y , light.specular.z);
+                ImGui::ColorEdit3("Point Light Specular" , &light.specular.x);
+                ImGui::Separator();
+                ImGui::Text("Linear Attenuation Term :: %f" , light.linear_attenuation);
+                ImGui::DragFloat("Linear Attenuation Term" , &light.linear_attenuation , 0.1f);
+                ImGui::Separator();
+                ImGui::Text("Quadratic Attenuation Term :: %f" , light.quadratic_attenuation);
+                ImGui::DragFloat("Quadratic Attenuation Term" , &light.quadratic_attenuation , 0.1f);
+                ImGui::Separator();
+
+            }
+            ImGui::End();
+
+            if (ImGui::Begin("Camera Information" , &camera_controls)) {
+                ImGui::Text("Camera Position :: [%f , %f , %f]" , camera->Position().x , camera->Position().y , camera->Position().z);
+                ImGui::Text("Camera Front :: [%f , %f , %f]" , camera->Front().x , camera->Front().y , camera->Front().z);
+                ImGui::Text("Camera Up :: [%f , %f , %f]" , camera->Up().x , camera->Up().y , camera->Up().z);
+                ImGui::Text("Camera Right :: [%f , %f , %f]" , camera->Right().x , camera->Right().y , camera->Right().z);
+                ImGui::Text("Camera Orientation :: [%f , %f , %f]" , camera->Yaw() , camera->Pitch() , camera->Roll());
+                ImGui::Text("Camera Speed :: %f" , camera->Speed());
+                ImGui::Text("Camera Sensitivity :: %f" , camera->Sensitivity());
+                ImGui::Text("Camera FOV :: %f" , camera->FOV());
+                ImGui::Text("Camera Zoom :: %f" , camera->Zoom());
+                ImGui::Text("Camera Clip :: [%f , %f]" , camera->Clip().x , camera->Clip().y);
+                ImGui::Text("Camera Viewport :: [%d , %d]" , camera->Viewport().x , camera->Viewport().y);
+                ImGui::Text("Camera Constrain Pitch :: %s" , camera->ConstrainPitch() ? "true" : "false");
+            }
+            ImGui::End();
+        }
+
+        virtual void Shutdown() override {
+            scene.End();
+            scene.UnloadScene();
+            scene.Shutdown();
+            ydelete cube_vao;
+        }
+};
+
+///// Terrain Generation /////
+
+#include "EngineY.hpp"
+
+#include <iostream>
+
+#include <glad/glad.h>
+
+#include "meshes.hpp"
+#include "editor_glue.hpp"
+#include "test_native_script.hpp"
+#include "contact_listeners.hpp"
+
+void CameraKeyboardCallback(YE::Camera* camera , float dt) {
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_W)) camera->SetPosition(camera->Position() + camera->Front() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_S)) camera->SetPosition(camera->Position() - camera->Front() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_A)) camera->SetPosition(camera->Position() - camera->Right() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_D)) camera->SetPosition(camera->Position() + camera->Right() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_LSHIFT)) camera->SetPosition(camera->Position() + camera->Up() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_LCTRL)) camera->SetPosition(camera->Position() - camera->Up() * camera->Speed());
+
+    camera->Recalculate();
+}
+
+void CameraMouseCallback(YE::Camera* camera , float dt) {
+    YE::Mouse::SnapToCenter();
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+
+    camera->SetLastMouse(camera->Mouse());
+    
+    int x, y;
+    SDL_GetGlobalMouseState(&x, &y);
+    camera->SetMousePos({ 
+        static_cast<float>(x) , 
+        static_cast<float>(y) 
+    });
+
+    camera->SetDeltaMouse({ 
+        camera->Mouse().x - camera->LastMouse().x ,
+        camera->LastMouse().y - camera->Mouse().y
+    });
+
+    glm::vec3 front = camera->Front();
+
+    int relx , rely;
+    SDL_GetRelativeMouseState(&relx , &rely);
+    camera->SetYaw(camera->Yaw() + (relx * camera->Sensitivity()));
+    camera->SetPitch(camera->Pitch() - (rely * camera->Sensitivity()));
+
+    if (camera->ConstrainPitch()) {
+
+        if (camera->Pitch() > 89.0f) camera->SetPitch(89.0f);
+        if (camera->Pitch() < -89.0f) camera->SetPitch(-89.0f);
+
+    }
+
+    front.x = cos(glm::radians(camera->Yaw())) * cos(glm::radians(camera->Pitch()));
+    front.y = sin(glm::radians(camera->Pitch()));
+    front.z = sin(glm::radians(camera->Yaw())) * cos(glm::radians(camera->Pitch()));
+    camera->SetFront(glm::normalize(front));
+
+    camera->SetRight(glm::normalize(glm::cross(camera->Front() , camera->WorldUp())));
+    camera->SetUp(glm::normalize(glm::cross(camera->Right() , camera->Front())));
+
+    camera->Recalculate();
+}
+
+void Color(glm::vec3& rgb , float noise_val) {
+    if (noise_val < 0.2f) {
+        rgb = glm::vec3(0.02f , 0.04f , 0.35f); 
+    } else if (noise_val >= 0.2f && noise_val < 0.5f) { 
+        rgb = glm::vec3(0.05f , 0.25f , 0.51f); 
+    } else if (noise_val >= 0.5f && noise_val < 0.8f) {
+        rgb = glm::vec3(0.f , 0.8f , 0.6f); 
+    } else {
+        rgb = glm::vec3(noise_val);
+    }
+}
+
+class Editor : public YE::App {
+
+    std::vector<float> fb_verts;
+    std::vector<uint32_t> fb_indices;
+    std::vector<uint32_t> fb_layout;
+
+    YE::VertexArray* cube_vao = nullptr;
+    YE::VertexArray* rect_vao = nullptr;
+
+    YE::Shader* rect_shader = nullptr;
+    YE::Shader* fb_shader = nullptr;
+    
+    YE::Texture* terrain_texture = nullptr;
+    
+    YE::Camera* camera = nullptr;
+    YE::Framebuffer* framebuffer = nullptr;
+
+    // YE::HeightMap2D* height_map = nullptr;
+    YE::GeneratorArgs gen_args;
+
+    YE::TerrainGenerator* terrain = nullptr;
+    float terrain_scale = 1.f;
+
+    bool main_camera_active = false;
+
+    public:
+        Editor() {}
+        virtual ~Editor() override {}
+
+        virtual YE::WindowConfig GetWindowConfig() override {
+            YE::WindowConfig config;
+            
+            config.title = "Engine Y";
+            
+            config.size.x = 1920;
+            config.size.y = 1080;
+
+            config.clear_color = { 0.1f , 0.1f , 0.1f , 1.f };
+
+            config.fullscreen = false;
+            config.vsync = false;
+            config.rendering_to_screen = true;
+
+            config.flags |= SDL_WINDOW_RESIZABLE;
+
+            return config;
+        }
+        
+        virtual void LoadResources() override {
+            cube_vao = ynew YE::VertexArray(cube_verts , {});
+            cube_vao->Upload();
+
+            rect_vao = ynew YE::VertexArray(rect_verts , rect_indices);
+            rect_vao->Upload();
+
+            rect_shader = EngineY::GetShader("height_map");
+            rect_shader->Bind();
+            rect_shader->SetUniformInt("camera_active" , 1);
+            rect_shader->SetUniformInt("tex" , 0);
+            rect_shader->Unbind();
+
+            terrain_texture = EngineY::GetTexture("terrain3");
+
+            fb_verts = {
+                 1.f ,  1.f , 1.f , 1.f ,
+                 1.f , -1.f , 1.f , 0.f ,
+                -1.f , -1.f , 0.f , 0.f ,
+                -1.f ,  1.f , 0.f , 1.f
+            };
+
+            fb_indices = {
+                0 , 1 , 3 ,
+                1 , 2 , 3
+            };
+
+            fb_layout = {
+                2 , 2
+            };
+
+            fb_shader = EngineY::GetShader("framebuffer0");
+            glm::ivec2 win_size = EngineY::Window()->GetSize();
+            framebuffer = ynew YE::Framebuffer(fb_verts , fb_indices , fb_layout , win_size);
+            framebuffer->SetBufferType({
+                YE::BufferBit::COLOR_BUFFER ,
+                YE::BufferBit::DEPTH_BUFFER 
+            });
+            framebuffer->Create();
+            framebuffer->AttachShader(fb_shader);
+
+            // height_map = ynew YE::HeightMap2D({ 256 , 256 });
+
+            terrain = ynew YE::TerrainGenerator({ 256 , 256 });
+        }
+
+        virtual void Initialize() override {
+            EngineY::RegisterKeyPressCallback(
+                [&](YE::KeyPressed* event) -> bool {
+                    if (event->Key() == YE::Keyboard::Key::YE_ESCAPE)
+                        EngineY::EventManager()->DispatchEvent(ynew YE::ShutdownEvent);
+                    if (event->Key() == YE::Keyboard::Key::YE_R)
+                        EngineY::ResourceHandler()->ReloadShaders();
+                    if (event->Key() == YE::Keyboard::Key::YE_C) {
+                        if (main_camera_active) {
+                            YE::Mouse::FreeCursor();
+                            camera->UnregisterMouseCallback();
+                            camera->UnregisterKeyboardCallback();
+                        } else {
+                            camera->RegisterMouseCallback(CameraMouseCallback);
+                            camera->RegisterKeyboardCallback(CameraKeyboardCallback);
+                        }
+                        main_camera_active = !main_camera_active;
+                    }
+                    return true;
+                } ,
+                "editor-keys"
+            );
+
+            EngineY::Renderer()->PushFramebuffer("editor-fb" , framebuffer);
+            EngineY::Renderer()->ActivateFramebuffer("editor-fb");
+
+            camera = ynew YE::Camera();
+            camera->SetFront({ 1.f , 0.f , 1.f });
+            camera->SetUp({ 0.f , 1.f , 0.f });
+            camera->SetRight({ 1.f , 0.f , 0.f });
+            camera->SetPosition({ 0.f , 0.f , 7.f });
+            camera->SetClip({ 0.1f , 1000.f });
+            camera->SetSpeed(0.75f);
+            camera->Recalculate();
+
+            // height_map->AttachNoiseGenerator(NoiseTest);
+            // height_map->AttachNoiseGenerator(YE::Noise2D::PerlinNoise);
+            // height_map->AttachColorEditor(Color);
+
+            gen_args.frequency = 0.01f;
+            gen_args.amplitude = 0.5f;
+            gen_args.octaves = 8;
+            gen_args.persistence = 0.5f;
+
+            terrain_scale = 5.f;
+
+            // height_map->GenerateHeightMap(gen_args);
+
+            terrain->AttachShader(EngineY::GetCoreShader("default"));
+            terrain->AttachNoiseGenerator(YE::Noise2D::FractalBrownianMotion);
+            terrain->AttachHeightTextureColorEditor(Color);
+            terrain->Generate(gen_args);
+        }
+        
+        virtual void Update(float dt) override {
+            camera->Update(dt);
+        }
+
+        virtual void Draw() override {
+            glm::mat4 model = glm::mat4(1.f);
+            model = glm::scale(model , glm::vec3(3.f));
+
+            // height_map->Bind(0);
+            // rect_shader->Bind();
+            // rect_shader->SetUniformInt("height_map" , 0);
+            // rect_shader->SetUniformMat4("model" , model);
+            // rect_shader->SetUniformMat4("view" , camera->View());
+            // rect_shader->SetUniformMat4("proj" , camera->Projection());
+            // rect_shader->SetUniformVec3("view_pos" , camera->Position());
+            // rect_vao->Draw(YE::DrawMode::TRIANGLES);
+            // rect_shader->Unbind();
+            // height_map->Unbind(0);
+
+            terrain_texture->Bind(0);
+            terrain->Draw(camera);
+            terrain_texture->Unbind(0);
+        }
+
+        virtual void DrawGui() override {
+            if (ImGui::Begin("Render Controls")) {
+                if (ImGui::Button("Fill"))
+                    EngineY::Renderer()->SetSceneRenderMode(YE::RenderMode::FILL);
+                ImGui::SameLine();
+                if (ImGui::Button("Line"))
+                    EngineY::Renderer()->SetSceneRenderMode(YE::RenderMode::LINE);
+                ImGui::SameLine();
+                if (ImGui::Button("Point"))
+                    EngineY::Renderer()->SetSceneRenderMode(YE::RenderMode::POINT);
+            }
+            ImGui::End();
+
+            if (ImGui::Begin("Terrain Generation Controls")) {
+                int octaves = gen_args.octaves;
+                ImGui::SliderFloat("Frequency" , &gen_args.frequency , 0.01f , 1.f);
+                ImGui::SliderFloat("Amplitude" , &gen_args.amplitude , 0.01f , 10.f);
+                ImGui::SliderInt("Octaves" , &octaves , 1 , 8);
+                ImGui::SliderFloat("Persistence" , &gen_args.persistence , 0.01f , 1.f);
+                gen_args.octaves = octaves;
+                if (ImGui::Button("Generate")) {
+                    terrain->Generate(gen_args);
+                }
+
+                ImGui::Separator();
+                ImGui::SliderFloat("World Scale" , &terrain_scale , 0.1f , 10.f);
+                terrain->SetScale(terrain_scale);
+            }
+            ImGui::End();
+
+            if (ImGui::Begin("Height Map")) {
+                YE::HeightMap2D* height_map = terrain->HeightMap();
+                uint32_t height_text = height_map->Texture();
+                const glm::ivec2& dimensions = height_map->Dimensions();
+                ImGui::Image((void*)(intptr_t)height_text , ImVec2(dimensions.x , dimensions.y));
+            }
+            ImGui::End();
+        }
+
+        virtual void Shutdown() override {
+            ydelete terrain;
+            // ydelete height_map;
+            ydelete camera;
+            ydelete cube_vao;
+        }
+};

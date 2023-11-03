@@ -10,11 +10,6 @@
 #endif // !YE_PLATFORM_WIN
 
 #ifdef YE_PLATFORM_WIN
-    #define YE_EXPORT __declspec(dllexport)
-    #define YE_IMPORT __declspec(dllimport)
-#else
-    #define YE_EXPORT
-    #define YE_IMPORT
 #endif // !YE_PLATFORM_WIN
 
 #ifdef YE_DEBUG_BUILD

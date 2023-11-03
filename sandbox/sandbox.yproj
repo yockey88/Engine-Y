@@ -1,0 +1,6 @@
+project sandbox {
+    author: "Y" , 
+    version: 0.1 ,
+    description: "Sandbox for engine development" ,
+    resources: "/resources" // \todo expand preprocessor to support -> #project_root ++ "\resources"
+}

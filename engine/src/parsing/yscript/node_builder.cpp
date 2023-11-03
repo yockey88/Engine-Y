@@ -44,6 +44,7 @@ namespace util {
             case YScriptTokenType::VERSION: return PropertyType::VERSION;
             case YScriptTokenType::DESCRIPTION: return PropertyType::DESCRIPTION;
             case YScriptTokenType::RESOURCES: return PropertyType::RESOURCES;
+            case YScriptTokenType::PATH: return PropertyType::PATH;
             case YScriptTokenType::POSITION: return PropertyType::POSITION;
             case YScriptTokenType::ROTATION: return PropertyType::ROTATION;
             case YScriptTokenType::SCALE: return PropertyType::SCALE;
@@ -644,9 +645,8 @@ namespace YS {
             YE_ERROR("{}" , e.what());
             return nullptr;
         }
-
-        // if (dump_nodes)
-        //     builder.DumpNodes();
+        
+        project_metadata = builder.ProjectMetadata();
 
         try {
             nodes = builder.Nodes();
