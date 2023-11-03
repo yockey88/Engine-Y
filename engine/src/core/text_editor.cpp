@@ -16,9 +16,6 @@ namespace YE {
         zep = std::make_unique<ZepWrapper>(
             std::filesystem::path(Filesystem::GetCWD()) , pixel_scale ,
             [&](std::shared_ptr<Zep::ZepMessage> message) -> void {
-                if (message->str != "") 
-                    YE_INFO("Editor Message :: {}" , message->str);
-                
                 if (message->str == "RequestQuit" || message->str == ":wq")
                     show = false;
             }
@@ -40,6 +37,7 @@ namespace YE {
             return;
 
         zep->GetEditor().InitWithFileOrDir(path.string());
+        show = true;
     }
 
     void TextEditor::Notify(const std::string& message) {

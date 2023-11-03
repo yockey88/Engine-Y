@@ -1,12 +1,11 @@
+require("premake_config")
+externals = require("externals")
+
 workspace "<projectname>"
     version = "0.0.2"
     projectname = "<projectname>"
-    externals_folder = "<externals-folder>"
-
     architecture "x64"
-
     startproject (projectname) 
-
     configurations {
         "Debug" ,
         "Release"
@@ -16,25 +15,10 @@ workspace "<projectname>"
         "_CRT_SECURE_NO_WARNINGS"
     }
 
-    binaries = "<engine-folder>/bin/%{cfg.buildcfg}"
-    objectdir = "<engine-folder>/bin-obj/%{cfg.buildcfg}"
+    binaries = "bin/%{cfg.buildcfg}"
+    objectdir = "bin-obj/%{cfg.buildcfg}"
     tdir = binaries .. "/%{prj.name}"
     odir = objectdir .. "/%{prj.name}"
-
-    -- External Dependency Directories
-    externals = {}
-    externals["sdl2"] = externals_folder .. "/SDL2-2.24.2"
-    externals["imgui"] = externals_folder .. "/imgui-docking"
-    externals["imguizmo"] = externals_folder .. "/imguizmo"
-    externals["entt"] = externals_folder .. "/entt"
-    externals["spdlog"] = externals_folder .. "/spdlog-1.11.0"
-    externals["glad"] = externals_folder .. "/glad"
-    externals["glm"] = externals_folder .. "/glm-master"
-    externals["stb"] = externals_folder .. "/stb"
-    externals["mono"] = externals_folder .. "/mono"
-    externals["assimp"] = externals_folder .. "/assimp"
-    externals["react"] = externals_folder .. "/ReactPhysics3d"
-    externals["magic_enum"] = externals_folder .. "/magic_enum"
 
     include "modules"
 
@@ -68,7 +52,6 @@ workspace "<projectname>"
             "%{externals.sdl2}/include" ,
             "%{externals.glad}/include" ,
             "%{externals.glm}" ,
-            -- "${externals.fmt}/include" ,
             "%{externals.spdlog}/include" ,
             "%{externals.entt}" ,
             "%{externals.stb}" ,
@@ -77,16 +60,20 @@ workspace "<projectname>"
             "%{externals.imguizmo}" ,
             "%{externals.assimp}/include" ,
             "%{externals.react}/include" ,
-            "%{externals.magic_enum}"
+            "%{externals.magic_enum}" ,
+            "%{externals.zep}/include" ,
+            "%{externals.nfd}/src" ,
         }
         
         libdirs {
-            binaries .. "/engine" ,
-            binaries .. "/glad" ,
-            binaries .. "/spdlog" ,
-            binaries .. "/imgui" ,
-            binaries .. "/imguizmo" ,
-            binaries .. "/reactphysics3d" ,
+            "<engine-folder>/bin/%{cfg.buildcfg}/engine" ,
+            "<engine-folder>/bin/%{cfg.buildcfg}/glad" ,
+            "<engine-folder>/bin/%{cfg.buildcfg}/spdlog" ,
+            "<engine-folder>/bin/%{cfg.buildcfg}/imgui" ,
+            "<engine-folder>/bin/%{cfg.buildcfg}/imguizmo" ,
+            "<engine-folder>/bin/%{cfg.buildcfg}/reactphysics3d" ,
+            "<engine-folder>/bin/%{cfg.buildcfg}/zep" ,
+            "<engine-folder>/bin/%{cfg.buildcfg}/nfd" ,
             "%{externals.sdl2}/lib/x64" ,
             "%{externals.mono}/lib/%{cfg.buildcfg}" ,
             "%{externals.assimp}/lib/%{cfg.buildcfg}"
@@ -102,7 +89,9 @@ workspace "<projectname>"
             "imgui" ,
             "imguizmo" ,
             "mono-2.0-sgen" ,
-            "reactphysics3d"
+            "reactphysics3d" ,
+            "zep" ,
+            "nfd"
         }
 
         filter { "system:windows" , "configurations:*" }
@@ -110,6 +99,12 @@ workspace "<projectname>"
             entrypoint "WinMainCRTStartup"
             defines {
                 "YE_PLATFORM_WIN"
+            }
+            links {
+                "shlwapi.lib" ,
+                "ole32.lib" ,
+                "shell32.lib" ,
+                "propsys.lib" ,
             }
 
         filter { "system:linux" , "configurations:*" }

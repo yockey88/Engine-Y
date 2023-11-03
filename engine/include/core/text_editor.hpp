@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <functional>
 
+#include <glm/glm.hpp>
 #include <zep/editor.h>
 #include <config_app.h>
 #include <zep/imgui/console_imgui.h>
@@ -36,15 +37,19 @@ namespace YE {
 
     class TextEditor {
         std::unique_ptr<ZepWrapper> zep = nullptr;
+        bool show = false;
+        
+        Zep::Msg MsgIdFromString(const std::string& message);
 
         public:
             TextEditor() {}
             ~TextEditor() {}
 
-            void Initialize(const std::string& path , Zep::NVec2f pixel_scale);
+            void Initialize(const glm::vec2& pixel_scale);
             void LoadFile(const std::filesystem::path& path);
+            void Notify(const std::string& message);
             void Update();
-            void Draw();
+            bool Draw(const glm::ivec2& size);
             void Shutdown();
     };
 

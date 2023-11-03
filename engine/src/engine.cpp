@@ -3,6 +3,7 @@
 #include <string>
 #include <queue>
 #include <thread>
+#include <filesystem>
 
 #include "core/app.hpp"
 #include "core/filesystem.hpp"
@@ -106,7 +107,8 @@ namespace YE {
         }
 
         app_config = app->GetEngineConfig();
-
+        Filesystem::Initialize(app->ProjectName());
+        
         if (app_config.use_project_file) {
             std::filesystem::path project_path = FindProjectFile();
             if (project_path.empty()) {
@@ -120,22 +122,19 @@ namespace YE {
             project_file_src = src;
 
             YE::YScriptParser parser(tokens);
-            project_ast = parser.Parse();
-        }
+            ProjectAst parse_tree = parser.Parse();
 
-        
+            YS::Interpreter interpreter(parse_tree);
+            project_scene_graph = interpreter.BuildScene();
+            YS::ProjectMetadata metadata = interpreter.ProjectMetadata();
+        } 
         app_loaded = true;
     }
 
     void Engine::Initialize() {
-        Filesystem::Initialize(app->ProjectName());
         app->PreInitialize();
+        
         this->InitializeSubSytems();
-
-        if (app_config.use_project_file && app_loaded) {
-            YE::YS::Interpreter interpreter(project_ast);
-            project_scene_graph = interpreter.BuildScene();
-        }
 
         if (!app->Initialize()) {
             YE_ERROR("Failed to initialize application");

@@ -48,7 +48,6 @@ namespace YE {
 
         App* app = nullptr;
         EngineConfig app_config;
-        ProjectAst project_ast; // invalid after initialization
         /* SceneGraph* */ Scene* project_scene_graph = nullptr;
         std::string project_file_src;
 

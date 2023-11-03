@@ -12,6 +12,7 @@ namespace YE {
         keyword_map[Hash::FNV32("version")] = YScriptTokenType::VERSION;
         keyword_map[Hash::FNV32("description")] = YScriptTokenType::DESCRIPTION;
         keyword_map[Hash::FNV32("resources")] = YScriptTokenType::RESOURCES;
+        keyword_map[Hash::FNV32("path")] = YScriptTokenType::PATH;
         keyword_map[Hash::FNV32("node")] = YScriptTokenType::NODE;
         keyword_map[Hash::FNV32("scene")] = YScriptTokenType::SCENE;
         keyword_map[Hash::FNV32("entity")] = YScriptTokenType::ENTITY;

@@ -1,41 +1,35 @@
+require("premake_config")
+externals = require("externals")
+
+version = "0.0.2"
+projectname = "launcher"
+engine_root = "C:/Program Files/EngineY" 
+
 workspace "launcher"
-    version = "0.0.2"
-    projectname = "launcher"
-    externals_folder = "../external"
-
     architecture "x64"
-
     startproject (projectname) 
-
     configurations {
         "Debug" ,
         "Release"
     }
 
+    filter { "action:vs*" }
+        linkoptions { "/ignore:4099" }
+        disablewarnings { "4068" }
+    
     defines {
-        "_CRT_SECURE_NO_WARNINGS"
+        "_CRT_SECURE_NO_WARNINGS" ,
     }
 
-    binaries = "../bin/%{cfg.buildcfg}"
-    objectdir = "../bin-obj/%{cfg.buildcfg}" 
+    filter { "options:debug" }
+        engine_root = os.getcwd() .. "/.."
+    
+    print("Building launcher to " .. engine_root)
+    
+    binaries = engine_root .. "/bin/%{cfg.buildcfg}"
+    objectdir = engine_root .. "/bin-obj/%{cfg.buildcfg}" 
     tdir = binaries .. "/%{prj.name}"
     odir = objectdir .. "/%{prj.name}"
-
-    -- External Dependency Directories
-    externals = {}
-    externals["sdl2"] = externals_folder .. "/SDL2-2.24.2"
-    externals["imgui"] = externals_folder .. "/imgui-docking"
-    externals["imguizmo"] = externals_folder .. "/imguizmo"
-    externals["entt"] = externals_folder .. "/entt"
-    externals["spdlog"] = externals_folder .. "/spdlog-1.11.0"
-    externals["glad"] = externals_folder .. "/glad"
-    externals["glm"] = externals_folder .. "/glm-master"
-    externals["stb"] = externals_folder .. "/stb"
-    externals["mono"] = externals_folder .. "/mono"
-    externals["assimp"] = externals_folder .. "/assimp"
-    externals["react"] = externals_folder .. "/ReactPhysics3d"
-    externals["magic_enum"] = externals_folder .. "/magic_enum"
-    externals["zep"] = externals_folder .. "/zep"
 
     include "modules"
 
@@ -56,15 +50,17 @@ workspace "launcher"
         }
     
         files {
-            "%{prj.name}/**.cpp",
+            "%{prj.name}/include**.hpp" ,
+            "%{prj.name}/src/**.cpp",
+            "%{prj.name}/enginey_launcher.cpp",
         }
 
         externalincludedirs {
-            "../engine/include" ,
+            "%{prj.name}/include" ,
+            engine_root .. "/engine/include" ,
             "%{externals.sdl2}/include" ,
             "%{externals.glad}/include" ,
             "%{externals.glm}" ,
-            -- "${externals.fmt}/include" ,
             "%{externals.spdlog}/include" ,
             "%{externals.entt}" ,
             "%{externals.stb}" ,
@@ -74,17 +70,19 @@ workspace "launcher"
             "%{externals.assimp}/include" ,
             "%{externals.react}/include" ,
             "%{externals.magic_enum}" ,
-            "%{externals.zep}/include"
+            "%{externals.zep}/include" ,
+            "%{externals.nfd}/src" ,
         }
         
         libdirs {
             binaries .. "/engine" ,
-            "%{externals.glad}/bin/%{cfg.buildcfg}/glad" ,
-            "%{externals.spdlog}/bin/%{cfg.buildcfg}/spdlog" ,
-            "%{externals.imgui}/bin/%{cfg.buildcfg}/imgui" ,
-            "%{externals.imguizmo}/bin/%{cfg.buildcfg}/imguizmo" ,
-            "%{externals.react}/bin/%{cfg.buildcfg}/reactphysics3d" ,
-            "%{externals.zep}/bin/%{cfg.buildcfg}/zep" ,
+            binaries .. "/glad" ,
+            binaries .. "/spdlog" ,
+            binaries .. "/imgui" ,
+            binaries .. "/imguizmo" ,
+            binaries .. "/reactphysics3d" ,
+            binaries .. "/zep" ,
+            binaries .. "/nfd" ,
             "%{externals.sdl2}/lib/x64" ,
             "%{externals.mono}/lib/%{cfg.buildcfg}" ,
             "%{externals.assimp}/lib/%{cfg.buildcfg}"
@@ -101,7 +99,8 @@ workspace "launcher"
             "imguizmo" ,
             "mono-2.0-sgen" ,
             "reactphysics3d" ,
-            "zep"
+            "zep" ,
+            "nfd" ,
         }
 
         filter { "system:windows" , "configurations:*" }
@@ -109,6 +108,12 @@ workspace "launcher"
             entrypoint "WinMainCRTStartup"
             defines {
                 "YE_PLATFORM_WIN"
+            }
+            links {
+                "shlwapi.lib" ,
+                "ole32.lib" ,
+                "shell32.lib" ,
+                "propsys.lib" ,
             }
 
         filter { "system:linux" , "configurations:*" }
