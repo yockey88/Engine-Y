@@ -3,6 +3,7 @@
 #include <string>
 #include <queue>
 #include <thread>
+#include <filesystem>
 
 #include "core/app.hpp"
 #include "core/filesystem.hpp"
@@ -25,7 +26,6 @@ namespace YE {
     Engine::Engine() {
         logger = Logger::Instance();
         logger->OpenLog();
-        Filesystem::Initialize();
         
         task_manager = TaskManager::Instance();
         resource_handler = ResourceHandler::Instance();
@@ -33,8 +33,6 @@ namespace YE {
         renderer = Renderer::Instance(); 
         script_engine = ScriptEngine::Instance();
         physics_engine = PhysicsEngine::Instance();
-
-        Systems::Initialize();
     }
 
     Engine* Engine::singleton = nullptr;
@@ -57,7 +55,7 @@ namespace YE {
         return std::filesystem::path();
     }
 
-    void Engine::InitializeSubSytems() {
+    void Engine::InitializeSubSytems() { 
         task_manager->DispatchTask([&](){ 
             stats = ynew EngineStats;
             for (uint32_t i = 0; i < kFrameTimeBufferSize; ++i) 
@@ -78,8 +76,9 @@ namespace YE {
         renderer->Initialize(app);
         renderer->OpenWindow();
 
-        resource_handler->Load();
-       
+        Systems::Initialize();
+        
+        resource_handler->Load(); 
     }
     
     void Engine::Update(float dt) {
@@ -107,30 +106,40 @@ namespace YE {
             return;
         }
 
-        std::filesystem::path project_path = FindProjectFile();
-        if (project_path.empty()) {
-            YE_ERROR("Project file missing");
-            return;
-        }
-
-        YE::YScriptLexer lexer(project_path.string());
-
-        auto [src , tokens] = lexer.Lex();
-        project_file_src = src;
-
-        YE::YScriptParser parser(tokens);
-        project_ast = parser.Parse();
+        app_config = app->GetEngineConfig();
+        Filesystem::Initialize(app->ProjectName());
         
+        if (app_config.use_project_file) {
+            std::filesystem::path project_path = FindProjectFile();
+            if (project_path.empty()) {
+                YE_ERROR("Project file missing");
+                return;
+            }
+
+            YE::YScriptLexer lexer(project_path.string());
+
+            auto [src , tokens] = lexer.Lex();
+            project_file_src = src;
+
+            YE::YScriptParser parser(tokens);
+            ProjectAst parse_tree = parser.Parse();
+
+            YS::Interpreter interpreter(parse_tree);
+            project_scene_graph = interpreter.BuildScene();
+            YS::ProjectMetadata metadata = interpreter.ProjectMetadata();
+        } 
         app_loaded = true;
     }
 
     void Engine::Initialize() {
-        this->InitializeSubSytems();
+        app->PreInitialize();
         
-        YE::YS::Interpreter interpreter(project_ast);
-        project_scene_graph = interpreter.BuildScene();
+        this->InitializeSubSytems();
 
-        app->Initialize();
+        if (!app->Initialize()) {
+            YE_ERROR("Failed to initialize application");
+            return;
+        }
         running = true;
     }
     

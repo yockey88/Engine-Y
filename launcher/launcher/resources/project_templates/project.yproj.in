@@ -1,0 +1,6 @@
+project <projectname> {
+    author: <author> ,
+    version: 0.1 ,
+    description: <description> ,
+    path: <projectpath> ,
+}

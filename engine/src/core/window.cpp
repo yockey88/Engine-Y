@@ -75,6 +75,20 @@ namespace YE {
     void Window::Open() {
         InitializeSDL2();
         InitializeOpenGL();
+        
+        FramebufferMap* framebuffers = Renderer::Instance()->Framebuffers();
+        EventManager::Instance()->RegisterWindowResizedCallback(
+            [window = this , fbs = framebuffers](WindowResized* event) -> bool {
+                window->HandleResize({ event->Width() , event->Height() });
+
+                UUID32 id = Renderer::Instance()->ActiveFramebuffer();
+                if (fbs->find(id) != fbs->end())
+                    (*fbs)[id]->HandleResize({ event->Width() , event->Height() });
+
+                return true;
+            } ,
+            "default-window-resize"
+        );
     }
 
     void Window::Clear() {

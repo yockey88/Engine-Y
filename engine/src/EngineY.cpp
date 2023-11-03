@@ -3,42 +3,6 @@
 #include <queue>
 #include <thread>
 
-int YE2Entry(int argc , char* argv[]) {
-
-#if 0
-    YE::Logger* logger = YE::Logger::Instance();
-    logger->OpenLog();
-
-    YE::Filesystem::Initialize();
-
-    std::string project_path = "sandbox/sandbox.ysc";
-    YE::YScriptLexer lexer(project_path);
-    YE::YScriptTokenPrinter printer;
-
-    auto [src , tokens] = lexer.Lex();
-    // for (auto& token : tokens)
-    //     printer(token , true);
-
-    YE::YScriptParser parser(tokens);
-    std::vector<std::unique_ptr<YE::ASTNode>> ast = parser.Parse();
-
-    YE::YScriptTreePrinter tree_printer;
-    for (auto& node : ast)
-        node->Walk(&tree_printer);
-
-    logger->CloseLog();
-#else
-    YE::Engine* engine = YE::Engine::Instance();
-    engine->RegisterApplication(CreateApp()); 
-    if (engine->AppLoaded()) {
-        engine->Initialize();
-        engine->Run();
-        engine->Shutdown();
-    }
-#endif
-    return 0;
-}  
-
 namespace EngineY {
     /// Getters ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     YE::Window* Window() {

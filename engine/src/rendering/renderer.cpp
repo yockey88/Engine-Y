@@ -107,18 +107,6 @@ namespace YE {
     
     void Renderer::OpenWindow() {
         window->Open();
-        EventManager::Instance()->RegisterWindowResizedCallback(
-            [window = window , fbs = &framebuffers](WindowResized* event) -> bool {
-                window->HandleResize({ event->Width() , event->Height() });
-
-                UUID32 id = Renderer::Instance()->ActiveFramebuffer();
-                if (fbs->find(id) != fbs->end())
-                    (*fbs)[id]->HandleResize({ event->Width() , event->Height() });
-
-                return true;
-            } ,
-            "default-window-resize"
-        );
         gui->Initialize(window);
 
         window->Clear();

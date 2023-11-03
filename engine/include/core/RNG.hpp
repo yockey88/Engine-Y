@@ -2,6 +2,7 @@
 #define YE_RNG_HPP
 
 #include <random>
+#include <limits>
 
 namespace YE {
 

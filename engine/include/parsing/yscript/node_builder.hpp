@@ -36,7 +36,7 @@ namespace YS {
     };
 
     enum class PropertyType {
-        AUTHOR , VERSION , DESCRIPTION , RESOURCES , // project properties
+        AUTHOR , VERSION , DESCRIPTION , RESOURCES , PATH , // project properties
         POSITION , SCALE , ROTATION , // transform properties
         MESH , TEXTURE , SHADER , MODEL , // renderable properties
         COLOR , AMBIENT , DIFFUSE , SPECULAR , CONSTANT , LINEAR , QUADRATIC , // light properties
@@ -194,6 +194,7 @@ namespace YS {
         SceneGraph scene_graph;
         Scene* current_scene = nullptr;
         Entity* current_entity = nullptr;
+        ProjectMetadata project_metadata;
 
         glm::vec3 Vec3FromProperty(const Property& property) const;
 
@@ -215,6 +216,8 @@ namespace YS {
 
             Scene* BuildScene(bool dump_nodes = false);
             // SceneGraph BuildScene(bool dump_nodes = false);
+            
+            inline const YS::ProjectMetadata ProjectMetadata() const { return project_metadata; }
     };
 
 } // namespace YS

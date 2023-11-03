@@ -29,7 +29,7 @@ namespace YE {
         START_OF_FILE ,
 
         // keywords 
-        PROJECT , NAME , AUTHOR , VERSION , DESCRIPTION , RESOURCES ,
+        PROJECT , NAME , AUTHOR , VERSION , DESCRIPTION , RESOURCES , PATH ,
         NODE , 
         SCENE ,
         ENTITY ,
@@ -152,7 +152,7 @@ namespace YE {
 
         const std::vector<std::string> keywords = {
             /* node type | properties for node type (not exclusive) */
-            "project" , "name" , "author" , "version" , "description" , "resources" ,
+            "project" , "name" , "author" , "version" , "description" , "resources" , "path" ,
             "node" ,
             "scene" ,
             "entity" ,

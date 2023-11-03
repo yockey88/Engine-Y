@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="nfd">
+      <UniqueIdentifier>{5D94880B-C99D-887C-5219-9F7CBE21947C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\nfd\nfd.h">
+      <Filter>nfd</Filter>
+    </ClInclude>
+    <ClInclude Include="src\nfd_common.h" />
+    <ClInclude Include="src\simple_exec.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\nfd_common.c" />
+    <ClCompile Include="src\nfd_win.cpp" />
+  </ItemGroup>
+</Project>

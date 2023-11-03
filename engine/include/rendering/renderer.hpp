@@ -129,6 +129,7 @@ namespace components {
             void CloseWindow();
             void Cleanup();
             
+            inline FramebufferMap* Framebuffers() { return &framebuffers; }
             inline Window* ActiveWindow() { return window; }
             inline UUID32 ActiveFramebuffer() const { return active_framebuffer; }
             inline bool DebugRendering() const { return debug_rendering; }

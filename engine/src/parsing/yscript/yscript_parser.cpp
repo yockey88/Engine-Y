@@ -39,6 +39,7 @@ namespace YE {
         return Match({
             YScriptTokenType::NAME , YScriptTokenType::AUTHOR , 
             YScriptTokenType::VERSION , YScriptTokenType::DESCRIPTION , YScriptTokenType::RESOURCES ,
+            YScriptTokenType::PATH ,
             YScriptTokenType::POSITION , YScriptTokenType::ROTATION , YScriptTokenType::SCALE ,
             YScriptTokenType::MESH , YScriptTokenType::SHADER , YScriptTokenType::TEXTURE , YScriptTokenType::MODEL ,
             YScriptTokenType::COLOR , YScriptTokenType::AMBIENT , YScriptTokenType::DIFFUSE , YScriptTokenType::SPECULAR ,
@@ -53,11 +54,11 @@ namespace YE {
     }
     
     bool YScriptParser::VerifyNamelessNode(YScriptTokenType type) {
-        return (type == YScriptTokenType::TRANSFORM || type == YScriptTokenType::RENDERABLE || 
-                type == YScriptTokenType::TEXTURED_RENDERABLE || type == YScriptTokenType::POINT_LIGHT ||
-                type == YScriptTokenType::RENDERABLE_MODEL || type == YScriptTokenType::SCRIPT || 
-                type == YScriptTokenType::PHYSICS_BODY || type == YScriptTokenType::BOX_COLLIDER ||
-                type == YScriptTokenType::SPHERE_COLLIDER || type == YScriptTokenType::CAPSULE_COLLIDER);
+        return (type == YScriptTokenType::TRANSFORM           || type == YScriptTokenType::RENDERABLE   || 
+                type == YScriptTokenType::TEXTURED_RENDERABLE || type == YScriptTokenType::POINT_LIGHT  ||
+                type == YScriptTokenType::RENDERABLE_MODEL    || type == YScriptTokenType::SCRIPT       || 
+                type == YScriptTokenType::PHYSICS_BODY        || type == YScriptTokenType::BOX_COLLIDER ||
+                type == YScriptTokenType::SPHERE_COLLIDER     || type == YScriptTokenType::CAPSULE_COLLIDER);
     }
 
     void YScriptParser::Synchronize() {
