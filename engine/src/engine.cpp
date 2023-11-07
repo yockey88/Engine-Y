@@ -19,10 +19,6 @@
 
 namespace YE {
     
-    WindowConfig App::GetWindowConfig() {
-        return WindowConfig{};
-    }
-
     Engine::Engine() {
         logger = Logger::Instance();
         logger->OpenLog();

@@ -30,6 +30,7 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
 #include <magic_enum/magic_enum.hpp>
+#include <nfd/nfd.h>
 
 #ifdef YE_PLATFORM_WIN
     #include <ShlObj.h>
@@ -155,19 +156,20 @@ namespace EngineY {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-#define DECLARE_APP(X)                               \
-    YE::App* CreateApp() {                           \
-        return ynew X;                               \
-    }                                                \
-    int YE2Entry(int argc , char* argv[]) {          \
-        YE::Engine* engine = YE::Engine::Instance(); \
-        engine->RegisterApplication(CreateApp());    \
-        if (engine->AppLoaded()) {                   \
-            engine->Initialize();                    \
-            engine->Run();                           \
-            engine->Shutdown();                      \
-        }                                            \
-        return 0;                                    \
+#define DECLARE_APP(X)                                                                                                                       \
+    YE::App* CreateApp() {                                                                                                                   \
+        return ynew X;                                                                                                                       \
+    }                                                                                                                                        \
+    int YE2Entry(int argc , char* argv[]) {                                                                                                  \
+        /* ConfigurationLoader::LoadCmndLineArgs(argc , argv); */                                                                            \
+        YE::Engine* engine = YE::Engine::Instance();                                                                                         \
+        engine->RegisterApplication(CreateApp());                                                                                            \
+        if (engine->AppLoaded()) {                                                                                                           \
+            engine->Initialize();                                                                                                            \
+            engine->Run();                                                                                                                   \
+            engine->Shutdown();                                                                                                              \
+        }                                                                                                                                    \
+        return 0;                                                                                                                            \
     }
 
 #endif // !YE_HPP 

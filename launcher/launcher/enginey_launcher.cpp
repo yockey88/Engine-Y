@@ -1,7 +1,5 @@
 #include "EngineY.hpp"
 
-#include <nfd/nfd.h>
-
 class Launcher : public YE::App {
     bool program_files_found = false;
     bool project_explorer_open = false;
@@ -35,16 +33,16 @@ class Launcher : public YE::App {
     public:
         Launcher() 
             : YE::App("launcher") {}
-        virtual ~Launcher() {}
+        ~Launcher() override {}
 
-        virtual YE::EngineConfig GetEngineConfig() override {
+        YE::EngineConfig GetEngineConfig() override {
             YE::EngineConfig config;
             config.project_name = "launcher";
             config.use_project_file = false;
             return config;
         }
 
-        virtual YE::WindowConfig GetWindowConfig() override {
+        YE::WindowConfig GetWindowConfig() override {
             YE::WindowConfig config;
             config.title = "Engine Y Launcher";
             config.size.x = 800;
@@ -57,11 +55,11 @@ class Launcher : public YE::App {
             return config;
         }
 
-        virtual void PreInitialize() override {
+        void PreInitialize() override {
             YE::Filesystem::OverrideResourcePath("launcher/launcher/resources");
         }
 
-        virtual bool Initialize() override {
+        bool Initialize() override {
             EngineY::RegisterKeyPressCallback(
                 [&](YE::KeyPressed* event) -> bool {
                     if (event->Key() == YE::Keyboard::Key::YE_ESCAPE && !editor_open) {
@@ -93,12 +91,12 @@ class Launcher : public YE::App {
             return true;
         }
 
-        virtual void Update() {
+        void Update() {
             if (editor != nullptr)
                 editor->Update();            
         }
 
-        virtual void DrawGui() {
+        void DrawGui() {
             if (!project_config_open) { 
                 if (ImGui::Begin("Engine Y Project Launcher")) {
                     if (ImGui::Button("Open Project")) {

@@ -26,7 +26,7 @@ namespace YE {
             virtual ~App() {}
 
             virtual EngineConfig GetEngineConfig() { return EngineConfig(); }
-            virtual WindowConfig GetWindowConfig();
+            virtual WindowConfig GetWindowConfig() { return WindowConfig(); }
 
             virtual void PreInitialize() {}
             virtual bool Initialize() { return false; }

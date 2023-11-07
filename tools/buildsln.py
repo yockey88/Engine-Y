@@ -29,7 +29,12 @@ if globals.IsWindows():
     )
     if (ret != 0):
         sys.exit(ret)
-    
+   
+    ret = subprocess.call(
+        ["cmd.exe" , "/c" , VS_BUILD_PATH , "editor\\editor.sln" , "/property:Configuration={}".format(CONFIG)]
+    )
+    if (ret != 0):
+        sys.exit(ret)  
 
 if globals.IsLinux():
     ret = subprocess.call(["make" , "config={}".format(CONFIG)])

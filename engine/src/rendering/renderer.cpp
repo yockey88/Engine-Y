@@ -73,7 +73,7 @@ namespace YE {
         if (framebuffer_active)
             framebuffers[active_framebuffer]->Draw();
 
-        gui->Render(window);
+        // gui->Render(window);
         app_handle->DrawGui();
         gui->EndRender(window->GetSDLWindow() , window->GetGLContext());
 
@@ -241,6 +241,8 @@ namespace YE {
         for (auto& [id , fb] : framebuffers)
             ydelete fb;
         framebuffers.clear();
+
+        if (gui != nullptr) ydelete gui;
 
         YE_CRITICAL_ASSERTION(window != nullptr , "Attempted to cleanup renderer without initializing it");
         ydelete window;

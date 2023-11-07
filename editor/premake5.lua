@@ -2,10 +2,10 @@ require("premake_config")
 externals = require("externals")
 
 version = "0.0.2"
-projectname = "launcher"
+projectname = "editor"
 engine_root = "C:/Program Files/EngineY" 
 
-workspace (projectname) 
+workspace (projectname)
     architecture "x64"
     startproject (projectname) 
     configurations {
@@ -24,7 +24,7 @@ workspace (projectname)
     filter { "options:debug" }
         engine_root = os.getcwd() .. "/.."
     
-    print("Building launcher to " .. engine_root)
+    print("Building editor to " .. engine_root)
     
     binaries = engine_root .. "/bin/%{cfg.buildcfg}"
     objectdir = engine_root .. "/bin-obj/%{cfg.buildcfg}" 
@@ -52,7 +52,7 @@ workspace (projectname)
         files {
             "%{prj.name}/include**.hpp" ,
             "%{prj.name}/src/**.cpp",
-            "%{prj.name}/enginey_launcher.cpp",
+            "%{prj.name}/editor.cpp",
         }
 
         externalincludedirs {
