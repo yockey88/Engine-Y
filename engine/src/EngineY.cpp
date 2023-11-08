@@ -5,6 +5,10 @@
 
 namespace EngineY {
     /// Getters ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    YE::Engine* Engine() {
+        return YE::Engine::Instance();
+    }
+
     YE::Window* Window() {
         return YE::Renderer::Instance()->ActiveWindow();
     }

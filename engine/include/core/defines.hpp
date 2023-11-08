@@ -28,7 +28,7 @@
 
 #define ybit(x) (1u << x)
 
-static constexpr uint32_t kTargetFps = 60;
+static constexpr uint32_t kTargetFps = 120;
 static constexpr uint32_t kTargetFrameTime = 1 / kTargetFps;
 
 #endif // !YE_DEFINES_HPP

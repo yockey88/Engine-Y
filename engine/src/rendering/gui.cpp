@@ -4,6 +4,8 @@
 #include <imgui/imgui.h>
 #include <imgui/backends/imgui_impl_sdl2.h>
 #include <imgui/backends/imgui_impl_opengl3.h>
+#include <imguizmo/ImGuizmo.h>
+#include <implot/implot.h>
 
 #include "log.hpp"
 #include "engine.hpp"
@@ -15,13 +17,14 @@ namespace YE {
     void Gui::Initialize(Window* window) {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
+        ImPlot::CreateContext();
         ImGuiIO& io = ImGui::GetIO();
         ImGui::StyleColorsDark((ImGuiStyle*)0);
 
         io.ConfigWindowsResizeFromEdges = true;
         io.ConfigWindowsMoveFromTitleBarOnly = true;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable | 
-                          ImGuiConfigFlags_NavEnableKeyboard;
+                          ImGuiConfigFlags_TransparentBackbuffers;
 
         SDL_Window* win = window->GetSDLWindow();
         SDL_GLContext gl_context = window->GetGLContext();
@@ -37,6 +40,9 @@ namespace YE {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
+        ImGuizmo::BeginFrame();
+        
+        ImGui::SetNextWindowBgAlpha(0.0f);
         ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
     }
 
@@ -45,18 +51,15 @@ namespace YE {
     void Gui::EndRender(SDL_Window* window , void* gl_context) {
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        ImGuiIO& io = ImGui::GetIO();
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            SDL_GL_MakeCurrent(window , gl_context);
-        }
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+        SDL_GL_MakeCurrent(window , gl_context);
     }
 
     void Gui::Shutdown() {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplSDL2_Shutdown();
+        ImPlot::DestroyContext();
         ImGui::DestroyContext();
     }
 

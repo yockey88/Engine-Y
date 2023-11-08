@@ -70,7 +70,6 @@ namespace YE {
         script_engine->LoadProjectModules();
 
         renderer->Initialize(app);
-        renderer->OpenWindow();
 
         Systems::Initialize();
         
@@ -146,10 +145,11 @@ namespace YE {
         task_manager->FlushTasks();
         while (running) {
             float dt = frame_rate.TimeStep();
-            task_manager->DispatchTask([dt = &delta_time , stats = stats](){
+            stats->last_frame_time = delta_time.Get();
+            task_manager->DispatchTask([stats = stats](){
                 for (uint32_t i = 0; i < kFrameTimeBufferSize - 1; ++i)
                     stats->frame_times[i] = stats->frame_times[i + 1];
-                stats->frame_times[kFrameTimeBufferSize - 1] = dt->Get();
+                stats->frame_times[kFrameTimeBufferSize - 1] = stats->last_frame_time;
             });
 
             Update(dt);

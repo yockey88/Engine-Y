@@ -27,6 +27,7 @@ namespace YE {
     static constexpr uint32_t kFrameTimeBufferSize = 1000;
 
     struct EngineStats {
+        float last_frame_time = 0.0f;
         float frame_times[kFrameTimeBufferSize];
     };
 

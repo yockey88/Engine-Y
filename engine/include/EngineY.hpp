@@ -26,9 +26,11 @@
 #include <regex>
 
 #include <SDL.h>
+#include <SDL_version.h>
 #include <glad/glad.h>
 #include <imgui/imgui.h>
 #include <imgui/imgui_internal.h>
+#include <implot/implot.h>
 #include <magic_enum/magic_enum.hpp>
 #include <nfd/nfd.h>
 
@@ -94,6 +96,7 @@ namespace EngineY {
 #define EVENT(event) YE::EventManager::Instance()->DispatchEvent(ynew event)
 
     // Getters ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    YE::Engine* Engine();
     YE::Window* Window();
     YE::Renderer* Renderer();
     YE::ResourceHandler* ResourceHandler();

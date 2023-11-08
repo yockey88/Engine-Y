@@ -12,7 +12,13 @@
 #include "core/defines.hpp"
 #include "core/UUID.hpp"
 #include "core/timer.hpp"
+#include "core/window.hpp"
 #include "rendering/render_commands.hpp"
+
+constexpr uint32_t kOpenGLMajorVersion = 4;
+constexpr uint32_t kOpenGLMinorVersion = 6;
+constexpr uint32_t kOpenGLDoubleBuffer = 1;
+constexpr uint32_t kOpenGLSwapInterval = 1;
 
 namespace YE {
 
@@ -23,7 +29,6 @@ namespace components {
 }
 
     class App;
-    class Window;
     class Gui;
     class VertexArray;
     class Framebuffer;
@@ -48,7 +53,7 @@ namespace components {
     };
 
     class Renderer {
-
+ 
         static Renderer* singleton;
 
         Window* window = nullptr;
@@ -79,6 +84,9 @@ namespace components {
 
         bool CheckID(UUID32 id , const std::string& name , const RenderCallbackMap& map);
         
+        void SetSDLWindowAttributes(WindowConfig& config);
+        void EnableGLSettings(WindowConfig& config);
+        void RegisterCallbacks();
         void BeginRender();
         void Execute();
         void EndRender();
@@ -99,7 +107,6 @@ namespace components {
             void RegisterPostRenderCallback(std::function<void()> callback , const std::string& name);
 
             void Initialize(App* app);
-            void OpenWindow();
             
             void PushFramebuffer(const std::string& name , Framebuffer* framebuffer);
             void SubmitRenderCmnd(std::unique_ptr<RenderCommand>& cmnd);

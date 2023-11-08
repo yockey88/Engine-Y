@@ -9,7 +9,6 @@
 #include "engine.hpp"
 #include "core/app.hpp"
 #include "core/hash.hpp"
-#include "core/window.hpp"
 #include "event/event_manager.hpp"
 #include "scene/scene.hpp"
 #include "scene/components.hpp"
@@ -30,9 +29,78 @@ namespace YE {
         return true;
     }
     
+    void Renderer::SetSDLWindowAttributes(WindowConfig& config) {
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK , SDL_GL_CONTEXT_PROFILE_CORE);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION , kOpenGLMajorVersion);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION , kOpenGLMinorVersion);       
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER , kOpenGLDoubleBuffer);
+        SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE , config.gl_stencil_size);
+        SDL_GL_SetAttribute(
+            SDL_GL_RED_SIZE , 
+            config.gl_color_bits.r > 8 ? 
+                8 : config.gl_color_bits.r
+        );
+        SDL_GL_SetAttribute(
+            SDL_GL_GREEN_SIZE , 
+            config.gl_color_bits.g > 8 ?
+                8 : config.gl_color_bits.g
+        );
+        SDL_GL_SetAttribute(
+            SDL_GL_BLUE_SIZE , 
+            config.gl_color_bits.b > 8 ? 
+                8 : config.gl_color_bits.b
+        );
+        SDL_GL_SetAttribute(
+            SDL_GL_ALPHA_SIZE , 
+            config.gl_color_bits.a > 8 ? 
+                8 : config.gl_color_bits.a
+        );
+        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS , config.gl_multisample_buffers);
+        SDL_GL_SetAttribute(
+            SDL_GL_ACCELERATED_VISUAL , 
+            config.accelerated_visual ? 1 : 0
+        );
+
+        SDL_GL_SetAttribute(
+            SDL_GL_MULTISAMPLESAMPLES , 
+            config.gl_multisample_samples > 16 ?
+                16 : config.gl_multisample_samples
+        );
+    }
+    
+    void Renderer::EnableGLSettings(WindowConfig& config) {
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glEnable(GL_MULTISAMPLE);
+
+        glClearColor(config.clear_color.r , config.clear_color.g , config.clear_color.b , config.clear_color.a);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    }
+    
+    void Renderer::RegisterCallbacks() {
+        EventManager::Instance()->RegisterWindowResizedCallback(
+            [fbs = &framebuffers](WindowResized* event) -> bool {
+                if (fbs->size() == 0) return true; // no framebuffers to resize
+
+                UUID32 id = Renderer::Instance()->ActiveFramebuffer();
+                if (fbs->find(id) != fbs->end()) {
+                    (*fbs)[id]->HandleResize({ event->Width() , event->Height() });
+                } else {
+                    YE_WARN("Failed to resize main framebuffer :: [{0}] | Framebuffer does not exist" , id.uuid);
+                    return false;
+                }
+                return true;
+            } ,
+            "active-framebuffer-resize"
+        );
+    }
+    
     void Renderer::BeginRender() {
         window->Clear();
-        gui->BeginRender(window->GetSDLWindow());
 
         glPolygonMode(GL_FRONT_AND_BACK , scene_render_mode);
 
@@ -73,7 +141,7 @@ namespace YE {
         if (framebuffer_active)
             framebuffers[active_framebuffer]->Draw();
 
-        // gui->Render(window);
+        gui->BeginRender(window->GetSDLWindow());
         app_handle->DrawGui();
         gui->EndRender(window->GetSDLWindow() , window->GetGLContext());
 
@@ -101,14 +169,35 @@ namespace YE {
 
     void Renderer::Initialize(App* app) {
         app_handle = app;
-        window = ynew Window(app->GetWindowConfig());
-        gui = ynew Gui;
-    }
-    
-    void Renderer::OpenWindow() {
-        window->Open();
-        gui->Initialize(window);
 
+        WindowConfig win_config = app->GetWindowConfig();
+        
+        win_config.flags |= SDL_WINDOW_OPENGL;
+        if (win_config.fullscreen) win_config.flags |= SDL_WINDOW_FULLSCREEN;
+
+        window = ynew Window;
+        gui = ynew Gui;
+
+        int sdl_init = SDL_InitSubSystem(SDL_INIT_EVENTS);
+        YE_CRITICAL_ASSERTION(
+            sdl_init == 0 , 
+            "Failed to initialize SDL2 {0}" ,
+            SDL_GetError()
+        );
+        
+        SetSDLWindowAttributes(win_config);
+        window->Open(win_config); 
+
+        int glad_init = gladLoadGLLoader(SDL_GL_GetProcAddress);
+        YE_CRITICAL_ASSERTION(glad_init != 0 , "GLAD failed to initialize");
+
+        EnableGLSettings(win_config);
+
+        window->RegisterCallbacks();
+        RegisterCallbacks();
+        
+        gui->Initialize(window);
+        
         window->Clear();
         window->SwapBuffers();
     }

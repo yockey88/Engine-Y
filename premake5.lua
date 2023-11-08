@@ -32,6 +32,7 @@ workspace "engine"
     include(externals_folder .. "/spdlog-1.11.0")
     include(externals_folder .. "/imgui-docking")
     include(externals_folder .. "/imguizmo")
+    include(externals_folder .. "/implot")
     include(externals_folder .. "/ReactPhysics3d")
     include(externals_folder .. "/zep")
     include(externals_folder .. "/nativefiledialog")
@@ -67,6 +68,7 @@ workspace "engine"
             "%{externals.mono}/include" ,
             "%{externals.imgui}" ,
             "%{externals.imguizmo}" ,
+            "%{externals.implot}" ,
             "%{externals.assimp}/include" ,
             "%{externals.react}/include" ,
             "%{externals.magic_enum}" ,
@@ -94,6 +96,7 @@ workspace "engine"
             "spdlog" ,
             "imgui" ,
             "imguizmo" ,
+            "implot" ,
             "mono-2.0-sgen" ,
             "reactphysics3d" ,
             "zep" ,

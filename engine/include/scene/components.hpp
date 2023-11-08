@@ -288,7 +288,7 @@ namespace components {
 
             unbind_script = [](NativeScript* instance) {
                 if (instance->instance != nullptr) {
-                    delete instance->instance;
+                    ydelete instance->instance;
                     instance->instance = nullptr;
                 } else {
                     YE_WARN("Attempted to destroy an unbound native entity script");
