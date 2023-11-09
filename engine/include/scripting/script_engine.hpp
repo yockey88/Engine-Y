@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <filesystem>
 
 #include "mono/metadata/assembly.h"
 #include "mono/jit/jit.h"
@@ -26,7 +27,12 @@
 // seemed cool before I started typing :'() 
 // it does allow me to avoid copies though so I guess it's not that bad
 // maps entity UUID -> map of their fields (UUID -> field)
-typedef std::unordered_map<YE::UUID , std::unordered_map<YE::UUID32 , std::unique_ptr<YE::FieldBase> , YE::UUID32Hash> , YE::UUIDHash> EntityFieldMap; 
+typedef std::unordered_map<
+    YE::UUID , 
+    std::unordered_map<
+        YE::UUID32 , std::unique_ptr<YE::FieldBase>
+    >
+> EntityFieldMap; 
 
 namespace YE {
 
@@ -47,6 +53,7 @@ namespace YE {
         bool initialized = false; 
         bool scripts_reloaded = false;
         bool scene_started = false;
+        bool scene_context_exists = false;
 
         struct AssemblyProperties {
             std::string name = "";
@@ -82,7 +89,8 @@ namespace YE {
         void InitializeScriptDebugging(uint16_t port);
         void CreateDebugDomains();
         void LoadDebugImage(MonoImage* img , const std::string& filepath);
-
+        
+        uint32_t BuildProjectModules(std::filesystem::path module_proj_path , std::string module_path);
         void LoadInternalScripts();
         void LoadProjectScripts();
         void UnloadProjectScripts();

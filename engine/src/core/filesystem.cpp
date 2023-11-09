@@ -48,14 +48,14 @@ namespace YE {
         engine_modelpath = engine_respath + "/models";
         gui_ini_path = engine_respath + "/imgui.ini";
 
-        project_directory = GetCWD();
+        project_directory = GetCWD() + "/" + project_name;
         project_code_dir = project_directory + "/" + project_name;
         respath = project_code_dir + "/resources";    
+        modulepath = project_code_dir + "/modules";
         shaderpath = respath + "/shaders";
         texturepath = respath + "/textures";
         modelpath = respath + "/models";
 
-        modulepath = project_directory + "/modules";
     }
 
     bool Filesystem::FileExists(const std::string& path) {

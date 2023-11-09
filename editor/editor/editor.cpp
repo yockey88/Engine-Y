@@ -1,5 +1,6 @@
 #include "EngineY.hpp"
 
+#include "editor_key_bindings.hpp"
 #include "ui_utils.hpp"
 
 class Editor : public YE::App {
@@ -41,13 +42,7 @@ class Editor : public YE::App {
 
         bool Initialize() override {
             EngineY::EventManager()->RegisterKeyPressedCallback(
-                [](YE::KeyPressed* event) -> bool {
-                    if (event->Key() == YE::Keyboard::Key::YE_ESCAPE) {
-                        EngineY::DispatchEvent(ynew YE::ShutdownEvent);
-                    }
-                    return true;
-                } , 
-                "editor-key-press"
+                EditorKeyBindings , "editor-key-press"
             );
 
             LoadImGuiStyle();
@@ -60,61 +55,32 @@ class Editor : public YE::App {
         void Draw() override {}
 
         void DrawGui() override {
-            
             ImGuiWindowFlags main_win_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBackground | 
                                               ImGuiWindowFlags_NoBringToFrontOnFocus;
-            if (ImGui::Begin("YE2" , nullptr , main_win_flags)) {
+            //if (ImGui::Begin("YE2" , nullptr , main_win_flags)) {
                 if (ImGui::BeginMainMenuBar()) {
                     if (ImGui::BeginMenu("File")) {
-                        if (ImGui::MenuItem("New Project")) {}
+                        if (ImGui::MenuItem("New Project" , "Ctrl+N")) {}
                         if (ImGui::MenuItem("Open Project")) {}
                         if (ImGui::MenuItem("Save Project")) {}
                         ImGui::EndMenu();
                     }
-                    // if (ImGui::MenuItem("Options")) { ImGui::OpenPopup("Options Menu"); }
-                    // if (ImGui::MenuItem("Stats")) { ImGui::OpenPopup("Stats Popup"); } 
+                    if (ImGui::BeginMenu("Edit")) {
+                        ImGui::EndMenu();
+                    }
+                    if (ImGui::BeginMenu("Options")) {
+                        if (ImGui::MenuItem("Reload Shaders" , "Crtl+Shift+S")) { EngineY::ShaderReload(); }
+                        if (ImGui::MenuItem("Reload Scripts" , "Crtl+Shift+R")) { EngineY::ScriptReload(); }
+                        ImGui::EndMenu();
+                    }
+                    if (ImGui::BeginMenu("Tools")) {
+                        ImGui::EndMenu();
+                    }
 
                     ImGui::EndMainMenuBar();
                 }
-            }
-            ImGui::End();
-
-            ImGui::ShowDemoWindow();
-
-            // if (ImGui::BeginPopup("##Menu:File")) {
-            //     if (ImGui::BeginCombo("##Menu:File" , "File Menu")) {
-            //         if (ImGui::Selectable("New Project")) {}
-            //         if (ImGui::Selectable("Open Project")) {}
-            //         if (ImGui::Selectable("Save Project")) {}
-            //         ImGui::EndCombo();
-            //     }
-            //     ImGui::EndPopup();
             // }
-
-            // if (ImGui::BeginPopup("Options Menu")) {
-            //     ImGui::Text("Options Menu");
-            //     if (ImGui::MenuItem("Reload Shaders")) { EngineY::ShaderReload(); }
-            //     if (ImGui::MenuItem("Reload Scripts")) { EngineY::ScriptReload(); }
-            //     ImGui::EndPopup();
-            // }
-
-            // YE::EngineStats* stats = EngineY::Engine()->GetStats();
-            // if (ImGui::BeginPopup("Stats Popup")) {
-            //     ImGui::Text("Stats Popup");
-            //     ImGui::Text("Engine Frame Stats");
-            //     ImGui::Separator();
-            //     ImGui::Text("FPS: %03f" , stats->last_frame_time);
-            //     ImGui::SameLine();
-            //     if (ImPlot::BeginPlot("Frame Times")) {
-            //         ImPlot::PlotBars(
-            //             "Frame Times (ms)" ,
-            //             stats->frame_times , YE::kFrameTimeBufferSize //,
-            //             // 1.0 , 0.0 , ImPlotLineFlags_Segments
-            //         );
-            //         ImPlot::EndPlot();
-            //     }
-            //     ImGui::EndPopup();
-            // }
+            // ImGui::End();
         }
 
         void Shutdown() override {}

@@ -5,9 +5,9 @@
 #include <SDL.h>
 
 #include "log.hpp"
+#include "core/event_manager.hpp"
 #include "event/events.hpp"
 #include "event/keyboard_events.hpp"
-#include "event/event_manager.hpp"
 
 namespace YE {
 

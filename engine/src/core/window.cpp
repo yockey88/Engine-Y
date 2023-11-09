@@ -3,9 +3,9 @@
 #include "log.hpp"
 
 #include "core/resource_handler.hpp"
+#include "core/event_manager.hpp"
 #include "rendering/shader.hpp"
 #include "rendering/framebuffer.hpp"
-#include "event/event_manager.hpp"
 
 namespace YE {
 

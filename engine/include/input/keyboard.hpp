@@ -41,6 +41,77 @@ namespace YE {
             }
             inline static bool Released(Key key) { return keys[key].current_state == State::RELEASED; }
 
+            inline static bool LCtrlLayer() { 
+                return Blocked(Key::YE_LCTRL) || Held(Key::YE_LCTRL);
+            }
+            inline static bool RCtrlLayer() { 
+                return Blocked(Key::YE_RCTRL) || Held(Key::YE_RCTRL);
+            }
+
+            inline static bool LAltLayer() { 
+                return Blocked(Key::YE_LALT) || Held(Key::YE_LALT);
+            }
+            inline static bool RAltLayer() { 
+                return Blocked(Key::YE_RALT) || Held(Key::YE_RALT);
+            }
+
+            inline static bool LCtrlShiftLayer() { 
+                return LCtrlLayer() && (Blocked(Key::YE_LSHIFT) || Held(Key::YE_LSHIFT));
+            }
+            inline static bool RCtrlShiftLayer() { 
+                return RCtrlLayer() && (Blocked(Key::YE_RSHIFT) || Held(Key::YE_RSHIFT));
+            }
+
+            inline static bool LCtrlAltLayer() { 
+                return LCtrlLayer() && (Blocked(Key::YE_LALT) || Held(Key::YE_LALT));
+            }
+            inline static bool RCtrlAltLayer() { 
+                return RCtrlLayer() && (Blocked(Key::YE_RALT) || Held(Key::YE_RALT));
+            }
+
+            inline static bool LCtrlAltShiftLayer() { 
+                return LCtrlLayer() && LAltLayer() && (Blocked(Key::YE_LSHIFT) || Held(Key::YE_LSHIFT));
+            }
+            inline static bool RCtrlAltShiftLayer() { 
+                return RCtrlLayer() && RAltLayer() && (Blocked(Key::YE_RSHIFT) || Held(Key::YE_RSHIFT));
+            }
+
+            inline static bool LCtrlLayerKey(Key key) { 
+                return LCtrlLayer() && Pressed(key);
+            }
+            inline static bool RCtrlLayerKey(Key key)  { 
+                return RCtrlLayer() && Pressed(key); 
+            }
+
+            inline static bool LAltLayerKey(Key key) { 
+                return LAltLayer() && Pressed(key);
+            }   
+            inline static bool RAltLayerKey(Key key) { 
+                return RAltLayer() && Pressed(key);
+            }
+
+            inline static bool LCtrlShiftLayerKey(Key key) { 
+                return LCtrlShiftLayer() && Pressed(key); 
+            }
+            inline static bool RCtrlShiftLayerKey(Key key) { 
+                return RCtrlShiftLayer() && Pressed(key);
+            }
+
+            inline static bool LCtrlAltLayerKey(Key key) { 
+                return LCtrlAltLayer() && Pressed(key);
+            }
+            inline static bool RCtrlAltLayerKey(Key key) { 
+                return RCtrlAltLayer() && Pressed(key);
+            }
+            
+            inline static bool LCtrlAltShiftLayerKey(Key key) { 
+                return LCtrlAltShiftLayer() && Pressed(key);
+            }
+
+            inline static bool RCtrlAltShiftLayerKey(Key key) { 
+                return RCtrlAltShiftLayer() && Pressed(key);
+            }
+
         private:
             
             // const uint8_t* state = nullptr;

@@ -9,7 +9,7 @@
 #include "core/filesystem.hpp"
 #include "core/task_manager.hpp"
 #include "core/resource_handler.hpp"
-#include "event/event_manager.hpp"
+#include "core/event_manager.hpp"
 #include "input/mouse.hpp"
 #include "input/keyboard.hpp"
 #include "rendering/renderer.hpp"
@@ -29,6 +29,10 @@ namespace YE {
         renderer = Renderer::Instance(); 
         script_engine = ScriptEngine::Instance();
         physics_engine = PhysicsEngine::Instance();
+    }
+
+    Engine::~Engine() {
+        logger->CloseLog();
     }
 
     Engine* Engine::singleton = nullptr;
@@ -92,6 +96,10 @@ namespace YE {
             singleton = ynew Engine;
         }
         return singleton;
+    }
+
+    bool Engine::CmndLine(int argc , char* argv[]) {
+        return cmnd_line_handler.Parse(argc , argv);
     }
 
     void Engine::RegisterApplication(App* app) {
@@ -183,7 +191,6 @@ namespace YE {
         script_engine->Cleanup();
         
         YE_INFO("Goodbye");
-        logger->CloseLog();
         if (singleton != nullptr) ydelete singleton;
     }
 

@@ -9,7 +9,7 @@
 #include "engine.hpp"
 #include "core/app.hpp"
 #include "core/hash.hpp"
-#include "event/event_manager.hpp"
+#include "core/event_manager.hpp"
 #include "scene/scene.hpp"
 #include "scene/components.hpp"
 #include "rendering/gui.hpp"

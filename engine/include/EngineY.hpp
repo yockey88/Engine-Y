@@ -51,9 +51,11 @@
 #include "core/filesystem.hpp"
 #include "core/window.hpp"
 #include "core/tasks.hpp"
+#include "core/event_manager.hpp"
 #include "core/task_manager.hpp"
 #include "core/resource_handler.hpp"
 #include "core/text_editor.hpp"
+#include "core/command_line_args.hpp"
 #include "parsing/yscript/node_builder.hpp"
 #include "parsing/shader/shader_parser.hpp"
 #include "event/events.hpp"
@@ -62,7 +64,6 @@
 #include "event/mouse_events.hpp"
 #include "event/scene_events.hpp"
 #include "event/editor_events.hpp"
-#include "event/event_manager.hpp"
 #include "scripting/script_engine.hpp"
 #include "rendering/vertex.hpp"
 #include "rendering/vertex_array.hpp"
@@ -164,8 +165,8 @@ namespace EngineY {
         return ynew X;                                                                                                                       \
     }                                                                                                                                        \
     int YE2Entry(int argc , char* argv[]) {                                                                                                  \
-        /* ConfigurationLoader::LoadCmndLineArgs(argc , argv); */                                                                            \
         YE::Engine* engine = YE::Engine::Instance();                                                                                         \
+        engine->CmndLine(argc , argv);                                                                                                       \
         engine->RegisterApplication(CreateApp());                                                                                            \
         if (engine->AppLoaded()) {                                                                                                           \
             engine->Initialize();                                                                                                            \

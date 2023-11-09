@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <filesystem>
 #include <algorithm>
 
 #if YE_PLATFORM_WIN
@@ -607,32 +606,7 @@ namespace YE {
         internal_state = std::make_unique<EngineState>();
     }
     
-    void ScriptEngine::LoadProjectModules() {
-        YE_CRITICAL_ASSERTION(initialized , "Attempting to load project modules before initializing script engine");
-        LoadProjectScripts();
-        ScriptMap::LoadProjectTypes();
-    }
-
-    void ScriptEngine::UnloadProjectModules() {
-        YE_CRITICAL_ASSERTION(initialized , "Attempting to unload project modules before initializing script engine");
-        ScriptMap::UnloadProjectTypes();
-        UnloadProjectScripts();
-    }
-
-    void ScriptEngine::ReloadProjectModules() {
-
-        bool scene_check = scene_started;
-        if (scene_check)
-            StopScene();
-
-        ScriptGC::Collect(true);
-        UnloadProjectModules();
-        ScriptGC::Shutdown();
-        ScriptMap::Destroy();
-        
-        std::filesystem::path module_proj_path = Filesystem::GetProjectModulesPath();
-        std::string module_path = Filesystem::GetModulePath();
-
+    uint32_t ScriptEngine::BuildProjectModules(std::filesystem::path module_proj_path , std::string module_path) {
 #if YE_PLATFORM_WIN
         TCHAR program_files_path_buffer[MAX_PATH];
 		SHGetSpecialFolderPath(0, program_files_path_buffer, CSIDL_PROGRAM_FILES, FALSE);
@@ -649,26 +623,117 @@ namespace YE {
             "\"\"{}\" \"{}\" /p:Configuration=Debug\"", 
             ms_build.string(), build_path.string()
         );
-        system(command.c_str());
+
+        return system(command.c_str());
+#else
+        YE_CRITICAL_ASSERTION(false , "TODO: Implement BuildProjectModules() for non-windows platforms");
+        return 1;
 #endif
+    }
+    
+    void ScriptEngine::LoadProjectModules() {
+        YE_CRITICAL_ASSERTION(initialized , "Attempting to load project modules before initializing script engine");
+        LoadProjectScripts();
+        ScriptMap::LoadProjectTypes();
+    }
+
+    void ScriptEngine::UnloadProjectModules() {
+        YE_CRITICAL_ASSERTION(initialized , "Attempting to unload project modules before initializing script engine");
+        ScriptMap::UnloadProjectTypes();
+        UnloadProjectScripts();
+    }
+
+    void ScriptEngine::ReloadProjectModules() {
+        std::filesystem::path internal_proj_path = Filesystem::GetInternalModulesPath();
+        YE_INFO("Internal modules path: {0}" , internal_proj_path.string());
+        
+        std::filesystem::path module_proj_path = Filesystem::GetProjectModulesPath();
+        std::string module_path = Filesystem::GetModulePath();
+        
+        if (std::filesystem::is_empty(module_path)) return;
+
+        bool scene_check = scene_started;
+        if (scene_check && scene_context_exists)
+            StopScene();
+
+        ScriptGC::Collect(true);
+        UnloadProjectModules();
+        ScriptGC::Shutdown();
+        ScriptMap::Destroy();
+
+        uint32_t command = BuildProjectModules(module_proj_path , module_path);
 
         LoadInternalScripts();
         ScriptMap::Generate();
         ScriptGC::Initialize();
+        
+        if (command == 0) {
+            LoadProjectModules();
 
-        LoadProjectModules();
+            if (!scene_context_exists) return;
 
-        for (auto& [id , entity] : *internal_state->context_entities) {
-            if (!entity->HasComponent<components::Script>())
-                continue;
-            auto& script = entity->GetComponent<components::Script>();
-            script.Bind(script.class_name);
+            for (auto& [id , entity] : *internal_state->context_entities) {
+                if (!entity->HasComponent<components::Script>())
+                    continue;
+                auto& script = entity->GetComponent<components::Script>();
+                script.Bind(script.class_name);
+            }
+
+            if (scene_check)
+                StartScene();
+
+            scripts_reloaded = true;
+
+            return;
+        } else {
+            try {
+                uint32_t num_modules = 0;
+                for (auto& entry : std::filesystem::directory_iterator(module_proj_path)) {
+                    if (entry.path().extension() == ".dll")
+                        ++num_modules;
+                }
+                if (num_modules > 0) {
+                    YE_ERROR("Failed to build project modules");
+                    YE_ERROR("Attempting to build modules again");
+
+                    command = BuildProjectModules(module_proj_path , module_path);
+                    if (command == 0) {
+                        YE_INFO("Attempted rebuild successful");
+                       
+                        LoadProjectModules();
+
+                        if (!scene_context_exists) return;
+
+                        for (auto& [id , entity] : *internal_state->context_entities) {
+                            if (!entity->HasComponent<components::Script>())
+                                continue;
+                            auto& script = entity->GetComponent<components::Script>();
+                            script.Bind(script.class_name);
+                        }
+
+                        if (scene_check)
+                            StartScene();
+
+                        scripts_reloaded = true;
+
+                        return;
+                    } else {
+                        YE_ERROR("Attempted rebuild failed");
+                    }
+                } else {
+                    scripts_reloaded = true;
+
+                    return;
+                }
+            } catch (std::filesystem::filesystem_error& e) {
+                YE_ERROR("Failed to read project modules directory: {0}" , e.what());
+                scripts_reloaded = true;
+                return;
+            }
         }
 
-        if (scene_check)
-            StartScene();
-
-        scripts_reloaded = true;
+        YE_CRITICAL_ASSERTION(false , "UNREACHABLE");
+        return;
     }
     
     void ScriptEngine::SetSceneContext(Scene* scene) {
@@ -676,6 +741,8 @@ namespace YE {
 
         internal_state->scene_context = scene;
         internal_state->context_entities = scene->Entities();
+
+        scene_context_exists = true;
     }
     
     void ScriptEngine::StartScene() {

@@ -5,14 +5,14 @@
 #include <functional>
 #include <queue>
 
+#include "UUID.hpp"
 #include "log.hpp"
-#include "events.hpp"
-#include "window_events.hpp"
-#include "keyboard_events.hpp"
-#include "mouse_events.hpp"
-#include "scene_events.hpp"
-#include "editor_events.hpp"
-#include "core/UUID.hpp"
+#include "event/events.hpp"
+#include "event/window_events.hpp"
+#include "event/keyboard_events.hpp"
+#include "event/mouse_events.hpp"
+#include "event/scene_events.hpp"
+#include "event/editor_events.hpp"
 #include "input/mouse.hpp"
 #include "input/keyboard.hpp"
 

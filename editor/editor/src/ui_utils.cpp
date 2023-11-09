@@ -5,6 +5,7 @@ void LoadImGuiStyle() {
     style.Colors[ImGuiCol_TitleBg]            = EditorStyles::title_bar;
     style.Colors[ImGuiCol_TitleBgActive]      = EditorStyles::title_bar_active;
     style.Colors[ImGuiCol_TitleBgCollapsed]   = EditorStyles::title_bar_collapsed;
+    style.Colors[ImGuiCol_MenuBarBg]          = EditorStyles::menu_bar;
     style.Colors[ImGuiCol_Tab]                = EditorStyles::tab;
     style.Colors[ImGuiCol_TabHovered]         = EditorStyles::tab_hovered;
     style.Colors[ImGuiCol_TabActive]          = EditorStyles::tab;

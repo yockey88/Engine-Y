@@ -3,9 +3,9 @@
 #include <memory>
 
 #include "core/window.hpp"
+#include "core/event_manager.hpp"
 #include "event/events.hpp"
 #include "event/mouse_events.hpp"
-#include "event/event_manager.hpp"
 #include "rendering/renderer.hpp"
 
 namespace YE {

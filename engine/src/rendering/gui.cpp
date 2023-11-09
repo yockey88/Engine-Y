@@ -10,7 +10,6 @@
 #include "log.hpp"
 #include "engine.hpp"
 #include "core/filesystem.hpp"
-#include "event/event_manager.hpp"
 
 namespace YE {
     
@@ -23,8 +22,7 @@ namespace YE {
 
         io.ConfigWindowsResizeFromEdges = true;
         io.ConfigWindowsMoveFromTitleBarOnly = true;
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable | 
-                          ImGuiConfigFlags_TransparentBackbuffers;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable; 
 
         SDL_Window* win = window->GetSDLWindow();
         SDL_GLContext gl_context = window->GetGLContext();
@@ -42,8 +40,8 @@ namespace YE {
         ImGui::NewFrame();
         ImGuizmo::BeginFrame();
         
-        ImGui::SetNextWindowBgAlpha(0.0f);
-        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+        // ImGui::SetNextWindowBgAlpha(0.0f);
+        ImGui::DockSpaceOverViewport(ImGui::GetMainViewport() , ImGuiDockNodeFlags_PassthruCentralNode);
     }
 
     void Gui::Render(Window* window) {}

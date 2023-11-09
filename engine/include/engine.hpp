@@ -11,6 +11,7 @@
 #include "core/timer.hpp"
 #include "core/defines.hpp"
 #include "core/UUID.hpp"
+#include "core/command_line_args.hpp"
 #include "parsing/yscript/node_builder.hpp"
 
 namespace YE {
@@ -44,6 +45,8 @@ namespace YE {
         EventManager* event_manager = nullptr;
         ResourceHandler* resource_handler = nullptr;
 
+        CmndLineHandler cmnd_line_handler;
+
         time::DeltaTime delta_time;
         time::FrameRateEnforcer<kTargetFps> frame_rate;
 
@@ -63,7 +66,7 @@ namespace YE {
         void HandleShutdownEvent();
 
         Engine();
-        ~Engine() {}
+        ~Engine();
 
         Engine(Engine&&) = delete;
         Engine(const Engine&) = delete;
@@ -74,6 +77,7 @@ namespace YE {
 
             static Engine* Instance();
 
+            bool CmndLine(int argc , char* argv[]);
             void RegisterApplication(App* app);
             void Initialize();
             void Run();
