@@ -5,8 +5,12 @@
 
 namespace EngineY {
     /// Getters ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    YE::Engine* Engine() {
-        return YE::Engine::Instance();
+    // YE::Engine* Engine() {
+    //     return YE::Engine::Instance();
+    // }
+
+    YE::CmndLineHandler& CmndLineHandler() {
+        return YE::Engine::Instance()->CmndLineHandler();
     }
 
     YE::Window* Window() {
@@ -197,7 +201,7 @@ namespace EngineY {
     }
 
     YE::Model* GetModel(const std::string& name) {
-        return YE::ResourceHandler::Instance()->GetModel(name);    
+        return YE::ResourceHandler::Instance()->GetModel(name);
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

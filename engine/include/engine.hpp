@@ -67,7 +67,7 @@ namespace YE {
 
         Engine();
         ~Engine();
-
+        
         Engine(Engine&&) = delete;
         Engine(const Engine&) = delete;
         Engine& operator=(Engine&&) = delete;
@@ -87,6 +87,7 @@ namespace YE {
             inline float TargetTimeStep() const { return frame_rate.TimeStep(); }
             inline const bool AppLoaded() const { return app_loaded; }
             inline /* \todo SceneGraph* */ Scene* ProjectSceneGraph() const { return project_scene_graph; }
+            inline CmndLineHandler& CmndLineHandler() { return cmnd_line_handler; }
     };
 
 }

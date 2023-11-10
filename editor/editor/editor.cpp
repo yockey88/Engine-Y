@@ -38,6 +38,8 @@ class Editor : public YE::App {
                 YE::Filesystem::GetCWD() + "/" + 
                 "editor/editor/resources"
             );
+
+            YE_INFO("CWD :: {}" , YE::Filesystem::GetCWD());
         }
 
         bool Initialize() override {

@@ -21,18 +21,12 @@ namespace YE {
     
     Engine::Engine() {
         logger = Logger::Instance();
-        logger->OpenLog();
-        
-        task_manager = TaskManager::Instance();
-        resource_handler = ResourceHandler::Instance();
-        event_manager = EventManager::Instance();
-        renderer = Renderer::Instance(); 
-        script_engine = ScriptEngine::Instance();
-        physics_engine = PhysicsEngine::Instance();
+        logger->OpenLog();    
     }
 
     Engine::~Engine() {
         logger->CloseLog();
+        logger = nullptr;
     }
 
     Engine* Engine::singleton = nullptr;
@@ -132,6 +126,13 @@ namespace YE {
             YS::ProjectMetadata metadata = interpreter.ProjectMetadata();
         } 
         app_loaded = true;
+        
+        task_manager = TaskManager::Instance();
+        resource_handler = ResourceHandler::Instance();
+        event_manager = EventManager::Instance();
+        renderer = Renderer::Instance(); 
+        script_engine = ScriptEngine::Instance();
+        physics_engine = PhysicsEngine::Instance();
     }
 
     void Engine::Initialize() {
@@ -171,25 +172,27 @@ namespace YE {
     }
 
     void Engine::Shutdown() {
-        task_manager->FlushTasks();
+        if (app_loaded) {
+            task_manager->FlushTasks();
 
-        app->Shutdown();
-        if (app != nullptr) ydelete app;
+            app->Shutdown();
+            if (app != nullptr) ydelete app;
 
-        Systems::Teardown();
+            Systems::Teardown();
 
-        resource_handler->Offload();
+            resource_handler->Offload();
 
-        renderer->CloseWindow();
-        script_engine->Shutdown();
-        physics_engine->Cleanup();
+            renderer->CloseWindow();
+            script_engine->Shutdown();
+            physics_engine->Cleanup();
 
-        resource_handler->Cleanup();
-        event_manager->Cleanup();
-        task_manager->Cleanup();
-        renderer->Cleanup();
-        script_engine->Cleanup();
-        
+            resource_handler->Cleanup();
+            event_manager->Cleanup();
+            task_manager->Cleanup();
+            renderer->Cleanup();
+            script_engine->Cleanup();
+        }
+       
         YE_INFO("Goodbye");
         if (singleton != nullptr) ydelete singleton;
     }

@@ -19,10 +19,17 @@ class Launcher : public YE::App {
     std::string project_name_str;
     std::string chosen_location;
 
+    bool build_thread_running = true;
+    bool project_generated = false;
+    bool project_built = false;
+
+    std::thread builder_thread;
+
     std::unique_ptr<YE::TextEditor> editor = nullptr;
 
     bool IsIgnoredExtension(const std::filesystem::path& extension);
 
+    void GenerateProject();
     void BuildProject();
     void LaunchProject();
     void ProjectExplorer();
@@ -80,7 +87,8 @@ class Launcher : public YE::App {
                 return false;
             }
 
-            engine_folder = std::filesystem::path(program_files) / "EngineY";
+            // engine_folder = std::filesystem::path(program_files) / "EngineY";
+            engine_folder = std::filesystem::current_path().string();
             project_folder = engine_folder / "projects";
 
             if (!std::filesystem::exists(engine_folder)) {
@@ -91,13 +99,25 @@ class Launcher : public YE::App {
             return true;
         }
 
-        void Update() {
+        void Update(float dt) override {
             if (editor != nullptr)
                 editor->Update();            
+
         }
 
         void DrawGui() {
-            if (!project_config_open) { 
+            if (project_generated) {
+                project_generated = false;
+                builder_thread = std::thread(&Launcher::BuildProject , this);
+                builder_thread.detach();
+            }
+            
+            if (project_built) {
+                project_built = false;
+                LaunchProject();
+            }
+
+            if (!project_config_open && !project_generated && !project_built) { 
                 if (ImGui::Begin("Engine Y Project Launcher")) {
                     if (ImGui::Button("Open Project")) {
                         ProjectExplorer();
@@ -108,7 +128,7 @@ class Launcher : public YE::App {
                     ProjectBuilder(); 
                 }
                 ImGui::End();  
-            } else {
+            } else if (!project_generated && !project_built) {
                 ConfigureProject();
             }
         }
@@ -123,7 +143,7 @@ bool Launcher::IsIgnoredExtension(const std::filesystem::path& extension) {
     return false;
 }
 
-void Launcher::BuildProject() {
+void Launcher::GenerateProject() {
 #if YE_PLATFORM_WIN
     std::filesystem::path premake_exe = engine_folder / "premake" / "premake5.exe";
     std::filesystem::path premake_path = project_folder / (project_name_str + ".lua");
@@ -133,10 +153,14 @@ void Launcher::BuildProject() {
         premake_exe.string() , premake_path.string()
     );
     std::system(cmd.c_str());
+#else
+    YE_CRITICAL_ASSERTION(false , "Not implemented");
 #endif
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    project_generated = true;
+}
 
+void Launcher::BuildProject() {
 #if YE_PLATFORM_WIN
     std::filesystem::path program_files;
     try {
@@ -190,14 +214,16 @@ void Launcher::BuildProject() {
     std::filesystem::copy_file(modules_dll , project_folder / "bin" / "Debug" / project_name_str / "modules.dll" , std::filesystem::copy_options::overwrite_existing);
     std::filesystem::copy_file(modules_pdb , project_folder / "bin" / "Debug" / project_name_str / "modules.pdb" , std::filesystem::copy_options::overwrite_existing);
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+    project_built = true;
 }
 
 void Launcher::LaunchProject() {
-    EngineY::EventManager()->DispatchEvent(ynew YE::ShutdownEvent);
-
 #if YE_PLATFORM_WIN
-    std::filesystem::path proj_executable = project_folder / "bin" / "Debug" / project_name_str / (project_name_str + ".exe");
+    // if running game w/ no editor
+    // std::filesystem::path proj_executable = project_folder / "bin" / "Debug" / project_name_str / (project_name_str + ".exe");
+
+    // if running editor
+    std::filesystem::path proj_executable = std::filesystem::path("bin") / "Debug" / "editor" / "editor.exe";
 
     PROCESS_INFORMATION process_info;
     STARTUPINFOA startup_info;
@@ -205,17 +231,33 @@ void Launcher::LaunchProject() {
     startup_info.cb = sizeof(STARTUPINFOA);
 
     std::string exec_str = proj_executable.string();
-
     if (!std::filesystem::exists(proj_executable)) {
         YE_ERROR("Failed to find executable for project");
         return;
     }
 
-    std::wstring wstr = std::wstring(exec_str.begin() , exec_str.end());
-    YE_DEBUG("{} | {}" , exec_str.c_str() , project_folder.string());
+    std::string project_folder_str = project_folder.string();
+    std::wstring project_folder_wstr = std::wstring(project_folder_str.begin() , project_folder_str.end());
+
+    std::string yproj_file = project_folder_str + "\\" + 
+                             project_name_str + ".yproj";
+
+    // std::string exec_wstr = std::wstring(exec_str.begin() , exec_str.end());
+
+    std::string engine_root = engine_folder.string();
+    std::string modules_dir = (engine_folder / "bin" / "Debug" / "modules").string();
+    std::string project_bin = (engine_folder / "bin" / "Debug" / project_name).string();
+
+    std::string cmnd_line = "--project-name"         + project_name_str   +
+                            " --project-path "       + project_folder_str + 
+                            " --project-file "       + yproj_file         +
+                            " --working-directory "  + engine_root        +
+                            " --modules-directory "  + modules_dir        +
+                            " --project-bin "        + project_bin;
     bool result = CreateProcessA(
-        exec_str.c_str() , nullptr , nullptr , nullptr , false , 
-        DETACHED_PROCESS , nullptr , project_folder.string().c_str() , 
+        exec_str.data() , cmnd_line.data() , 
+        nullptr , nullptr , false , 
+        DETACHED_PROCESS , nullptr , engine_root.data() , 
         &startup_info , &process_info
     );
 
@@ -229,7 +271,8 @@ void Launcher::LaunchProject() {
         DWORD error = GetLastError();
         YE_ERROR("Error: {}" , error);
     }
-
+#else
+    YE_CRITICAL_ASSERTION(false , "Not implemented");
 #endif
 }
 
@@ -433,10 +476,8 @@ void Launcher::ConfigureProject() {
             editor->Notify("RequestQuit");
             editor->Shutdown();
 
-            BuildProject();
-            LaunchProject();
-
-            EngineY::DispatchEvent(ynew YE::ShutdownEvent);
+            builder_thread = std::thread(&Launcher::GenerateProject , this);
+            builder_thread.detach();
         }
     }
     ImGui::End();

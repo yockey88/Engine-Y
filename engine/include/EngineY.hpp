@@ -24,6 +24,7 @@
 #include <atomic>
 #include <future>
 #include <regex>
+#include <coroutine>
 
 #include <SDL.h>
 #include <SDL_version.h>
@@ -97,7 +98,8 @@ namespace EngineY {
 #define EVENT(event) YE::EventManager::Instance()->DispatchEvent(ynew event)
 
     // Getters ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    YE::Engine* Engine();
+    // YE::Engine* Engine();
+    YE::CmndLineHandler& CmndLineHandler();
     YE::Window* Window();
     YE::Renderer* Renderer();
     YE::ResourceHandler* ResourceHandler();
@@ -166,7 +168,11 @@ namespace EngineY {
     }                                                                                                                                        \
     int YE2Entry(int argc , char* argv[]) {                                                                                                  \
         YE::Engine* engine = YE::Engine::Instance();                                                                                         \
-        engine->CmndLine(argc , argv);                                                                                                       \
+        if (!engine->CmndLine(argc , argv)) {                                                                                                \
+            YE_ERROR("Failed to parse command line arguments");                                                                              \
+            engine->Shutdown();                                                                                                              \
+            return 1;                                                                                                                        \
+        }                                                                                                                                    \
         engine->RegisterApplication(CreateApp());                                                                                            \
         if (engine->AppLoaded()) {                                                                                                           \
             engine->Initialize();                                                                                                            \

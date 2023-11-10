@@ -1,4 +1,4 @@
-#include "event/event_manager.hpp"
+#include "core/event_manager.hpp"
 
 #include <SDL.h>
 #include <imgui/backends/imgui_impl_sdl2.h>
