@@ -16,22 +16,30 @@ class Launcher : public YE::App {
     std::filesystem::path engine_folder;
     std::filesystem::path project_folder;
 
+    std::string program_files; 
     std::string project_name_str;
     std::string chosen_location;
 
-    bool build_thread_running = true;
+    bool build_started = false;
     bool project_generated = false;
     bool project_built = false;
+    
+    bool project_selector = true;
 
     std::thread builder_thread;
 
     std::unique_ptr<YE::TextEditor> editor = nullptr;
 
     bool IsIgnoredExtension(const std::filesystem::path& extension);
+    
+    enum class LaunchType {
+        GAME , 
+        EDITOR
+    };
 
     void GenerateProject();
     void BuildProject();
-    void LaunchProject();
+    void LaunchProject(LaunchType type);
     void ProjectExplorer();
     bool GenerateProjectDirectory(const std::string& chosen_path);
     void ConfigureProject(); 
@@ -43,27 +51,24 @@ class Launcher : public YE::App {
         ~Launcher() override {}
 
         YE::EngineConfig GetEngineConfig() override {
-            YE::EngineConfig config;
-            config.project_name = "launcher";
-            config.use_project_file = false;
-            return config;
-        }
-
-        YE::WindowConfig GetWindowConfig() override {
-            YE::WindowConfig config;
-            config.title = "Engine Y Launcher";
-            config.size.x = 800;
-            config.size.y = 600;
-            config.clear_color = { 0.1f , 0.1f , 0.1f , 1.f };
-            config.fullscreen = false;
-            config.vsync = false;
-            config.rendering_to_screen = true;
-            config.flags |= SDL_WINDOW_RESIZABLE;
+            YE::EngineConfig config; 
+            config.window_config.title = "Engine Y Launcher";
+            config.window_config.size.x = 800;
+            config.window_config.size.y = 600;
+            config.window_config.clear_color = { 0.1f , 0.1f , 0.1f , 1.f };
+            config.window_config.fullscreen = false;
+            config.window_config.vsync = false;
+            config.window_config.rendering_to_screen = true;
+            config.window_config.flags |= SDL_WINDOW_RESIZABLE;
             return config;
         }
 
         void PreInitialize() override {
             YE::Filesystem::OverrideResourcePath("launcher/launcher/resources");
+            YE::Filesystem::OverrideProjectModulePath(
+                YE::Filesystem::GetEngineRoot() + 
+                "/bin/Debug/launcher/launcher_modules.dll"
+            );
         }
 
         bool Initialize() override {
@@ -82,8 +87,8 @@ class Launcher : public YE::App {
                 program_files = std::string{ std::getenv("PROGRAMFILES") };
                 program_files_found = true;
             } catch (std::exception& e) {
-                YE_ERROR("Failed to get PROGRAMFILES environment variable");
-                YE_ERROR(e.what());
+                ENGINE_ERROR("Failed to get PROGRAMFILES environment variable");
+                ENGINE_ERROR(e.what());
                 return false;
             }
 
@@ -106,18 +111,34 @@ class Launcher : public YE::App {
         }
 
         void DrawGui() {
-            if (project_generated) {
-                project_generated = false;
-                builder_thread = std::thread(&Launcher::BuildProject , this);
-                builder_thread.detach();
-            }
-            
-            if (project_built) {
-                project_built = false;
-                LaunchProject();
+
+            if (build_started) {
+                if (project_generated) {
+                    project_generated = false;
+                    builder_thread = std::thread(&Launcher::BuildProject , this);
+                    builder_thread.detach();
+                }
+
+                if (project_built) { 
+                    if (ImGui::Begin("Launcher Console")) {
+                        if (ImGui::Button("Launch Project In Editor")) {
+                            LaunchProject(LaunchType::EDITOR);
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("Launch Project")) {
+                            LaunchProject(LaunchType::GAME);
+                        }
+                    }
+                    ImGui::End();
+                } else {
+                    if (ImGui::Begin("Launcher Console")) {
+                        ImGui::Text("Building Project...");
+                    }
+                    ImGui::End();
+                }
             }
 
-            if (!project_config_open && !project_generated && !project_built) { 
+            if (project_selector) {
                 if (ImGui::Begin("Engine Y Project Launcher")) {
                     if (ImGui::Button("Open Project")) {
                         ProjectExplorer();
@@ -128,7 +149,9 @@ class Launcher : public YE::App {
                     ProjectBuilder(); 
                 }
                 ImGui::End();  
-            } else if (!project_generated && !project_built) {
+            }
+            
+            if (project_config_open) {
                 ConfigureProject();
             }
         }
@@ -144,6 +167,7 @@ bool Launcher::IsIgnoredExtension(const std::filesystem::path& extension) {
 }
 
 void Launcher::GenerateProject() {
+    project_config_open = false;
 #if YE_PLATFORM_WIN
     std::filesystem::path premake_exe = engine_folder / "premake" / "premake5.exe";
     std::filesystem::path premake_path = project_folder / (project_name_str + ".lua");
@@ -166,8 +190,8 @@ void Launcher::BuildProject() {
     try {
         program_files = std::string{ std::getenv("PROGRAMFILES") };
     } catch (std::exception& e) {
-        YE_ERROR("Failed to get Program Files directory");
-        YE_ERROR(e.what());
+        ENGINE_ERROR("Failed to get Program Files directory");
+        ENGINE_ERROR(e.what());
         return;
     }
 
@@ -177,12 +201,12 @@ void Launcher::BuildProject() {
     std::filesystem::path sln_path = project_folder / (project_name_str + ".sln");
 
     if (!std::filesystem::exists(ms_build)) {
-        YE_ERROR("MSBuild.exe not found");
+        ENGINE_ERROR("MSBuild.exe not found");
         return;
     }
 
     if (!std::filesystem::exists(sln_path)) {
-        YE_ERROR("Failed to generate solution file for project");
+        ENGINE_ERROR("Failed to generate solution file for project");
         return;
     }
 
@@ -217,59 +241,85 @@ void Launcher::BuildProject() {
     project_built = true;
 }
 
-void Launcher::LaunchProject() {
-#if YE_PLATFORM_WIN
-    // if running game w/ no editor
-    // std::filesystem::path proj_executable = project_folder / "bin" / "Debug" / project_name_str / (project_name_str + ".exe");
-
-    // if running editor
-    std::filesystem::path proj_executable = std::filesystem::path("bin") / "Debug" / "editor" / "editor.exe";
-
-    PROCESS_INFORMATION process_info;
-    STARTUPINFOA startup_info;
-    ZeroMemory(&startup_info , sizeof(STARTUPINFOA));
-    startup_info.cb = sizeof(STARTUPINFOA);
+void Launcher::LaunchProject(LaunchType type) {
+    std::filesystem::path proj_executable;
+    switch (type) {
+        case LaunchType::GAME:
+            proj_executable = project_folder / "bin" / "Debug" / project_name_str / (project_name_str + ".exe");
+        break;
+        case LaunchType::EDITOR:
+            proj_executable = engine_folder / "bin" / "Debug" / "editor" / "editor.exe";
+        break;
+        default:
+            YE_CRITICAL_ASSERTION(false , "UNKNOWN Launch Type | UNDEFINED BEHAVIOR");
+            return;
+    }
 
     std::string exec_str = proj_executable.string();
     if (!std::filesystem::exists(proj_executable)) {
-        YE_ERROR("Failed to find executable for project");
+        ENGINE_ERROR("Failed to find executable for project");
         return;
     }
 
     std::string project_folder_str = project_folder.string();
-    std::wstring project_folder_wstr = std::wstring(project_folder_str.begin() , project_folder_str.end());
 
-    std::string yproj_file = project_folder_str + "\\" + 
-                             project_name_str + ".yproj";
-
-    // std::string exec_wstr = std::wstring(exec_str.begin() , exec_str.end());
+    std::string yproj_file = (project_folder / (project_name_str + ".yproj")).string();
 
     std::string engine_root = engine_folder.string();
+    std::string mono_config_path = (engine_folder / "external").string();
     std::string modules_dir = (engine_folder / "bin" / "Debug" / "modules").string();
     std::string project_bin = (engine_folder / "bin" / "Debug" / project_name).string();
+    
+    std::string cmnd_line = exec_str +
+                            " --project-name "       + project_name_str           +
+                            " --project-path "       + project_folder_str         + 
+                            " --project-file "       + yproj_file                 +
+                            " --working-directory "  + engine_root                +
+                            " --modules-directory "  + modules_dir                +
+                            " --project-bin "        + project_bin                +
+                            " --mono-config-path "   + engine_root + "/external"  + 
+                            " --engine-root "        + engine_root                +
+                            " --from-launcher";
+    
+    std::string cwd = YE::Filesystem::GetCWD();
 
-    std::string cmnd_line = "--project-name"         + project_name_str   +
-                            " --project-path "       + project_folder_str + 
-                            " --project-file "       + yproj_file         +
-                            " --working-directory "  + engine_root        +
-                            " --modules-directory "  + modules_dir        +
-                            " --project-bin "        + project_bin;
-    bool result = CreateProcessA(
-        exec_str.data() , cmnd_line.data() , 
-        nullptr , nullptr , false , 
-        DETACHED_PROCESS , nullptr , engine_root.data() , 
+#ifdef YE_PLATFORM_WIN
+
+    std::wstring exec_wstr = std::wstring(exec_str.begin() , exec_str.end());
+    std::wstring project_name_wstr = std::wstring(project_name_str.begin() , project_name_str.end());
+    std::wstring project_folder_wstr = std::wstring(project_folder_str.begin() , project_folder_str.end());
+    std::wstring yproj_file_wstr = std::wstring(yproj_file.begin() , yproj_file.end());
+    std::wstring engine_root_wstr = std::wstring(engine_root.begin() , engine_root.end());
+    std::wstring mono_config_path_wstr = std::wstring(mono_config_path.begin() , mono_config_path.end());
+    std::wstring modules_dir_wstr = std::wstring(modules_dir.begin() , modules_dir.end());
+    std::wstring project_bin_wstr = std::wstring(project_bin.begin() , project_bin.end());
+    std::replace(cmnd_line.begin() , cmnd_line.end() , '/' , '\\');
+    std::wstring cmnd_line_wstr = std::wstring(cmnd_line.begin() , cmnd_line.end());
+
+    PROCESS_INFORMATION process_info;
+    STARTUPINFO startup_info;
+    
+    ZeroMemory(&startup_info , sizeof(startup_info));
+    ZeroMemory(&process_info , sizeof(process_info));
+    startup_info.cb = sizeof(startup_info);
+    
+    bool result = CreateProcess(
+        nullptr , cmnd_line_wstr.data() , 
+        nullptr , nullptr , true , 
+        DETACHED_PROCESS , 
+        nullptr , nullptr , 
         &startup_info , &process_info
     );
 
     if (result) {
-        CloseHandle(process_info.hThread);
-        CloseHandle(process_info.hProcess);
+        // CloseHandle(process_info.hThread);
+        // CloseHandle(process_info.hProcess);
 
-        EngineY::EventManager()->DispatchEvent(ynew YE::ShutdownEvent);
+        EngineY::DispatchEvent(ynew YE::ShutdownEvent);
     } else {
-        YE_ERROR("Failed to launch project");
+        ENGINE_ERROR("Failed to launch project");
         DWORD error = GetLastError();
-        YE_ERROR("Error: {}" , error);
+        ENGINE_ERROR("Error: {0:#4x}" , error);
     }
 #else
     YE_CRITICAL_ASSERTION(false , "Not implemented");
@@ -285,8 +335,6 @@ void Launcher::ProjectExplorer() {
     chosen_location = std::string{ out_path };
     std::filesystem::path path{ chosen_location };
     
-    YE_DEBUG("Chosen location: {0}" , chosen_location);
-
     bool project_found = false;
     for (const auto& entry : std::filesystem::directory_iterator(path)) {
         if (entry.is_directory()) continue;
@@ -297,7 +345,7 @@ void Launcher::ProjectExplorer() {
     }
 
     if (!project_found) {
-        YE_ERROR("No project found in chosen directory");
+        ENGINE_ERROR("No project found in chosen directory");
         return;
     }
 
@@ -306,6 +354,7 @@ void Launcher::ProjectExplorer() {
 
     project_folder = path;
     project_name_str = path.filename().string();
+    project_selector = false;
     project_config_open = true;
 }
 
@@ -320,8 +369,8 @@ bool Launcher::GenerateProjectDirectory(const std::string& chosen_path) {
     project_folder = proj_folder;
     std::filesystem::path code_path = project_folder / project_name_str;
     
-    YE_INFO("Project Path: {0}" , project_folder.string());
-    YE_INFO("Code Path: {0}" , code_path.string());
+    LOG_INFO("Project Path: {0}" , project_folder.string());
+    LOG_INFO("Code Path: {0}" , code_path.string());
 
     std::string shader_dir = "resources/shaders";
     std::string texture_dir = "resources/textures";
@@ -353,7 +402,7 @@ bool Launcher::GenerateProjectDirectory(const std::string& chosen_path) {
     std::ifstream yproj_template{ (template_dir / "project.yproj.in").string() };
 
     if (!premake_template.is_open()) {
-        YE_ERROR("Failed to open premake5.lua.in");
+        ENGINE_ERROR("Failed to open premake5.lua.in");
         return false;
     } else {
         premake << premake_template.rdbuf();
@@ -361,7 +410,7 @@ bool Launcher::GenerateProjectDirectory(const std::string& chosen_path) {
     }
 
     if (!module_template.is_open()) {
-        YE_ERROR("Failed to open modules.lua.in");
+        ENGINE_ERROR("Failed to open modules.lua.in");
         return false;
     } else {
         modules << module_template.rdbuf();
@@ -369,7 +418,7 @@ bool Launcher::GenerateProjectDirectory(const std::string& chosen_path) {
     }
 
     if (!proj_template.is_open()) {
-        YE_ERROR("Failed to open project.cpp.in");
+        ENGINE_ERROR("Failed to open project.cpp.in");
         return false;
     } else {
         project_cpp << proj_template.rdbuf();
@@ -377,7 +426,7 @@ bool Launcher::GenerateProjectDirectory(const std::string& chosen_path) {
     }
 
     if (!yproj_template.is_open()) {
-        YE_ERROR("Failed to open project.yproj.in");
+        ENGINE_ERROR("Failed to open project.yproj.in");
         return false;
     } else {
         yproj_file << yproj_template.rdbuf();
@@ -447,7 +496,7 @@ void Launcher::ConfigureProject() {
     YE_CRITICAL_ASSERTION(editor != nullptr , "Editor is null");
     YE_CRITICAL_ASSERTION(std::filesystem::exists(project_folder) , "Failed to generate project directory");
     YE_CRITICAL_ASSERTION(std::filesystem::exists(project_folder / project_name_str) , "Failed to generate project code directory");
-    if (ImGui::Begin("Project Configuration" , &project_config_open)) {
+    if (ImGui::Begin("Project Configuration")) {
         ImGui::Text("Project Build Configuration");
         for (const auto& entry : std::filesystem::directory_iterator(project_folder)) {
             if (entry.is_directory() || IsIgnoredExtension(entry.path().extension())) continue;
@@ -476,6 +525,10 @@ void Launcher::ConfigureProject() {
             editor->Notify("RequestQuit");
             editor->Shutdown();
 
+            build_started = true;
+            project_selector = false;
+            project_config_open = true;
+
             builder_thread = std::thread(&Launcher::GenerateProject , this);
             builder_thread.detach();
         }
@@ -490,7 +543,6 @@ void Launcher::ProjectBuilder() {
     if (ImGui::BeginPopupModal("Project Creator" , nullptr , flags)) {
         ImGui::InputText("Project Name"  , project_name , 256);
         
-        
         if (ImGui::Button("Create")) {
             project_name_str = std::string{ project_name };
             nfdchar_t* out_path = nullptr;
@@ -503,7 +555,6 @@ void Launcher::ProjectBuilder() {
 
             chosen_location = std::string{ out_path };
             if (GenerateProjectDirectory(chosen_location)) {
-                YE_DEBUG("{}" , YE::Filesystem::GetCWD());
                 editor = std::make_unique<YE::TextEditor>();
                 editor->Initialize({ 1.0f , 1.0f });
                 project_config_open = true;

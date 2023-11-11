@@ -31,7 +31,7 @@ namespace YE {
             template<typename T , typename... Args>
             T& AddComponent(Args&&... args) {
                 if (HasComponent<T>()) {
-                    YE_WARN("Attempted to add a component that already exists");
+                    ENGINE_WARN("Attempted to add a component that already exists");
                     return GetComponent<T>();
                 }
                 return context->registry.emplace<T>(entity , std::forward<Args>(args)...);

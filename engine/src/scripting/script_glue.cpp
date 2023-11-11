@@ -29,7 +29,7 @@ namespace YE {
         std::string_view name = TypeData<T , true>().Name();
 
         if (name.find("components::") == std::string_view::npos) {
-            YE_ERROR("Attempted to register type that is not a component: {0}" , name);
+            ENGINE_ERROR("Attempted to register type that is not a component: {0}" , name);
             return;
         } else {
             size_t components = name.find("components::");
@@ -47,7 +47,7 @@ namespace YE {
 
         func_map->component_getters<T>[type] = [](Entity* entity , T* component) -> bool {
             if (!entity->HasComponent<T>()) {
-                YE_ERROR(
+                ENGINE_ERROR(
                     "Attempted to get component {0} from entity {1} that does not have it" , 
                     TypeData<T , true>().Name() , 
                     entity->GetComponent<components::ID>().name
@@ -55,8 +55,6 @@ namespace YE {
 
                 *component = T();
                 return false;
-            } else {
-                YE_DEBUG("Getting component {0} from entity {1}" , TypeData<T , true>().Name() , entity->GetComponent<components::ID>().name);
             }
 
             const auto& ent_component = entity->GetComponent<T>();
@@ -66,7 +64,7 @@ namespace YE {
 
         func_map->component_setters<T>[type] = [](Entity* entity , T* component) {
             if (!entity->HasComponent<T>()) {
-                YE_ERROR(
+                ENGINE_ERROR(
                     "Attempted to set component {0} from entity {1} that does not have it" , 
                     TypeData<T , true>().Name() , 
                     entity->GetComponent<components::ID>().name
@@ -76,7 +74,7 @@ namespace YE {
             }
 
             if (component == nullptr) {
-                YE_ERROR("Attempted to set component {0} to null" , TypeData<T , true>().Name());
+                ENGINE_ERROR("Attempted to set component {0} to null" , TypeData<T , true>().Name());
                 return;
             }
 
@@ -206,7 +204,6 @@ namespace YE {
         YE_ADD_SCRIPT_FUNCTION(LogInfo);
         YE_ADD_SCRIPT_FUNCTION(LogWarn);
         YE_ADD_SCRIPT_FUNCTION(LogError);
-        YE_ADD_SCRIPT_FUNCTION(LogFatal);
     }
     
     void ScriptGlue::BindAssembly() {
@@ -253,7 +250,7 @@ namespace ScriptInternalCalls {
     void GetEntityTransform(uint64_t entity_id , components::Transform* transform) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("GetEntityTransform :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
+            ENGINE_ERROR("GetEntityTransform :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
             *transform = components::Transform();
             return;
         }
@@ -268,12 +265,12 @@ namespace ScriptInternalCalls {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
 
         if (entity == nullptr) {
-            YE_ERROR("SetEntityTransform :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
+            ENGINE_ERROR("SetEntityTransform :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
             return;
         }
 
         if (transform == nullptr) {
-            YE_ERROR("SetEntityTransform :: Attempted to set transform to null");
+            ENGINE_ERROR("SetEntityTransform :: Attempted to set transform to null");
             return;
         }
 
@@ -308,12 +305,12 @@ namespace ScriptInternalCalls {
     void GetEntityPosition(uint64_t entity_id , glm::vec3* position) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("GetEntityPosition :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
+            ENGINE_ERROR("GetEntityPosition :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
             return;
         }
 
         if (position == nullptr) {
-            YE_ERROR("GetEntityPosition :: Attempted to retrieve position with null pointer");
+            ENGINE_ERROR("GetEntityPosition :: Attempted to retrieve position with null pointer");
             return;
         }
 
@@ -325,12 +322,12 @@ namespace ScriptInternalCalls {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
 
         if (entity == nullptr) {
-            YE_ERROR("SetEntityPosition :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
+            ENGINE_ERROR("SetEntityPosition :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
             return;
         }
 
         if (position == nullptr) {
-            YE_ERROR("SetEntityPosition :: Attempted to set position to null");
+            ENGINE_ERROR("SetEntityPosition :: Attempted to set position to null");
             return;
         }
 
@@ -350,7 +347,7 @@ namespace ScriptInternalCalls {
     void GetEntityRotation(uint64_t entity_id , glm::vec3* rotation) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("GetEntityRotation :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
+            ENGINE_ERROR("GetEntityRotation :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
             return;
         }
 
@@ -361,12 +358,12 @@ namespace ScriptInternalCalls {
     void SetEntityRotation(uint64_t entity_id , glm::vec3* rotation) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("SetEntityRotation :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
+            ENGINE_ERROR("SetEntityRotation :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
             return;
         }
 
         if (rotation == nullptr) {
-            YE_ERROR("SetEntityRotation :: Attempted to set rotation to null");
+            ENGINE_ERROR("SetEntityRotation :: Attempted to set rotation to null");
             return;
         }
 
@@ -388,7 +385,7 @@ namespace ScriptInternalCalls {
     void GetEntityScale(uint64_t entity_id , glm::vec3* scale) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("GetEntityScale :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
+            ENGINE_ERROR("GetEntityScale :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
             return;
         }
 
@@ -399,12 +396,12 @@ namespace ScriptInternalCalls {
     void SetEntityScale(uint64_t entity_id , glm::vec3* scale) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("SetEntityScale :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
+            ENGINE_ERROR("SetEntityScale :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
             return;
         }
 
         if (scale == nullptr) {
-            YE_ERROR("SetEntityScale :: Attempted to set scale to null");
+            ENGINE_ERROR("SetEntityScale :: Attempted to set scale to null");
             return;
         }
 
@@ -444,12 +441,12 @@ namespace ScriptInternalCalls {
     uint32_t GetPhysicsBodyType(uint64_t entity_id) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr)  {
-            YE_ERROR("GetPhysicsBodyType :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
+            ENGINE_ERROR("GetPhysicsBodyType :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
             return 0;
         }
 
         if (!entity->HasComponent<components::PhysicsBody>()) {
-            YE_ERROR("GetPhysicsBodyType :: Attempted to retrieve physics body from entity that does not have it");
+            ENGINE_ERROR("GetPhysicsBodyType :: Attempted to retrieve physics body from entity that does not have it");
             return 0;
         }
 
@@ -460,17 +457,17 @@ namespace ScriptInternalCalls {
     void SetPhysicsBodyType(uint64_t entity_id , uint32_t type) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("SetPhysicsBodyType :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
+            ENGINE_ERROR("SetPhysicsBodyType :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
             return;
         }
 
         if (!entity->HasComponent<components::PhysicsBody>()) {
-            YE_ERROR("SetPhysicsBodyType :: Attempted to retrieve physics body from entity that does not have it");
+            ENGINE_ERROR("SetPhysicsBodyType :: Attempted to retrieve physics body from entity that does not have it");
             return;
         }
 
         if (type > static_cast<uint32_t>(PhysicsBodyType::DYNAMIC)) {
-            YE_ERROR("SetPhysicsBodyType :: Attempted to set physics body type to invalid type: {0}" , type);
+            ENGINE_ERROR("SetPhysicsBodyType :: Attempted to set physics body type to invalid type: {0}" , type);
             return;
         }
 
@@ -482,12 +479,12 @@ namespace ScriptInternalCalls {
     void GetPhysicsBodyPosition(uint64_t entity_id , glm::vec3* position) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("GetPhysicsBodyPosition :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
+            ENGINE_ERROR("GetPhysicsBodyPosition :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
             return;
         }
 
         if (!entity->HasComponent<components::PhysicsBody>()) {
-            YE_ERROR("GetPhysicsBodyPosition :: Attempted to retrieve physics body from entity that does not have it");
+            ENGINE_ERROR("GetPhysicsBodyPosition :: Attempted to retrieve physics body from entity that does not have it");
             return;
         }
 
@@ -500,17 +497,17 @@ namespace ScriptInternalCalls {
     void SetPhysicsBodyPosition(uint64_t entity_id , glm::vec3* position) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("SetPhysicsBodyPosition :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
+            ENGINE_ERROR("SetPhysicsBodyPosition :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
             return;
         }
 
         if (!entity->HasComponent<components::PhysicsBody>()) {
-            YE_ERROR("SetPhysicsBodyPosition :: Attempted to retrieve physics body from entity that does not have it");
+            ENGINE_ERROR("SetPhysicsBodyPosition :: Attempted to retrieve physics body from entity that does not have it");
             return;
         }
 
         if (position == nullptr) {
-            YE_ERROR("SetPhysicsBodyPosition :: Attempted to set physics body position to null");
+            ENGINE_ERROR("SetPhysicsBodyPosition :: Attempted to set physics body position to null");
             return;
         }
 
@@ -526,12 +523,12 @@ namespace ScriptInternalCalls {
     void GetPhysicsBodyRotation(uint64_t entity_id , glm::vec3* rotation) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("GetPhysicsBodyRotation :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
+            ENGINE_ERROR("GetPhysicsBodyRotation :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
             return;
         }
 
         if (!entity->HasComponent<components::PhysicsBody>()) {
-            YE_ERROR("GetPhysicsBodyRotation :: Attempted to retrieve physics body from entity that does not have it");
+            ENGINE_ERROR("GetPhysicsBodyRotation :: Attempted to retrieve physics body from entity that does not have it");
             return;
         }
 
@@ -563,17 +560,17 @@ namespace ScriptInternalCalls {
     void SetPhysicsBodyRotation(uint64_t entity_id , glm::vec3* rotation) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("SetPhysicsBodyRotation :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
+            ENGINE_ERROR("SetPhysicsBodyRotation :: Attempted to retrieve invalid entity from ID: {0}" , entity_id);
             return;
         }
 
         if (!entity->HasComponent<components::PhysicsBody>()) {
-            YE_ERROR("SetPhysicsBodyRotation :: Attempted to retrieve physics body from entity that does not have it");
+            ENGINE_ERROR("SetPhysicsBodyRotation :: Attempted to retrieve physics body from entity that does not have it");
             return;
         }
 
         if (rotation == nullptr) {
-            YE_ERROR("SetPhysicsBodyRotation :: Attempted to set physics body rotation to null");
+            ENGINE_ERROR("SetPhysicsBodyRotation :: Attempted to set physics body rotation to null");
             return;
         }
 
@@ -591,12 +588,12 @@ namespace ScriptInternalCalls {
     float GetPhysicsBodyMass(uint64_t entity_id) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("GetPhysicsBodyMass :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
+            ENGINE_ERROR("GetPhysicsBodyMass :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
             return 0.f;
         }
 
         if (!entity->HasComponent<components::PhysicsBody>()) {
-            YE_ERROR("GetPhysicsBodyMass :: Attempted to retrieve physics body from entity that does not have it");
+            ENGINE_ERROR("GetPhysicsBodyMass :: Attempted to retrieve physics body from entity that does not have it");
             return 0.f;
         }
 
@@ -607,12 +604,12 @@ namespace ScriptInternalCalls {
     void SetPhysicsBodyMass(uint64_t entity_id , float mass) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("SetPhysicsBodyMass :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
+            ENGINE_ERROR("SetPhysicsBodyMass :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
             return;
         }
 
         if (!entity->HasComponent<components::PhysicsBody>()) {
-            YE_ERROR("SetPhysicsBodyMass :: Attempted to retrieve physics body from entity that does not have it");
+            ENGINE_ERROR("SetPhysicsBodyMass :: Attempted to retrieve physics body from entity that does not have it");
             return;
         }
 
@@ -623,17 +620,17 @@ namespace ScriptInternalCalls {
     void ApplyForceCenterOfMass(uint64_t entity_id , glm::vec3* force) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_WARN("ApplyForceCenterOfMass :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
+            ENGINE_WARN("ApplyForceCenterOfMass :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
             return;
         }
 
         if (!entity->HasComponent<components::PhysicsBody>()) {
-            YE_WARN("ApplyForceCenterOfMass :: Attempted to retrieve physics body from entity that does not have it");
+            ENGINE_WARN("ApplyForceCenterOfMass :: Attempted to retrieve physics body from entity that does not have it");
             return;
         }
 
         if (force == nullptr) {
-            YE_WARN("ApplyForceCenterOfMass :: Attempted to apply force to null");
+            ENGINE_WARN("ApplyForceCenterOfMass :: Attempted to apply force to null");
             return;
         }
 
@@ -646,17 +643,17 @@ namespace ScriptInternalCalls {
     void ApplyForce(uint64_t entity_id , glm::vec3* force , glm::vec3* point) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_WARN("ApplyForce :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
+            ENGINE_WARN("ApplyForce :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
             return;
         }
 
         if (!entity->HasComponent<components::PhysicsBody>()) {
-            YE_WARN("ApplyForce :: Attempted to retrieve physics body from entity that does not have it");
+            ENGINE_WARN("ApplyForce :: Attempted to retrieve physics body from entity that does not have it");
             return;
         }
 
         if (force == nullptr) {
-            YE_WARN("ApplyForce :: Attempted to apply force to null");
+            ENGINE_WARN("ApplyForce :: Attempted to apply force to null");
             return;
         }
 
@@ -670,17 +667,17 @@ namespace ScriptInternalCalls {
     void ApplyTorque(uint64_t entity_id , glm::vec3* torque) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_WARN("ApplyTorque :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
+            ENGINE_WARN("ApplyTorque :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
             return;
         }
 
         if (!entity->HasComponent<components::PhysicsBody>()) {
-            YE_WARN("ApplyTorque :: Attempted to retrieve physics body from entity that does not have it");
+            ENGINE_WARN("ApplyTorque :: Attempted to retrieve physics body from entity that does not have it");
             return;
         }
 
         if (torque == nullptr) {
-            YE_WARN("ApplyTorque :: Attempted to apply force to null");
+            ENGINE_WARN("ApplyTorque :: Attempted to apply force to null");
             return;
         }
 
@@ -699,7 +696,7 @@ namespace ScriptInternalCalls {
     uint32_t GetCameraType(uint32_t camera_id) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraType :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraType :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return 0;
         }
 
@@ -709,12 +706,12 @@ namespace ScriptInternalCalls {
     void SetCameraType(uint32_t camera_id, uint32_t type) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("SetCameraType :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("SetCameraType :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
         if (type > static_cast<uint32_t>(CameraType::ORTHOGRAPHIC)) {
-            YE_ERROR("SetCameraType :: Attempted to set camera type to invalid type: {0}" , type);
+            ENGINE_ERROR("SetCameraType :: Attempted to set camera type to invalid type: {0}" , type);
             return;
         }
 
@@ -724,7 +721,7 @@ namespace ScriptInternalCalls {
     void RecalculateCameraViewProjectionMatrix(uint32_t camera_id) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("RecalculateCameraViewProjectionMatrix :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("RecalculateCameraViewProjectionMatrix :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -734,7 +731,7 @@ namespace ScriptInternalCalls {
     void GetCameraView(uint32_t camera_id , glm::mat4* matrix) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraView :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraView :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -744,7 +741,7 @@ namespace ScriptInternalCalls {
     void GetCameraProjection(uint32_t camera_id , glm::mat4* matrix) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -754,7 +751,7 @@ namespace ScriptInternalCalls {
     void GetCameraViewProjection(uint32_t camera_id , glm::mat4* matrix) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -764,7 +761,7 @@ namespace ScriptInternalCalls {
     void GetCameraPosition(uint32_t camera_id , glm::vec3* position) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraPosition :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraPosition :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -774,12 +771,12 @@ namespace ScriptInternalCalls {
     void SetCameraPosition(uint32_t camera_id , glm::vec3* position) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("SetCameraPosition :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("SetCameraPosition :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
         if (position == nullptr) {
-            YE_ERROR("SetCameraPosition :: Attempted to set camera position to null");
+            ENGINE_ERROR("SetCameraPosition :: Attempted to set camera position to null");
             return;
         }
 
@@ -789,7 +786,7 @@ namespace ScriptInternalCalls {
     void GetCameraFront(uint32_t camera_id , glm::vec3* front) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraFront :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraFront :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -799,12 +796,12 @@ namespace ScriptInternalCalls {
     void SetCameraFront(uint32_t camera_id , glm::vec3* front) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
         if (front == nullptr) {
-            YE_ERROR("SetCameraPosition :: Attempted to set camera position to null");
+            ENGINE_ERROR("SetCameraPosition :: Attempted to set camera position to null");
             return;
         }
 
@@ -814,7 +811,7 @@ namespace ScriptInternalCalls {
     void GetCameraUp(uint32_t camera_id , glm::vec3* up) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -824,12 +821,12 @@ namespace ScriptInternalCalls {
     void SetCameraUp(uint32_t camera_id , glm::vec3* up) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
         if (up == nullptr) {
-            YE_ERROR("SetCameraPosition :: Attempted to set camera position to null");
+            ENGINE_ERROR("SetCameraPosition :: Attempted to set camera position to null");
             return;
         }
 
@@ -839,7 +836,7 @@ namespace ScriptInternalCalls {
     void GetCameraRight(uint32_t camera_id , glm::vec3* right) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -849,7 +846,7 @@ namespace ScriptInternalCalls {
     void GetCameraWorldUp(uint32_t camera_id , glm::vec3* world_up) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -859,12 +856,12 @@ namespace ScriptInternalCalls {
     void SetCameraWorldUp(uint32_t camera_id , glm::vec3* world_up) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
         if (world_up == nullptr) {
-            YE_ERROR("SetCameraPosition :: Attempted to set camera position to null");
+            ENGINE_ERROR("SetCameraPosition :: Attempted to set camera position to null");
             return;
         }
 
@@ -874,7 +871,7 @@ namespace ScriptInternalCalls {
     void GetCameraEulerAngles(uint32_t camera_id , glm::vec3* angles) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -884,12 +881,12 @@ namespace ScriptInternalCalls {
     void SetCameraEulerAngles(uint32_t camera_id , glm::vec3* angles) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
         
         if (angles == nullptr) {
-            YE_ERROR("SetCameraPosition :: Attempted to set camera position to null");
+            ENGINE_ERROR("SetCameraPosition :: Attempted to set camera position to null");
             return;
         }
 
@@ -899,7 +896,7 @@ namespace ScriptInternalCalls {
     void GetCameraViewportSize(uint32_t camera_id , glm::vec2* size) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -910,12 +907,12 @@ namespace ScriptInternalCalls {
     void SetCameraViewportSize(uint32_t camera_id , glm::vec2* size) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
         if (size == nullptr) {
-            YE_ERROR("SetCameraPosition :: Attempted to set camera position to null");
+            ENGINE_ERROR("SetCameraPosition :: Attempted to set camera position to null");
             return;
         }
 
@@ -926,7 +923,7 @@ namespace ScriptInternalCalls {
     void GetCameraClip(uint32_t camera_id , glm::vec2* clip) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -936,12 +933,12 @@ namespace ScriptInternalCalls {
     void SetCameraClip(uint32_t camera_id , glm::vec2* clip) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
         
         if (clip == nullptr) {
-            YE_ERROR("SetCameraPosition :: Attempted to set camera position to null");
+            ENGINE_ERROR("SetCameraPosition :: Attempted to set camera position to null");
             return;
         }
 
@@ -951,7 +948,7 @@ namespace ScriptInternalCalls {
     void SetCameraNearClip(uint32_t camera_id , float near_clip) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("SetCameraNearClip :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("SetCameraNearClip :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -963,7 +960,7 @@ namespace ScriptInternalCalls {
     void SetCameraFarClip(uint32_t camera_id , float far_clip) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("SetCameraFarClip :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("SetCameraFarClip :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -975,7 +972,7 @@ namespace ScriptInternalCalls {
     void GetCameraMousePos(uint32_t camera_id , glm::vec2* position) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -985,7 +982,7 @@ namespace ScriptInternalCalls {
     void GetCameraLastMousePos(uint32_t camera_id , glm::vec2* position) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -995,7 +992,7 @@ namespace ScriptInternalCalls {
     void GetCameraDeltaMouse(uint32_t camera_id , glm::vec2* delta) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -1005,7 +1002,7 @@ namespace ScriptInternalCalls {
     float GetCameraSpeed(uint32_t camera_id) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return 0.f;
         }
 
@@ -1015,7 +1012,7 @@ namespace ScriptInternalCalls {
     void SetCameraSpeed(uint32_t camera_id, float speed) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -1025,7 +1022,7 @@ namespace ScriptInternalCalls {
     float GetCameraSensitivity(uint32_t camera_id) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return 0.f;
         }
 
@@ -1035,7 +1032,7 @@ namespace ScriptInternalCalls {
     void SetCameraSensitivity(uint32_t camera_id , float sensitivity) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -1045,7 +1042,7 @@ namespace ScriptInternalCalls {
     float GetCameraFov(uint32_t camera_id) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return 0.f;
         }
 
@@ -1055,7 +1052,7 @@ namespace ScriptInternalCalls {
     void SetCameraFov(uint32_t camera_id , float fov) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -1065,7 +1062,7 @@ namespace ScriptInternalCalls {
     float GetCameraZoom(uint32_t camera_id) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return 0.f;
         }
 
@@ -1075,7 +1072,7 @@ namespace ScriptInternalCalls {
     void SetCameraZoom(uint32_t camera_id , float zoom) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -1085,7 +1082,7 @@ namespace ScriptInternalCalls {
     bool GetCameraConstrainPitch(uint32_t camera_id) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return false;
         }
 
@@ -1095,7 +1092,7 @@ namespace ScriptInternalCalls {
     void SetCameraConstrainPitch(uint32_t camera_id , bool constrain_pitch) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -1105,7 +1102,7 @@ namespace ScriptInternalCalls {
     bool IsCameraPrimary(uint32_t camera_id) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return false;
         }
 
@@ -1115,7 +1112,7 @@ namespace ScriptInternalCalls {
     void SetCameraPrimary(uint32_t camera_id , bool primary) {
         Camera* camera = ScriptEngine::Instance()->GetSceneContext()->GetCamera(camera_id);
         if (camera == nullptr) {
-            YE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
+            ENGINE_ERROR("GetCameraViewProjection :: Attempted to retrieve invalid camera with ID: {0}" , camera_id);
             return;
         }
 
@@ -1127,13 +1124,13 @@ namespace ScriptInternalCalls {
     uint64_t GetEntityParent(uint64_t entity_id) {
         Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr)  {
-            YE_ERROR("GetEntityParent :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
+            ENGINE_ERROR("GetEntityParent :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
             return 0;
         }
 
         Entity* parent = entity->GetParent();
         if (parent == nullptr) {
-            YE_ERROR("GetEntityParent :: Attempted to retrieve parent from entity that does not have one");
+            ENGINE_ERROR("GetEntityParent :: Attempted to retrieve parent from entity that does not have one");
             return 0;
         }
 
@@ -1143,7 +1140,7 @@ namespace ScriptInternalCalls {
     void SetEntityParent(uint64_t child , uint64_t parent) {
         Entity* child_entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(child);
         if (child_entity == nullptr) {
-            YE_ERROR("SetEntityParent :: Attempted to retrieve invalid entity with ID: {0}", child);
+            ENGINE_ERROR("SetEntityParent :: Attempted to retrieve invalid entity with ID: {0}", child);
             return;
         }
 
@@ -1152,7 +1149,7 @@ namespace ScriptInternalCalls {
         } else {
             Entity* parent_entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(parent);
             if (parent_entity == nullptr) {
-                YE_ERROR("SetEntityParent :: Attempted to retrieve invalid entity with ID: {0}", parent);
+                ENGINE_ERROR("SetEntityParent :: Attempted to retrieve invalid entity with ID: {0}", parent);
                 return;
             }
 
@@ -1163,12 +1160,12 @@ namespace ScriptInternalCalls {
     void EntityAddComponent(uint64_t entity_id , MonoReflectionType* component_name) {
         YE::Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("EntityAddComponent :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
+            ENGINE_ERROR("EntityAddComponent :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
             return;
         }
 
         if (component_name == nullptr) {
-            YE_ERROR("EntityAddComponent :: Attempted to retrieve component with null name");
+            ENGINE_ERROR("EntityAddComponent :: Attempted to retrieve component with null name");
             mono_free(component_name);
             return;
         }
@@ -1176,14 +1173,14 @@ namespace ScriptInternalCalls {
         MonoType* type = mono_reflection_type_get_type(component_name);
         if (type == nullptr) {
             char* component_name = mono_type_get_name(type);
-            YE_ERROR("EntityAddComponent :: Failed to get type from MonoReflectionType {0}" , component_name);
+            ENGINE_ERROR("EntityAddComponent :: Failed to get type from MonoReflectionType {0}" , component_name);
             mono_free(component_name);
             return;
         }
 
         if (func_map->component_builders.find(type) == func_map->component_builders.end()) {
             char* component_name = mono_type_get_name(type);
-            YE_ERROR("EntityAddComponent :: Failed to find component builder for type {0}" , component_name);
+            ENGINE_ERROR("EntityAddComponent :: Failed to find component builder for type {0}" , component_name);
             mono_free(component_name);
             return;
         }
@@ -1194,12 +1191,12 @@ namespace ScriptInternalCalls {
     bool EntityHasComponent(uint64_t entity_id , MonoReflectionType* component_name) {
         YE::Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("EntityHasComponent :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
+            ENGINE_ERROR("EntityHasComponent :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
             return false;
         }
 
         if (component_name == nullptr) {
-            YE_ERROR("EntityHasComponent :: Attempted to retrieve component with null name");
+            ENGINE_ERROR("EntityHasComponent :: Attempted to retrieve component with null name");
             mono_free(component_name);
             return false;
         }
@@ -1207,14 +1204,14 @@ namespace ScriptInternalCalls {
         MonoType* type = mono_reflection_type_get_type(component_name);
         if (type == nullptr) {
             char* component_name = mono_type_get_name(type);
-            YE_ERROR("EntityHasComponent :: Failed to get type from MonoReflectionType {0}" , component_name);
+            ENGINE_ERROR("EntityHasComponent :: Failed to get type from MonoReflectionType {0}" , component_name);
             mono_free(component_name);
             return false;
         }
 
         if (func_map->component_checkers.find(type) == func_map->component_checkers.end()) {
             char* component_name = mono_type_get_name(type);
-            YE_ERROR("EntityHasComponent :: Failed to find component checker for type {0}" , component_name);
+            ENGINE_ERROR("EntityHasComponent :: Failed to find component checker for type {0}" , component_name);
             mono_free(component_name);
             return false;
         }
@@ -1225,12 +1222,12 @@ namespace ScriptInternalCalls {
     bool EntityRemoveComponent(uint64_t entity_id , MonoReflectionType* component_name) {
         YE::Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("EntityRemoveComponent :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
+            ENGINE_ERROR("EntityRemoveComponent :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
             return false;
         }
 
         if (component_name == nullptr) {
-            YE_ERROR("EntityRemoveComponent :: Attempted to retrieve component with null name");
+            ENGINE_ERROR("EntityRemoveComponent :: Attempted to retrieve component with null name");
             mono_free(component_name);
             return false;
         }
@@ -1238,21 +1235,21 @@ namespace ScriptInternalCalls {
         MonoType* type = mono_reflection_type_get_type(component_name);
         if (type == nullptr) {
             char* component_name = mono_type_get_name(type);
-            YE_ERROR("EntityRemoveComponent :: Failed to get type from MonoReflectionType {0}" , component_name);
+            ENGINE_ERROR("EntityRemoveComponent :: Failed to get type from MonoReflectionType {0}" , component_name);
             mono_free(component_name);
             return false;
         }
 
         if (func_map->component_destroyers.find(type) == func_map->component_destroyers.end()) {
             char* component_name = mono_type_get_name(type);
-            YE_ERROR("EntityRemoveComponent :: Failed to find component destroyer for type {0}" , component_name);
+            ENGINE_ERROR("EntityRemoveComponent :: Failed to find component destroyer for type {0}" , component_name);
             mono_free(component_name);
             return false;
         }
 
         if (!func_map->component_checkers[type](entity)) {
             char* component_name = mono_type_get_name(type);
-            YE_ERROR("EntityRemoveComponent :: Entity does not have component {0}" , component_name);
+            ENGINE_ERROR("EntityRemoveComponent :: Entity does not have component {0}" , component_name);
             mono_free(component_name);
             return false;
         }
@@ -1278,13 +1275,13 @@ namespace ScriptInternalCalls {
         ScriptEngine* engine = ScriptEngine::Instance();
         
         if (!engine->GetSceneContext()->IsEntityValid(entity_id)) {
-            YE_ERROR("DestroyEntity :: Attempted to destroy invalid entity with ID: {0}" , entity_id);
+            ENGINE_ERROR("DestroyEntity :: Attempted to destroy invalid entity with ID: {0}" , entity_id);
             return;
         }
 
         Entity* entity = engine->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
-            YE_ERROR("DestroyEntity :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
+            ENGINE_ERROR("DestroyEntity :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
             return;
         }
 
@@ -1297,7 +1294,7 @@ namespace ScriptInternalCalls {
         mono_free(str);
         
         if (entity == nullptr) {
-            YE_ERROR("GetEntityByName :: Attempted to retrieve invalid entity with name: {0}" , str);
+            ENGINE_ERROR("GetEntityByName :: Attempted to retrieve invalid entity with name: {0}" , str);
             return 0;
         }
 
@@ -1309,7 +1306,7 @@ namespace ScriptInternalCalls {
     uint32_t KeyFramesHeld(uint32_t key) {
         if (static_cast<Keyboard::Key>(key) < Keyboard::Key::YE_UNKNOWN || 
             static_cast<Keyboard::Key>(key) > Keyboard::Key::YE_NUM_YES) {
-            YE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , key);
+            ENGINE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , key);
             return false;
         }
 
@@ -1320,7 +1317,7 @@ namespace ScriptInternalCalls {
     bool IsKeyPressed(uint32_t key) {
         if (static_cast<Keyboard::Key>(key) < Keyboard::Key::YE_UNKNOWN || 
             static_cast<Keyboard::Key>(key) > Keyboard::Key::YE_NUM_YES) {
-            YE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , key);
+            ENGINE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , key);
             return false;
         }
 
@@ -1330,7 +1327,7 @@ namespace ScriptInternalCalls {
     bool IsKeyBlocked(uint32_t key) {
         if (static_cast<Keyboard::Key>(key) < Keyboard::Key::YE_UNKNOWN || 
             static_cast<Keyboard::Key>(key) > Keyboard::Key::YE_NUM_YES) {
-            YE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , key);
+            ENGINE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , key);
             return false;
         }
         
@@ -1340,7 +1337,7 @@ namespace ScriptInternalCalls {
     bool IsKeyHeld(uint32_t key) {
         if (static_cast<Keyboard::Key>(key) < Keyboard::Key::YE_UNKNOWN || 
             static_cast<Keyboard::Key>(key) > Keyboard::Key::YE_NUM_YES) {
-            YE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , key);
+            ENGINE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , key);
             return false;
         }
         
@@ -1350,7 +1347,7 @@ namespace ScriptInternalCalls {
     bool IsKeyDown(uint32_t key) {
         if (static_cast<Keyboard::Key>(key) < Keyboard::Key::YE_UNKNOWN || 
             static_cast<Keyboard::Key>(key) > Keyboard::Key::YE_NUM_YES) {
-            YE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , key);
+            ENGINE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , key);
             return false;
         }
         
@@ -1360,7 +1357,7 @@ namespace ScriptInternalCalls {
     bool IsKeyReleased(uint32_t key) {
         if (static_cast<Keyboard::Key>(key) < Keyboard::Key::YE_UNKNOWN || 
             static_cast<Keyboard::Key>(key) > Keyboard::Key::YE_NUM_YES) {
-            YE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , key);
+            ENGINE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , key);
             return false;
         }
         
@@ -1424,7 +1421,7 @@ namespace ScriptInternalCalls {
     uint32_t ButtonFramesHeld(uint32_t button) {
         if (static_cast<Mouse::Button>(button) < Mouse::Button::FIRST || 
             static_cast<Mouse::Button>(button) > Mouse::Button::LAST) {
-            YE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , button);
+            ENGINE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , button);
             return false;
         }
 
@@ -1435,7 +1432,7 @@ namespace ScriptInternalCalls {
     bool IsMouseButtonPressed(uint32_t button) {
         if (static_cast<Mouse::Button>(button) < Mouse::Button::FIRST || 
             static_cast<Mouse::Button>(button) > Mouse::Button::LAST) {
-            YE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , button);
+            ENGINE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , button);
             return false;
         }
 
@@ -1445,7 +1442,7 @@ namespace ScriptInternalCalls {
     bool IsMouseButtonBlocked(uint32_t button) {
         if (static_cast<Mouse::Button>(button) < Mouse::Button::FIRST || 
             static_cast<Mouse::Button>(button) > Mouse::Button::LAST) {
-            YE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , button);
+            ENGINE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , button);
             return false;
         }
 
@@ -1455,7 +1452,7 @@ namespace ScriptInternalCalls {
     bool IsMouseButtonHeld(uint32_t button) {
         if (static_cast<Mouse::Button>(button) < Mouse::Button::FIRST || 
             static_cast<Mouse::Button>(button) > Mouse::Button::LAST) {
-            YE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , button);
+            ENGINE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , button);
             return false;
         }
 
@@ -1465,7 +1462,7 @@ namespace ScriptInternalCalls {
     bool IsMouseButtonReleased(uint32_t button) {
         if (static_cast<Mouse::Button>(button) < Mouse::Button::FIRST || 
             static_cast<Mouse::Button>(button) > Mouse::Button::LAST) {
-            YE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , button);
+            ENGINE_ERROR("IsKeyDown :: Attempted to retrieve invalid key: {0}" , button);
             return false;
         }
 
@@ -1476,37 +1473,31 @@ namespace ScriptInternalCalls {
     // *** Logging Functions *** //
     void LogTrace(MonoString* msg) {
         char* str = mono_string_to_utf8(msg);
-        YE_TRACE("[C#] {0}" , str);
+        LOG_TRACE("[C#] {0}" , str);
         mono_free(str);
     }
 
     void LogDebug(MonoString* msg) {
         char* str = mono_string_to_utf8(msg);
-        YE_DEBUG("[C#] {0}" , str);
+        LOG_DEBUG("[C#] {0}" , str);
         mono_free(str);
     }
 
     void LogInfo(MonoString* msg) {
         char* str = mono_string_to_utf8(msg);
-        YE_INFO("[C#] {0}" , str);
+        LOG_INFO("[C#] {0}" , str);
         mono_free(str);
     }
 
     void LogWarn(MonoString* msg) {
         char* str = mono_string_to_utf8(msg);
-        YE_WARN("[C#] {0}" , str);
+        LOG_WARN("[C#] {0}" , str);
         mono_free(str);
     }
 
     void LogError(MonoString* msg) {
         char* str = mono_string_to_utf8(msg);
-        YE_ERROR("[C#] {0}" , str);
-        mono_free(str);
-    }
-
-    void LogFatal(MonoString* msg) {
-        char* str = mono_string_to_utf8(msg);
-        YE_FATAL("[C#] {0}" , str);
+        LOG_ERROR("[C#] {0}" , str);
         mono_free(str);
     }
     // ************************ //

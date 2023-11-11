@@ -1,5 +1,6 @@
 #include "core/task_manager.hpp"
 
+#include "log.hpp"
 namespace YE {
 
     TaskManager* TaskManager::singleton = nullptr;
@@ -12,8 +13,12 @@ namespace YE {
     }
 
     void TaskManager::DispatchTask(BaseTask* task) {
+        ENTER_FUNCTION_TRACE();
+
         task_queue.push(task);
         task->Dispatch();
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void TaskManager::FlushTasks() {
@@ -26,8 +31,12 @@ namespace YE {
     }
     
     void TaskManager::Cleanup() {
+        ENTER_FUNCTION_TRACE();
+
         this->FlushTasks();
         if (singleton != nullptr) ydelete singleton;
+
+        EXIT_FUNCTION_TRACE();
     }
 
 }

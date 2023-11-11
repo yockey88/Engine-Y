@@ -57,6 +57,7 @@
 #include "core/resource_handler.hpp"
 #include "core/text_editor.hpp"
 #include "core/command_line_args.hpp"
+#include "core/console.hpp"
 #include "parsing/yscript/node_builder.hpp"
 #include "parsing/shader/shader_parser.hpp"
 #include "event/events.hpp"
@@ -169,7 +170,7 @@ namespace EngineY {
     int YE2Entry(int argc , char* argv[]) {                                                                                                  \
         YE::Engine* engine = YE::Engine::Instance();                                                                                         \
         if (!engine->CmndLine(argc , argv)) {                                                                                                \
-            YE_ERROR("Failed to parse command line arguments");                                                                              \
+            ENGINE_ERROR("Failed to parse command line arguments");                                                                              \
             engine->Shutdown();                                                                                                              \
             return 1;                                                                                                                        \
         }                                                                                                                                    \

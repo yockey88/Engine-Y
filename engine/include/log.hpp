@@ -10,56 +10,114 @@
  *          also handle their errors differently, and have a seperate log for them
 */
 
-#ifdef YE_DEBUG_BUILD
-#define YE_TRACE(...) \
-    if (spdlog::get(CONSOLE_LOG_NAME)) { \
-        spdlog::get(CONSOLE_LOG_NAME)->trace(__VA_ARGS__); \
-    } 
-#define YE_DEBUG(...) \
-    if (spdlog::get(CONSOLE_LOG_NAME)) { \
-        spdlog::get(CONSOLE_LOG_NAME)->debug(__VA_ARGS__); \
-    } 
-#define YE_INFO(...) \
-    if (spdlog::get(CONSOLE_LOG_NAME)) { \
-        spdlog::get(CONSOLE_LOG_NAME)->info(__VA_ARGS__); \
+#define TRACE_FILE(...) \
+    if (spdlog::get(ENGINE_LOGGER_NAME)) { \
+        spdlog::get(ENGINE_LOGGER_NAME)->trace(__VA_ARGS__); \
     }
-#define YE_WARN(...) \
-    if (spdlog::get(CONSOLE_LOG_NAME)) { \
-        spdlog::get(CONSOLE_LOG_NAME)->warn(__VA_ARGS__); \
+#define DEBUG_FILE(...) \
+    if (spdlog::get(ENGINE_LOGGER_NAME)) { \
+        spdlog::get(ENGINE_LOGGER_NAME)->debug(__VA_ARGS__); \
+    }
+#define INFO_FILE(...) \
+    if (spdlog::get(ENGINE_LOGGER_NAME)) { \
+        spdlog::get(ENGINE_LOGGER_NAME)->info(__VA_ARGS__); \
+    }
+#define WARN_FILE(...) \
+    if (spdlog::get(ENGINE_LOGGER_NAME)) { \
+        spdlog::get(ENGINE_LOGGER_NAME)->warn(__VA_ARGS__); \
+    }
+#define ERROR_FILE(...) \
+    if (spdlog::get(ENGINE_LOGGER_NAME)) { \
+        spdlog::get(ENGINE_LOGGER_NAME)->error(__VA_ARGS__); \
+    }
+
+#define LOG_TRACE(...) \
+    if (spdlog::get(ENGINE_CONSOLE_NAME)) { \
+        spdlog::get(ENGINE_CONSOLE_NAME)->trace(__VA_ARGS__); \
+    }
+#define LOG_DEBUG(...) \
+    if (spdlog::get(ENGINE_CONSOLE_NAME)) { \
+        spdlog::get(ENGINE_CONSOLE_NAME)->debug(__VA_ARGS__); \
+    }
+#define LOG_INFO(...) \
+    if (spdlog::get(ENGINE_CONSOLE_NAME)) { \
+        spdlog::get(ENGINE_CONSOLE_NAME)->info(__VA_ARGS__); \
+    }
+#define LOG_WARN(...) \
+    if (spdlog::get(ENGINE_CONSOLE_NAME)) { \
+        spdlog::get(ENGINE_CONSOLE_NAME)->warn(__VA_ARGS__); \
+    }
+#define LOG_ERROR(...) \
+    if (spdlog::get(ENGINE_CONSOLE_NAME)) { \
+        spdlog::get(ENGINE_CONSOLE_NAME)->error(__VA_ARGS__); \
+    }
+
+#define ENGINE_TRACE(...) \
+    if (spdlog::get(ENGINE_LOGGER_NAME)) { \
+        spdlog::get(ENGINE_LOGGER_NAME)->trace(__VA_ARGS__); \
+    } \
+    if (spdlog::get(ENGINE_CONSOLE_NAME)) { \
+        spdlog::get(ENGINE_CONSOLE_NAME)->trace(__VA_ARGS__); \
     } 
-#define YE_ERROR(...) \
-    if (spdlog::get(CONSOLE_LOG_NAME)) { \
-        spdlog::get(CONSOLE_LOG_NAME)->error(__VA_ARGS__); \
+#define ENGINE_DEBUG(...) \
+    if (spdlog::get(ENGINE_LOGGER_NAME)) { \
+        spdlog::get(ENGINE_LOGGER_NAME)->trace(__VA_ARGS__); \
+    } \
+    if (spdlog::get(ENGINE_CONSOLE_NAME)) { \
+        spdlog::get(ENGINE_CONSOLE_NAME)->trace(__VA_ARGS__); \
     } 
+#define ENGINE_INFO(...) \
+    if (spdlog::get(ENGINE_LOGGER_NAME)) { \
+        spdlog::get(ENGINE_LOGGER_NAME)->trace(__VA_ARGS__); \
+    } \
+    if (spdlog::get(ENGINE_CONSOLE_NAME)) { \
+        spdlog::get(ENGINE_CONSOLE_NAME)->trace(__VA_ARGS__); \
+    } 
+#define ENGINE_WARN(...) \
+    if (spdlog::get(ENGINE_LOGGER_NAME)) { \
+        spdlog::get(ENGINE_LOGGER_NAME)->trace(__VA_ARGS__); \
+    } \
+    if (spdlog::get(ENGINE_CONSOLE_NAME)) { \
+        spdlog::get(ENGINE_CONSOLE_NAME)->trace(__VA_ARGS__); \
+    } 
+#define ENGINE_ERROR(...) \
+    if (spdlog::get(ENGINE_LOGGER_NAME)) { \
+        spdlog::get(ENGINE_LOGGER_NAME)->trace(__VA_ARGS__); \
+    } \
+    if (spdlog::get(ENGINE_CONSOLE_NAME)) { \
+        spdlog::get(ENGINE_CONSOLE_NAME)->trace(__VA_ARGS__); \
+    } 
+
 #define YE_FATAL(...) \
-    if (spdlog::get(CONSOLE_LOG_NAME)) { \
-        spdlog::get(CONSOLE_LOG_NAME)->critical(__VA_ARGS__); \
+    if (spdlog::get(ENGINE_LOGGER_NAME)) { \
+        spdlog::get(ENGINE_LOGGER_NAME)->critical(__VA_ARGS__); \
     } \
     ABORT;
-#define XCRITICAL_ASSERT(x , ...) \
-    if ((x)) {} else { \
-        if (spdlog::get(CONSOLE_LOG_NAME)) { \
-            spdlog::get(CONSOLE_LOG_NAME)->error("[Assertion Failed]"); \
-        } \
-        if (spdlog::get(CONSOLE_LOG_NAME)) { \
-            spdlog::get(CONSOLE_LOG_NAME)->critical(__VA_ARGS__); \
-        } \
-        ABORT; \
-    }
-#define YE_CRITICAL_ASSERTION(x , ...) XCRITICAL_ASSERT(x , __VA_ARGS__)
+
+#ifdef YE_DEBUG_BUILD
+#define ENTER_FUNCTION_TRACE() \
+    { std::string msg = fmt::format("[{}::{}] Enter" , __FUNCTION__ , __LINE__); \
+      TRACE_FILE(msg); }
+#define EXIT_FUNCTION_TRACE() \
+    { std::string msg = fmt::format("[{}::{}] Exit" , __FUNCTION__ , __LINE__); \
+      TRACE_FILE(msg); } 
+
+#define ENTER_FUNCTION_TRACE_MSG(...) \
+    { std::string msg = fmt::format("[{}::{}] Enter | {}" , __FUNCTION__ , __LINE__ , __VA_ARGS__); \
+      TRACE_FILE(msg); }
+
+#define EXIT_FUNCTION_TRACE_MSG(...) \
+    { std::string msg = fmt::format("[{}::{}] Exit | {}" , __FUNCTION__ , __LINE__ , __VA_ARGS__); \
+      TRACE_FILE(msg); }
 #else
-#define YE_TRACE(...) (void)0
-#define YE_DEBUG(...) (void)0
-#define YE_INFO(...) (void)0
-#define YE_WARN(...) (void)0
-#define YE_ERROR(...) (void)0
-#define YE_FATAL(...) (void)0
-#define XCRITICAL_ASSERT(void)0
-#define YE_CRITICAL_ASSERTION(x , ...) (void)0
+#define ENTER_FUNCTION_TRACE() (void)0
+#define EXIT_FUNCTION_TRACE() (void)0
+#define ENTER_FUNCTION_TRACE_MSG(...) (void)0
+#define EXIT_FUNCTION_TRACE_MSG(...) (void)0
 #endif
 
 #if 0 // preparing for later (when I can get it to work lmao)
-#ifdef YE_DEBUG
+#ifdef YE_DEBUG_BUILD
     #define YE_PROFILING_ENABLED 1
 #else 
     #define YE_PROFILING_ENABLED 0
@@ -84,8 +142,6 @@
 
 #define YE_PROFILE_SHUTDOWN() OPTICK_SHUTDOWN()
 
-#define YE_INIT_VULKAN_PROFILING(devices , physical_dev , cmd_qs , cmd_qs_fam , num_cmd_qs) \
-            OPTICK_GPU_INIT_VULKAN(devices , physical_dev , cmd_qs , cmd_qs_fam , num_cmd_qs)
 #define YE_GPU_PROFILE_CONTEXT(...) OPTICK_GPU_CONTEXT(__VA_ARGS__)
 
 #define YE_GPU_PROFILE_EVENT(name) OPTICK_GPU_EVENT(name)

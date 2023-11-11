@@ -84,7 +84,7 @@ namespace YE {
         } catch (const yscript_parser_error& e) {
             Synchronize();
             aborted = true;
-            YE_ERROR("{}" , e.what());
+            ENGINE_ERROR("{}" , e.what());
             return nullptr;
         }
     }
@@ -525,7 +525,7 @@ namespace YE {
             }
         } catch (yscript_parser_error& e) {
             aborted = true;
-            YE_ERROR("Project File Parse Failed :: {}" , e.what());
+            ENGINE_ERROR("Project File Parse Failed :: {}" , e.what());
             return {};
         }
 

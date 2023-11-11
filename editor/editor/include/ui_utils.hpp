@@ -18,6 +18,10 @@ struct EditorStyles {
     inline static constexpr ImVec4 tab_unfocused_active = title_bar_collapsed; 
 };
 
-void LoadImGuiStyle();
+namespace EditorUtils {
+
+    void LoadImGuiStyle();
+
+} // namespace EditorUtils
 
 #endif // !YE_EDITOR_UI_UTILS_HPP

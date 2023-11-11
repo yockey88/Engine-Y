@@ -468,7 +468,7 @@ namespace YE {
                     continue;
                 }
             } catch (const glsl_lexer_error& e) {
-                YE_ERROR("GLSL Lexer Error :: <{0}>" , e.what());
+                ENGINE_ERROR("GLSL Lexer Error :: <{0}>" , e.what());
                 return {};
             }
         }

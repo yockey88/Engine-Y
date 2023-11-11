@@ -38,7 +38,7 @@ namespace YE {
         glFramebufferRenderbuffer(GL_FRAMEBUFFER , GL_DEPTH_STENCIL_ATTACHMENT , GL_RENDERBUFFER , rbo);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            YE_ERROR("Framebuffer is not complete!");
+            ENGINE_ERROR("Framebuffer is not complete!");
             complete = false;
         }
 
@@ -58,7 +58,7 @@ namespace YE {
         glFramebufferTexture2D(GL_FRAMEBUFFER , GL_COLOR_ATTACHMENT0 , GL_TEXTURE_2D , screen_texture , 0);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            YE_ERROR("Intermediate Framebuffer is not complete!");
+            ENGINE_ERROR("Intermediate Framebuffer is not complete!");
             complete = false;
         }
 
@@ -67,7 +67,7 @@ namespace YE {
 
     void Framebuffer::Draw(DrawMode mode) {
         if (!complete) {
-            YE_ERROR("Rendering Invalid Framebuffer");
+            ENGINE_ERROR("Rendering Invalid Framebuffer");
         } else {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D , color_attachment);
@@ -113,7 +113,7 @@ namespace YE {
         glFramebufferRenderbuffer(GL_FRAMEBUFFER , GL_DEPTH_STENCIL_ATTACHMENT , GL_RENDERBUFFER , rbo);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            YE_ERROR("Framebuffer is not complete | Could not handle resize");
+            ENGINE_ERROR("Framebuffer is not complete | Could not handle resize");
             complete = false;
         }
 

@@ -1,6 +1,7 @@
 #ifndef YE_COMMAND_LINE_ARGS_HPP
 #define YE_COMMAND_LINE_ARGS_HPP
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <map>
@@ -8,9 +9,9 @@
 
 namespace YE {
 
-    static constexpr uint32_t kNumShortFlags = 10;
+    static constexpr uint32_t kNumShortFlags = 9;
     static constexpr std::array<std::string_view , kNumShortFlags> kShortFlags = {
-        "-n" , "-f" , "-p" , "-wd" , "-md" , "-pmd" , "-bc" , "-mdp" , "-mcp" , "-er"
+        "-n" , "-f" , "-p" , "-wd" , "-md" , "-pb" , "-mcp" , "-er" , "-fl"
     };
 
 
@@ -18,14 +19,20 @@ namespace YE {
     static constexpr std::array<std::string_view , kNumValidFlags> kValidFlags = {
         "-n"   , "--project-name"      , "-f"   , "--project-file"      , "-p"   , "--project-path" , 
         "-wd"  , "--working-directory" , "-md"  , "--modules-directory" , "-pb"  , "--project-bin"  , 
-        "-mdp" , "--mono-dll-path"     , "-mcp" , "--mono-config-path"  , "-er"  , "--engine-root"  
+        "-mcp" , "--mono-config-path"  , "-er"  , "--engine-root"       , "-fl"  , "--from-launcher"
     };
 
     
     enum CmndLineFlag : uint32_t {
-        PROJECT_FILE = 0 , 
-        PROJECT_PATH  ,
-        WORKING_DIR ,
+        PROJECT_NAME ,
+        PROJECT_FILE , 
+        PROJECT_PATH ,
+        WORKING_DIR  ,
+        MODULES_DIR  ,
+        PROJECT_BIN  ,
+        MONO_CONFIG_PATH ,
+        ENGINE_ROOT ,
+        FROM_LAUNCHER ,
         INVALID 
     };
 
@@ -49,6 +56,7 @@ namespace YE {
 
             bool Parse(int argc , char* argv[]);
             bool FlagExists(const std::string& flag) const;
+            bool FlagExists(CmndLineFlag flag) const;
             std::string RetrieveValue(const std::string& flag);
             std::string RetrieveValue(CmndLineFlag flag);
             Argument RetrieveArgument(const std::string& flag);

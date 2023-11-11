@@ -12,7 +12,7 @@ namespace ScriptUtils {
         if (has_error) {
             unsigned short err_code = mono_error_get_error_code(error);
             std::string err_msg{ mono_error_get_message(error) };
-            YE_ERROR("Mono error: {0} | {1}" , err_code , err_msg);
+            ENGINE_ERROR("Mono error: {0} | {1}" , err_code , err_msg);
             mono_error_cleanup(error);
         }
         return has_error;

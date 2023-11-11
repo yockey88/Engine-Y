@@ -32,6 +32,7 @@ namespace YE {
     Engine* Engine::singleton = nullptr;
     
     std::filesystem::path Engine::FindProjectFile() {
+        ENTER_FUNCTION_TRACE();
         YE_CRITICAL_ASSERTION(app != nullptr , "Application is null");
 
         std::string project_name = app->ProjectName();
@@ -42,14 +43,127 @@ namespace YE {
         path /= file_name;
         for (uint32_t i = 0; i < extensions.size(); ++i) {
             path.replace_extension(extensions[i]);
-            if (std::filesystem::exists(path))
+            if (std::filesystem::exists(path)) {
+                EXIT_FUNCTION_TRACE();
                 return path;
+            }
         }
 
+        EXIT_FUNCTION_TRACE();
         return std::filesystem::path();
     }
 
+    bool Engine::FindCoreDirectories() {
+        ENTER_FUNCTION_TRACE();
+
+        if (!cmnd_line_handler.FlagExists(CmndLineFlag::WORKING_DIR)) {
+            app_config.working_directory = std::filesystem::current_path().string();
+        } else {
+            app_config.working_directory = cmnd_line_handler.RetrieveValue(CmndLineFlag::WORKING_DIR);
+        }
+        
+        if (!cmnd_line_handler.FlagExists(CmndLineFlag::PROJECT_PATH)) {
+            if (std::filesystem::current_path().string() == app_config.project_name) {
+                app_config.project_path = std::filesystem::current_path().string();
+            } else if (std::filesystem::exists(app_config.working_directory + "/" + app_config.project_name)) {
+                app_config.project_path = app_config.working_directory + "/" + app_config.project_name;
+            } else if (std::filesystem::exists(
+                std::filesystem::path(program_files) / "EngineY" / app_config.project_name
+            )) {
+                app_config.project_path = program_files + "/EngineY/" + app_config.project_name;
+            } else {
+                ENGINE_ERROR("Failed to find project directory");
+                return false;
+            }
+        } else {
+            app_config.project_path = cmnd_line_handler.RetrieveValue(CmndLineFlag::PROJECT_PATH);
+        }
+
+        if (!cmnd_line_handler.FlagExists(CmndLineFlag::PROJECT_FILE)) {
+            if (std::filesystem::exists(
+                std::filesystem::path(app_config.working_directory) / app_config.project_name / (app_config.project_name + ".yproj")
+            )) {
+                app_config.project_file = app_config.working_directory + "/" + app_config.project_name + "/" + app_config.project_name + ".yproj";
+            } else if (std::filesystem::exists(
+                std::filesystem::path(program_files) / "EngineY" / app_config.project_name / (app_config.project_name + ".yproj")
+            )) {
+                app_config.project_file = program_files + "/EngineY/" + app_config.project_name + "/" + app_config.project_name + ".yproj";
+            } else if (std::filesystem::exists(
+                std::filesystem::path(app_config.project_path) / (app_config.project_name + ".yproj")
+            )) {
+                app_config.project_file = (std::filesystem::path(app_config.project_path) / (app_config.project_name + ".yproj")).string();
+            } else {
+                ENGINE_ERROR("Failed to find project file");
+                return false;
+            }
+        } else {
+            app_config.project_file = cmnd_line_handler.RetrieveValue(CmndLineFlag::PROJECT_FILE);
+        }
+        
+        if (!cmnd_line_handler.FlagExists(CmndLineFlag::MODULES_DIR)) {
+            if (std::filesystem::exists(std::filesystem::path(app_config.project_path) / "modules")) {
+                app_config.modules_directory = (std::filesystem::path(app_config.project_path) / "modules").string();
+            } else if (std::filesystem::exists(
+                std::filesystem::path(program_files) / "EngineY" / "bin" / "Debug" / "modules"
+            )) {
+                app_config.modules_directory = program_files + "/EngineY/bin/Debug/modules";
+            } else {
+                ENGINE_ERROR("Failed to find modules directory");
+                return false;
+            }
+        } else {
+            app_config.modules_directory = cmnd_line_handler.RetrieveValue(CmndLineFlag::MODULES_DIR);
+        }
+        
+        if (!cmnd_line_handler.FlagExists(CmndLineFlag::MONO_CONFIG_PATH)) {
+            app_config.mono_config_path = app_config.mono_dll_path;
+        } else {
+            app_config.mono_config_path = cmnd_line_handler.RetrieveValue(CmndLineFlag::MONO_CONFIG_PATH);
+        } 
+
+        EXIT_FUNCTION_TRACE();
+    }
+    
+    bool Engine::ValidateConfiguration() {
+        ENTER_FUNCTION_TRACE();
+
+        if (!Filesystem::FileExists(app_config.project_path)) {
+            ENGINE_ERROR("Project directory does not exist");
+            return false;
+        }
+
+        if (!Filesystem::FileExists(app_config.project_file)) {
+            ENGINE_ERROR("Project file does not exist");
+            return false;
+        }
+
+        if (!Filesystem::FileExists(app_config.modules_directory)) {
+            ENGINE_ERROR("Modules directory does not exist");
+            return false;
+        }
+
+        if (!Filesystem::FileExists(app_config.mono_config_path)) {
+            ENGINE_ERROR("Mono config file does not exist");
+            return false;
+        }
+
+        if (!Filesystem::FileExists(app_config.engine_root)) {
+            ENGINE_ERROR("Engine root directory does not exist");
+            return false;
+        }
+
+        if (!Filesystem::FileExists(app_config.mono_dll_path)) {
+            ENGINE_ERROR("Mono dll directory does not exist");
+            return false;
+
+        }
+
+        EXIT_FUNCTION_TRACE();
+    }
+
     void Engine::InitializeSubSytems() { 
+        ENTER_FUNCTION_TRACE();
+
         task_manager->DispatchTask([&](){ 
             stats = ynew EngineStats;
             for (uint32_t i = 0; i < kFrameTimeBufferSize; ++i) 
@@ -67,11 +181,13 @@ namespace YE {
         script_engine->Initialize();
         script_engine->LoadProjectModules();
 
-        renderer->Initialize(app);
+        renderer->Initialize(app , app_config.window_config);
 
         Systems::Initialize();
         
         resource_handler->Load(); 
+
+        EXIT_FUNCTION_TRACE();
     }
     
     void Engine::Update(float dt) {
@@ -82,34 +198,105 @@ namespace YE {
     }
     
     void Engine::HandleShutdownEvent() {
+        ENTER_FUNCTION_TRACE();
         running = false;
+        EXIT_FUNCTION_TRACE();
     }
 
     Engine* Engine::Instance() {
         if (singleton == nullptr) {
             singleton = ynew Engine;
         }
+
         return singleton;
     }
 
     bool Engine::CmndLine(int argc , char* argv[]) {
-        return cmnd_line_handler.Parse(argc , argv);
+        ENTER_FUNCTION_TRACE();
+
+        if (!cmnd_line_handler.Parse(argc , argv)) {
+            ENGINE_ERROR("Failed to parse command line arguments");
+            return false;
+        }
+
+        EXIT_FUNCTION_TRACE();
+        return true;
     }
 
     void Engine::RegisterApplication(App* app) {
+        ENTER_FUNCTION_TRACE_MSG(app->ProjectName());
+
         this->app = app;
         if (app == nullptr) {
-            YE_ERROR("Application is null");
+            ENGINE_ERROR("Application is null");
             return;
         }
 
+#ifdef YE_PLATFORM_WIN
+        try {
+            program_files = std::getenv("ProgramFiles");
+        } catch (const std::exception& e) {
+            ENGINE_ERROR("Failed to retrieve ProgramFiles environment variable: {}", e.what());
+            return;
+        }
+#else
+        YE_CRITICAL_ASSERTION(false , "UNIMPLEMENTED");
+#endif
+
         app_config = app->GetEngineConfig();
-        Filesystem::Initialize(app->ProjectName());
+        app_config.engine_root = program_files + "/EngineY";
+        app_config.mono_dll_path = app_config.engine_root + "/external";
+
+        if (app->ProjectName() == "editor") 
+            logger->OpenConsole();
+
+        if (cmnd_line_handler.FlagExists(CmndLineFlag::PROJECT_NAME)) 
+            app_config.project_name = cmnd_line_handler.RetrieveValue(CmndLineFlag::PROJECT_NAME);
+        else 
+            app_config.project_name = app->ProjectName();
+        
+        if (cmnd_line_handler.FlagExists(CmndLineFlag::PROJECT_FILE)) { 
+            app_config.use_project_file = true;
+            app_config.project_file = cmnd_line_handler.RetrieveValue(CmndLineFlag::PROJECT_FILE);
+        }
+        
+        if (!cmnd_line_handler.FlagExists(CmndLineFlag::WORKING_DIR) || !cmnd_line_handler.FlagExists(CmndLineFlag::PROJECT_PATH)   ||
+            !cmnd_line_handler.FlagExists(CmndLineFlag::MODULES_DIR)  || !cmnd_line_handler.FlagExists(CmndLineFlag::MONO_CONFIG_PATH)) {
+            if (!FindCoreDirectories()) {
+                ENGINE_ERROR("Failed to find core directories");
+                return;
+            }
+        } else {
+            if (cmnd_line_handler.FlagExists(CmndLineFlag::PROJECT_PATH)) 
+                app_config.project_path = cmnd_line_handler.RetrieveValue(CmndLineFlag::PROJECT_PATH);
+
+            if (cmnd_line_handler.FlagExists(CmndLineFlag::WORKING_DIR)) 
+                app_config.working_directory = cmnd_line_handler.RetrieveValue(CmndLineFlag::WORKING_DIR);
+
+            if (cmnd_line_handler.FlagExists(CmndLineFlag::MODULES_DIR))
+                app_config.modules_directory = cmnd_line_handler.RetrieveValue(CmndLineFlag::MODULES_DIR);
+        
+            if (cmnd_line_handler.FlagExists(CmndLineFlag::PROJECT_BIN))
+                app_config.project_bin = cmnd_line_handler.RetrieveValue(CmndLineFlag::PROJECT_BIN);
+        
+            if (cmnd_line_handler.FlagExists(CmndLineFlag::MONO_CONFIG_PATH))
+                app_config.mono_config_path = cmnd_line_handler.RetrieveValue(CmndLineFlag::MONO_CONFIG_PATH);
+        
+            if (cmnd_line_handler.FlagExists(CmndLineFlag::ENGINE_ROOT))
+                app_config.engine_root = cmnd_line_handler.RetrieveValue(CmndLineFlag::ENGINE_ROOT);
+        }
+
+        if (!ValidateConfiguration()) {
+            ENGINE_ERROR("Failed to validate configuration | Paths may be invalid");
+            return;
+        }
+
+        Filesystem::Initialize(app_config);
         
         if (app_config.use_project_file) {
-            std::filesystem::path project_path = FindProjectFile();
+            std::filesystem::path project_path = app_config.project_file;
             if (project_path.empty()) {
-                YE_ERROR("Project file missing");
+                ENGINE_ERROR("Project file missing");
                 return;
             }
 
@@ -133,21 +320,29 @@ namespace YE {
         renderer = Renderer::Instance(); 
         script_engine = ScriptEngine::Instance();
         physics_engine = PhysicsEngine::Instance();
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void Engine::Initialize() {
+        ENTER_FUNCTION_TRACE();
+
         app->PreInitialize();
         
-        this->InitializeSubSytems();
+        InitializeSubSytems();
 
         if (!app->Initialize()) {
-            YE_ERROR("Failed to initialize application");
+            ENGINE_ERROR("Failed to initialize application");
             return;
         }
         running = true;
+
+        EXIT_FUNCTION_TRACE();
     }
     
     void Engine::Run() {
+        ENTER_FUNCTION_TRACE();
+
         delta_time.Start();
         Mouse::SnapToCenter();
 
@@ -169,9 +364,13 @@ namespace YE {
             
             frame_rate.Enforce();
         }
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void Engine::Shutdown() {
+        ENTER_FUNCTION_TRACE();
+
         if (app_loaded) {
             task_manager->FlushTasks();
 
@@ -192,8 +391,9 @@ namespace YE {
             renderer->Cleanup();
             script_engine->Cleanup();
         }
-       
-        YE_INFO("Goodbye");
+        
+        LOG_INFO("Goodbye");
+        EXIT_FUNCTION_TRACE();
         if (singleton != nullptr) ydelete singleton;
     }
 

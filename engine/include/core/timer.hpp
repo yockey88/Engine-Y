@@ -31,7 +31,7 @@ namespace time {
             void Restart();
             void Pause();
 
-            void Tick();
+            bool Tick();
             void Reset();
 
             inline bool Running() const { return running; }

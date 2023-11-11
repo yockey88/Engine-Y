@@ -12,9 +12,12 @@ namespace YE {
     ResourceHandler* ResourceHandler::singleton = nullptr;
     
     void ResourceHandler::StoreShaders(const std::string& dir_path , ResourceMap<ShaderResource>& shaders) {
+        ENTER_FUNCTION_TRACE_MSG(dir_path);
+
         std::filesystem::path path = dir_path;
         if (!std::filesystem::exists(path)) {
-            YE_WARN("Failed to load shaders :: [{0}] | Directory does not exist" , dir_path);
+            ENGINE_WARN("Failed to load shaders :: [{0}] | Directory does not exist" , dir_path);
+            EXIT_FUNCTION_TRACE();
             return;
         }
         
@@ -59,12 +62,17 @@ namespace YE {
                 }
             }
         }
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void ResourceHandler::StoreTextures(const std::string& dir_path , ResourceMap<TextureResource>& textures) {
+        ENTER_FUNCTION_TRACE_MSG(dir_path);
+
         std::filesystem::path path = dir_path;
         if (!std::filesystem::exists(path)) {
-            YE_WARN("Failed to load textures :: [{0}] | Directory does not exist" , dir_path);
+            ENGINE_WARN("Failed to load textures :: [{0}] | Directory does not exist" , dir_path);
+            EXIT_FUNCTION_TRACE();
             return;
         }
 
@@ -88,10 +96,14 @@ namespace YE {
             std::replace(texture.path.begin() , texture.path.end() , '\\' , '/');
             textures[id] = texture;
         }
+
+        EXIT_FUNCTION_TRACE();
     }
     
     // quad , cube , sphere , icosphere , cylinder , cone , torus , plane
     void ResourceHandler::GeneratePrimitiveVAOs(ResourceMap<VertexArrayResource>& vaos) {
+        ENTER_FUNCTION_TRACE();
+
         VertexArrayResource quad_vao;
         quad_vao.name = "quad";
         quad_vao.vao = ynew VertexArray(primitives::quad_verts , primitives::quad_indices);
@@ -101,12 +113,16 @@ namespace YE {
         cube_vao.name = "cube";
         cube_vao.vao = ynew VertexArray(primitives::cube_verts , {});
         vaos[Hash::FNV(cube_vao.name)] = cube_vao;
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void ResourceHandler::StoreModels(const std::string& dir_path , ResourceMap<ModelResource>& models) {
+        ENTER_FUNCTION_TRACE_MSG(dir_path);
+
         // std::filesystem::path path = dir_path;
         // if (!std::filesystem::exists(path)) {
-        //     YE_WARN("Failed to load models :: [{0}] | Directory does not exist" , dir_path);
+        //     ENGINE_WARN("Failed to load models :: [{0}] | Directory does not exist" , dir_path);
         //     return;
         // }
         
@@ -121,9 +137,13 @@ namespace YE {
         //     std::replace(model.path.begin() , model.path.end() , '\\' , '/');
         //     models[id] = model;
         // }
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void ResourceHandler::CompileShaders(ResourceMap<ShaderResource>& shaders) {
+        ENTER_FUNCTION_TRACE();
+
         for (auto& [id , shader] : shaders) {
             Shader* s = nullptr;
             if (shader.has_geom) {
@@ -132,7 +152,7 @@ namespace YE {
                 s = ynew Shader(shader.vert_path , shader.frag_path);
             }
             if (!s->Compile()) {
-                YE_WARN("Failed to compile shader [{0}] :: [{1}] | [{2}] | [{3}]" , shader.name , shader.vert_path , shader.frag_path ,
+                ENGINE_WARN("Failed to compile shader [{0}] :: [{1}] | [{2}] | [{3}]" , shader.name , shader.vert_path , shader.frag_path ,
                                                                                     shader.has_geom ? shader.geom_path : "<no geometry>");
                 ydelete s;
                 s = nullptr;
@@ -141,65 +161,101 @@ namespace YE {
             }
             shader.shader = s;
         }
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void ResourceHandler::LoadTextures(ResourceMap<TextureResource>& textures) {
+        ENTER_FUNCTION_TRACE();
+
         for (auto& [id , texture] : textures) {
             Texture* t = ynew Texture(texture.path);
             t->Load(texture.target , texture.channels);
             t->SetName(texture.name);
             texture.texture = t;
         }
+
+        EXIT_FUNCTION_TRACE();
     }
     
     void ResourceHandler::UploadPrimitiveVAOs(ResourceMap<VertexArrayResource>& vaos) {
+        ENTER_FUNCTION_TRACE();
+
         for (auto& [id , vao] : vaos) {
             vao.vao->Upload();
         }
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void ResourceHandler::LoadModels(ResourceMap<ModelResource>& models) {
+        ENTER_FUNCTION_TRACE();
+
         for (auto& [id , model] : models) {
             Model* m = ynew Model(model.name , model.path);
             m->Load();
             model.model = m;
         }
+
+        EXIT_FUNCTION_TRACE();
     }
     
     void ResourceHandler::CleanupShaders(ResourceMap<ShaderResource>& shaders) {
+        ENTER_FUNCTION_TRACE();
+
         for (auto& [id , s] : engine_shaders) {
             if (s.shader != nullptr) ydelete s.shader;
         }
         shaders.clear();
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void ResourceHandler::CleanupTextures(ResourceMap<TextureResource>& textures) {
+        ENTER_FUNCTION_TRACE();
+
         for (auto& [id , t] : textures) {
             if (t.texture != nullptr) ydelete t.texture; 
         }
         textures.clear();
+
+        EXIT_FUNCTION_TRACE();
     }
     
     void ResourceHandler::CleanupPrimitiveVAOs(ResourceMap<VertexArrayResource>& vaos) {
+        ENTER_FUNCTION_TRACE();
+
         for (auto& [id , vao] : vaos) {
             if (vao.vao != nullptr) ydelete vao.vao;
         }
         vaos.clear();
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void ResourceHandler::CleanupModels(ResourceMap<ModelResource>& models) {
+        ENTER_FUNCTION_TRACE();
+
         for (auto& [id , m] : models)
             if (m.model != nullptr) ydelete m.model;
         models.clear();
+
+        EXIT_FUNCTION_TRACE();
     }
 
     ResourceHandler* ResourceHandler::Instance() {
+        ENTER_FUNCTION_TRACE();
+
         if (singleton == nullptr)
             singleton = ynew ResourceHandler;
         return singleton;
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void ResourceHandler::Load() {
+        ENTER_FUNCTION_TRACE();
+
         stbi_set_flip_vertically_on_load(true);
 
         engine_resource_dir = Filesystem::GetEngineResPath();
@@ -229,9 +285,13 @@ namespace YE {
         StoreModels(app_model_dir , app_models);
         LoadModels(engine_models);
         LoadModels(app_models);
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void ResourceHandler::Offload() {
+        ENTER_FUNCTION_TRACE();
+
         CleanupShaders(engine_shaders);
         CleanupShaders(app_shaders);
         CleanupTextures(engine_textures);
@@ -239,77 +299,108 @@ namespace YE {
         CleanupPrimitiveVAOs(primitive_vaos);
         CleanupModels(engine_models);
         CleanupModels(app_models);
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void ResourceHandler::AddShader(const std::string& vert_path , const std::string& frag_path ,
                                     const std::string& geom_path) {
+        ENTER_FUNCTION_TRACE_MSG(vert_path + " | " + frag_path + " | " + geom_path);
+        
         // UUID id = Hash::FNV(vert_path + frag_path + geom_path);
         // if (!CheckID(id , vert_path , shaders)) return;
         // shaders[id].shader = ynew Shader(vert_path , frag_path , geom_path);
         // if (!shaders[id].shader->Compile()) {
-        //     YE_WARN("Failed to compile shader :: [{0}] | [{1}] | [{2}]" , vert_path , frag_path , geom_path);
+        //     ENGINE_WARN("Failed to compile shader :: [{0}] | [{1}] | [{2}]" , vert_path , frag_path , geom_path);
         //     ydelete shader;
         //     return;
         // }
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void ResourceHandler::AddTexture(const std::string& path) {
+        ENTER_FUNCTION_TRACE_MSG(path);
+
         // UUID id = Hash::FNV(path);
         // if (!CheckID(id , path , textures)) return;
         // textures[id].texture = ynew Texture(path);
         // textures[id].texture->Load();
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void ResourceHandler::AddModel(const std::string& path) {
+        ENTER_FUNCTION_TRACE_MSG(path);
+
         // UUID id = Hash::FNV(path);
         // if (!CheckID(id , path , models)) return;
         // models[id].model = ynew Model(path);
         // models[id].model->Load();
+
+        EXIT_FUNCTION_TRACE();
     }
 
     Shader* ResourceHandler::GetCoreShader(const std::string& name) {
+        ENTER_FUNCTION_TRACE_MSG(name);
+
         for (auto& [id , shader] : engine_shaders)
             if (shader.name == name) return shader.shader;
         return nullptr;
     }
 
     Shader* ResourceHandler::GetShader(const std::string& name) {
+        ENTER_FUNCTION_TRACE_MSG(name);
+
         for (auto& [id , shader] : app_shaders)
             if (shader.name == name) return shader.shader;
+        
         return nullptr;
     }
     
     Texture* ResourceHandler::GetCoreTexture(const std::string& name) {
+        ENTER_FUNCTION_TRACE_MSG(name);
+
         for (auto& [id , texture] : engine_textures)
             if (texture.name == name) return texture.texture;
         return nullptr;
     }
 
     Texture* ResourceHandler::GetTexture(const std::string& name) {
+        ENTER_FUNCTION_TRACE_MSG(name);
+
         for (auto& [id , texture] : app_textures)
             if (texture.name == name) return texture.texture;
         return nullptr;
     }
 
     VertexArray* ResourceHandler::GetPrimitiveVAO(const std::string& name) {
+        ENTER_FUNCTION_TRACE_MSG(name);
+
         for (auto& [id , vao] : primitive_vaos)
             if (vao.name == name) return vao.vao;
         return nullptr;
     }
 
     Model* ResourceHandler::GetCoreModel(const std::string& name) {
+        ENTER_FUNCTION_TRACE_MSG(name);
+
         for (auto& [id , model] : engine_models)
             if (model.name == name) return model.model;
         return nullptr;
     }
 
     Model* ResourceHandler::GetModel(const std::string& name) {
+        ENTER_FUNCTION_TRACE_MSG(name);
+
         for (auto& [id , model] : app_models)
             if (model.name == name) return model.model;
         return nullptr;
     }
 
     void ResourceHandler::ReloadShaders() {
+        ENTER_FUNCTION_TRACE();
+
         CleanupShaders(engine_shaders);
         CleanupShaders(app_shaders);
         StoreShaders(engine_shader_dir , engine_shaders);
@@ -317,10 +408,16 @@ namespace YE {
         CompileShaders(engine_shaders);
         CompileShaders(app_shaders);
         shaders_reloaded = true;
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void ResourceHandler::Cleanup() {
+        ENTER_FUNCTION_TRACE();
+
         if (singleton != nullptr) ydelete singleton;
+
+        EXIT_FUNCTION_TRACE();
     }
 
 }

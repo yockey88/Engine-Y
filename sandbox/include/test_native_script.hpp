@@ -5,32 +5,19 @@
 
 class Foo : public YE::NativeScriptEntity {
     
-    void Hello() {
-        YE_TRACE("Foo says hello from C++!");
-    }
+    void Hello() {}
 
-    void Print(const std::string& str) {
-        YE_TRACE(str);
-    }
+    void Print(const std::string& str) {}
 
     public:
         Foo() {}
-        virtual ~Foo() {
-            YE_TRACE("Foo::~Foo()");
-        }
+        virtual ~Foo() {}
 
-        virtual void Create() override {
-            YE_TRACE("Foo::Create()");
-            Hello();
-        }
+        virtual void Create() override {}
 
-        virtual void Update(float dt) override {
-            YE_TRACE("Foo::Update()");
-        }
+        virtual void Update(float dt) override {}
 
-        virtual void Destroy() override {
-            YE_TRACE("Foo::Destroy()");
-        }
+        virtual void Destroy() override {}
 
 };
 

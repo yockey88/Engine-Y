@@ -29,8 +29,8 @@ namespace YE {
         pixels = stbi_load(path.c_str() , &size.x , &size.y , &num_channels , 0);
 
         if (pixels == nullptr) {
-            YE_ERROR("Failed to load texture :: {0}" , path);
-            YE_WARN("Using default texture");
+            ENGINE_ERROR("Failed to load texture :: {0}" , path);
+            ENGINE_WARN("Using default texture");
 
             float def_pixels[] = {
                 1.f , 1.f , 1.f ,   1.f , 0.f , 0.f ,   0.f , 1.f , 0.f ,   0.f , 0.f , 1.f ,

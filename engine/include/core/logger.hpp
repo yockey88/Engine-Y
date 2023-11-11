@@ -3,15 +3,17 @@
 
 #include <mutex>
 
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
+#include <spdlog/pattern_formatter.h>
 
 #include "defines.hpp"
 
 #define GLM_ENABLE_EXPERIMENTAL
-#include "glm/gtx/string_cast.hpp"
+#include <glm/gtx/string_cast.hpp>
 
 #define YE_LOG_PATH "logs/ye.log"
-#define CONSOLE_LOG_NAME "YEConsoleLogger"
+#define ENGINE_LOGGER_NAME "EngineYLogger"
+#define ENGINE_CONSOLE_NAME "EngineYConsole"
 
 /**
  * Operator overloads for printing glm types
@@ -34,20 +36,25 @@ inline OStream& operator<<(OStream& os, glm::qua<T, Q> quaternion) {
 namespace YE {
 
     enum class LogLevel {
-        TRACE ,
-        DEBUG ,
-        INFO , 
-        WARN , 
-        ERR , 
-        FATAL
+        TRACE = spdlog::level::trace ,
+        DEBUG = spdlog::level::debug ,
+        INFO = spdlog::level::info , 
+        WARN = spdlog::level::warn , 
+        ERR = spdlog::level::err ,
     };
+
+    enum class Target {
+        FILE , 
+        CONSOLE ,
+        BOTH
+    };    
 
     class Logger {
 
         static Logger* singleton;
 
         std::shared_ptr<spdlog::logger> logger = nullptr;
-        /// \todo add file logger
+        std::shared_ptr<spdlog::logger> console_logger = nullptr;
 
         Logger() {}
         ~Logger() {}
@@ -62,9 +69,10 @@ namespace YE {
             static Logger* Instance();
 
             void OpenLog();
+            void OpenConsole();
 
-            template<typename... Args>
-            void Log(LogLevel lvl , const std::string& fmt , Args... args) {}
+            void ChangeLogLevel(LogLevel level , Target target);
+            void DumpBacktrace();
 
             void CloseLog();
 

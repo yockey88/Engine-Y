@@ -6,6 +6,12 @@
 class Editor : public YE::App {
     bool show_file_menu = false;
 
+    YE::time::Timer timer{ std::chrono::milliseconds(1000) }; 
+    std::unique_ptr<YE::EngineConsole> console = nullptr;
+    
+    char command_buffer[256] = "$> ";
+    int count = 0;
+    
     public:
         Editor() 
             : YE::App("editor") {}
@@ -13,33 +19,25 @@ class Editor : public YE::App {
 
         YE::EngineConfig GetEngineConfig() override {
             YE::EngineConfig config;
-            config.project_name = "editor";
-            config.use_project_file = false;
-            return config;
-        }
-
-        YE::WindowConfig GetWindowConfig() override {
-            YE::WindowConfig config;
-            config.title = "Engine Y Editor";
-            config.size.x = 1920;
-            config.size.y = 1080;
-            config.clear_color = {
+            config.window_config.title = "Engine Y Editor";
+            config.window_config.size.x = 1920;
+            config.window_config.size.y = 1080;
+            config.window_config.clear_color = {
                 48 / 255.f  , 56 / 255.f , 
                 126 / 255.f , 1.0f
             };
-            config.vsync = true;
-            config.rendering_to_screen = true;
-            config.flags |= SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+            config.window_config.vsync = true;
+            config.window_config.rendering_to_screen = true;
+            config.window_config.flags |= SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
             return config;
         }
 
         void PreInitialize() override {
-            YE::Filesystem::OverrideResourcePath(
-                YE::Filesystem::GetCWD() + "/" + 
-                "editor/editor/resources"
+            YE::Filesystem::OverrideResourcePath("editor/editor/resources");
+            YE::Filesystem::OverrideProjectModulePath(
+                YE::Filesystem::GetEngineRoot() +  
+                "/bin/Debug/editor/editor_modules.dll"
             );
-
-            YE_INFO("CWD :: {}" , YE::Filesystem::GetCWD());
         }
 
         bool Initialize() override {
@@ -47,19 +45,26 @@ class Editor : public YE::App {
                 EditorKeyBindings , "editor-key-press"
             );
 
-            LoadImGuiStyle();
+            EditorUtils::LoadImGuiStyle();
+
+            console = std::make_unique<YE::EngineConsole>();
             
+            timer.Start();
+
             return true;
         }
 
-        void Update(float delta) override {}
+        void Update(float delta) override {
+            if (!timer.Tick()) {
+                LOG_DEBUG("Editor Update {}" , count);
+                timer.Restart();
+                count++;
+            }
+        }
 
         void Draw() override {}
 
         void DrawGui() override {
-            ImGuiWindowFlags main_win_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBackground | 
-                                              ImGuiWindowFlags_NoBringToFrontOnFocus;
-            //if (ImGui::Begin("YE2" , nullptr , main_win_flags)) {
                 if (ImGui::BeginMainMenuBar()) {
                     if (ImGui::BeginMenu("File")) {
                         if (ImGui::MenuItem("New Project" , "Ctrl+N")) {}
@@ -81,11 +86,44 @@ class Editor : public YE::App {
 
                     ImGui::EndMainMenuBar();
                 }
+            // ImGuiWindowFlags main_win_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBackground | 
+            //                                   ImGuiWindowFlags_NoBringToFrontOnFocus;
+            //if (ImGui::Begin("YE2" , nullptr , main_win_flags)) {
             // }
             // ImGui::End();
+
+            ImGui::ShowDemoWindow();
+
+            console->DrawGui({
+                { 
+                    "Command Bar" , 
+                    [cmnd_buffer = command_buffer](const std::vector<void*>&) {
+
+                        ImGui::PushStyleColor(ImGuiCol_FrameBg , ImVec4(0x0E / 255 , 0x0E / 255 , 0x0E / 255 , 1.f));
+                        if (ImGui::BeginChild("##command-bar")) {
+                            ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll; 
+                            if (ImGui::InputText("##command-bar" , cmnd_buffer , 256 , input_text_flags)) {
+                                std::string input = cmnd_buffer;
+                                input = input.substr(2 , input.size() - 2); // remove '$>'
+
+                                // trim whitespace
+                                size_t beginning = input.find_first_not_of(' ');
+                                size_t end = input.find_last_not_of(' ');
+                                size_t range = end - beginning + 1;
+                                input = input.substr(beginning , range);
+
+                                YE::EngineConsole::SinkMessage({ YE::ConsoleMessageType::COMMAND , input });
+                                strcpy(cmnd_buffer , "$>  ");
+                            }
+                        }
+                        ImGui::EndChild();
+                        ImGui::PopStyleColor();
+                    } 
+                }
+            });
         }
 
         void Shutdown() override {}
 };
 
-DECLARE_APP(Editor)
+DECLARE_APP(Editor);

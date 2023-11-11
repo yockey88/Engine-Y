@@ -12,7 +12,7 @@
 
 #define CHECK_MONO_EXCEPTION(exc)                                                                        \
     if (exc != nullptr) {                                                                                \
-        YE_ERROR("Exception thrown by mono [{0} | {1}::{2}]" , __FILE__ , __FUNCTION__ , __LINE__);      \
+        ENGINE_ERROR("Exception thrown by mono [{0} | {1}::{2}]" , __FILE__ , __FUNCTION__ , __LINE__);      \
         YE_CRITICAL_ASSERTION(                                                                           \
             false , "Exception message: {0}" , mono_string_to_utf8(mono_object_to_string(exc , nullptr)) \
         );                                                                                               \
@@ -22,10 +22,10 @@
     MonoError error;                                                                            \
     bool error = !mono_error_ok(&error);                                                        \
     if (error) {                                                                                \
-        YE_ERROR("Error thrown by mono [{0} | {1}::{2}]" , __FILE__ , __FUNCTION__ , __LINE__); \
+        ENGINE_ERROR("Error thrown by mono [{0} | {1}::{2}]" , __FILE__ , __FUNCTION__ , __LINE__); \
         unsigned int error_code = mono_error_get_error_code(&error);                            \
         const char* error_name = mono_error_get_error_name(&error);                             \
-        YE_ERROR("Error code: {0} | Error name: {1}" , error_code , error_name);                \
+        ENGINE_ERROR("Error code: {0} | Error name: {1}" , error_code , error_name);                \
         YE_CRITICAL_ASSERTION(                                                                  \
             false , "Error message: {0}" , mono_error_get_message(error)                        \
         );                                                                                      \

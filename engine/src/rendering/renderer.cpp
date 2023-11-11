@@ -23,7 +23,7 @@ namespace YE {
 
     bool Renderer::CheckID(UUID32 id , const std::string& name , const RenderCallbackMap& map) {
         if (map.find(id) != map.end()) {
-            YE_WARN("Failed to register pre-execute callback :: [{0}] | Name already exists" , name);
+            ENGINE_WARN("Failed to register pre-execute callback :: [{0}] | Name already exists" , name);
             return false;
         }
         return true;
@@ -90,7 +90,7 @@ namespace YE {
                 if (fbs->find(id) != fbs->end()) {
                     (*fbs)[id]->HandleResize({ event->Width() , event->Height() });
                 } else {
-                    YE_WARN("Failed to resize main framebuffer :: [{0}] | Framebuffer does not exist" , id.uuid);
+                    ENGINE_WARN("Failed to resize main framebuffer :: [{0}] | Framebuffer does not exist" , id.uuid);
                     return false;
                 }
                 return true;
@@ -167,13 +167,11 @@ namespace YE {
         PostRenderCallbacks[id] = callback;
     }
 
-    void Renderer::Initialize(App* app) {
+    void Renderer::Initialize(App* app , WindowConfig& config) {
         app_handle = app;
-
-        WindowConfig win_config = app->GetWindowConfig();
         
-        win_config.flags |= SDL_WINDOW_OPENGL;
-        if (win_config.fullscreen) win_config.flags |= SDL_WINDOW_FULLSCREEN;
+        config.flags |= SDL_WINDOW_OPENGL;
+        if (config.fullscreen) config.flags |= SDL_WINDOW_FULLSCREEN;
 
         window = ynew Window;
         gui = ynew Gui;
@@ -185,13 +183,13 @@ namespace YE {
             SDL_GetError()
         );
         
-        SetSDLWindowAttributes(win_config);
-        window->Open(win_config); 
+        SetSDLWindowAttributes(config);
+        window->Open(config); 
 
         int glad_init = gladLoadGLLoader(SDL_GL_GetProcAddress);
         YE_CRITICAL_ASSERTION(glad_init != 0 , "GLAD failed to initialize");
 
-        EnableGLSettings(win_config);
+        EnableGLSettings(config);
 
         window->RegisterCallbacks();
         RegisterCallbacks();
@@ -204,13 +202,13 @@ namespace YE {
 
     void Renderer::PushFramebuffer(const std::string& name , Framebuffer* framebuffer) {
         if (framebuffer == nullptr) {
-            YE_WARN("Failed to push framebuffer :: [{0}] | Framebuffer is nullptr" , name);
+            ENGINE_WARN("Failed to push framebuffer :: [{0}] | Framebuffer is nullptr" , name);
             return;
         }
 
         UUID32 id = Hash::FNV32(name);
         if (framebuffers.find(id) != framebuffers.end()) {
-            YE_WARN("Failed to push framebuffer :: [{0}] | Name already exists" , name);
+            ENGINE_WARN("Failed to push framebuffer :: [{0}] | Name already exists" , name);
             return;
         }
 
@@ -228,7 +226,7 @@ namespace YE {
     void Renderer::PopFramebuffer(const std::string& name) {
         UUID32 id = Hash::FNV32(name);
         if (framebuffers.find(id) == framebuffers.end()) {
-            YE_WARN("Failed to pop framebuffer :: [{0}] | Did you push it to the renderer?" , name);
+            ENGINE_WARN("Failed to pop framebuffer :: [{0}] | Did you push it to the renderer?" , name);
             return;
         }
 
@@ -242,7 +240,7 @@ namespace YE {
     void Renderer::SetDefaultFramebuffer(const std::string& name) {
         UUID32 id = Hash::FNV32(name);
         if (framebuffers.find(id) == framebuffers.end()) {
-            YE_WARN("Failed to set default framebuffer :: [{0}] | Did you push it to the renderer?" , name);
+            ENGINE_WARN("Failed to set default framebuffer :: [{0}] | Did you push it to the renderer?" , name);
             return;
         }
         default_framebuffer = id;
@@ -250,7 +248,7 @@ namespace YE {
 
     void Renderer::RevertToDefaultFramebuffer() {
         if (framebuffers.find(default_framebuffer) == framebuffers.end()) {
-            YE_WARN("Failed to revert to default framebuffer | Did you set a default?");
+            ENGINE_WARN("Failed to revert to default framebuffer | Did you set a default?");
             return;
         }
         active_framebuffer = default_framebuffer;
@@ -260,7 +258,7 @@ namespace YE {
     void Renderer::ActivateFramebuffer(const std::string& name) {
         UUID32 id = Hash::FNV32(name);
         if (framebuffers.find(id) == framebuffers.end()) {
-            YE_WARN("Failed to activate framebuffer :: [{0}] | Did you push it to the renderer?" , name);
+            ENGINE_WARN("Failed to activate framebuffer :: [{0}] | Did you push it to the renderer?" , name);
             return;
         }
         
@@ -271,7 +269,7 @@ namespace YE {
         
     void Renderer::ActivateLastFramebuffer() {
         if (framebuffers.find(last_active_framebuffer) == framebuffers.end()) {
-            YE_WARN("Failed to activate last framebuffer | Attempting to revert to default");
+            ENGINE_WARN("Failed to activate last framebuffer | Attempting to revert to default");
             RevertToDefaultFramebuffer();
         }
         active_framebuffer = last_active_framebuffer;
@@ -285,7 +283,7 @@ namespace YE {
     
     void Renderer::RegisterSceneContext(Scene* scene) {
         if (scene == nullptr) {
-            YE_WARN("Failed to register scene context | Scene is nullptr");
+            ENGINE_WARN("Failed to register scene context | Scene is nullptr");
             return;
         }
         SetSceneRenderMode(scene->current_render_mode);
@@ -293,7 +291,7 @@ namespace YE {
 
     void Renderer::PushCamera(Camera* camera) {
         if (camera == nullptr) {
-            YE_WARN("Failed to push camera | Camera is nullptr");
+            ENGINE_WARN("Failed to push camera | Camera is nullptr");
             return;
         }
         render_camera = camera;

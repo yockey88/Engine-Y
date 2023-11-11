@@ -5,16 +5,10 @@
 #include <map>
 #include <string>
 
-#include "core/window.hpp"
+#include "defines.hpp"
+#include "window.hpp"
 
 namespace YE {
-
-    struct EngineConfig {
-        std::string project_name;
-        std::string project_file_src;
-
-        bool use_project_file = false;
-    };
 
     class App {
         protected:
@@ -26,7 +20,6 @@ namespace YE {
             virtual ~App() {}
 
             virtual EngineConfig GetEngineConfig() { return EngineConfig(); }
-            virtual WindowConfig GetWindowConfig() { return WindowConfig(); }
 
             virtual void PreInitialize() {}
             virtual bool Initialize() { return false; }

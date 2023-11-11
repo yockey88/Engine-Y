@@ -15,6 +15,8 @@ namespace YE {
     PhysicsEngine* PhysicsEngine::singleton = nullptr;
     
     glm::vec3 PhysicsEngine::HexColorToRGB(uint32_t hex) {
+        ENTER_FUNCTION_TRACE();
+
         return glm::vec3(
             (hex >> 16 & 0xFF) / 255.f ,
             (hex >> 8 & 0xFF) / 255.f ,
@@ -23,6 +25,8 @@ namespace YE {
     }
 
     void PhysicsEngine::SubmitDebugRendering() {
+        ENTER_FUNCTION_TRACE();
+
         YE_CRITICAL_ASSERTION(physics_world != nullptr , "Attempting to submit debug rendering without a physics world");
 
         rp3d::DebugRenderer& debug_renderer = physics_world->getDebugRenderer();
@@ -109,16 +113,22 @@ namespace YE {
 
         Renderer::Instance()->SubmitDebugRenderCmnd(debug_triangles);
         Renderer::Instance()->SubmitDebugRenderCmnd(debug_lines);
+
+        EXIT_FUNCTION_TRACE();
     }
 
 
     PhysicsEngine* PhysicsEngine::Instance() {
+        ENTER_FUNCTION_TRACE();
+
         if (singleton == nullptr)
             singleton = ynew PhysicsEngine;
         return singleton;
     }
 
     void PhysicsEngine::ToggleDebugRendering() {
+        ENTER_FUNCTION_TRACE();
+
         debug_rendering = !debug_rendering;
         if (physics_world != nullptr)
             physics_world->setIsDebugRenderingEnabled(debug_rendering);
@@ -129,6 +139,8 @@ namespace YE {
     }
 
     void PhysicsEngine::SetSceneContext(Scene* scene) {
+        ENTER_FUNCTION_TRACE();
+
         current_context = scene;
 
         if (physics_world != nullptr)
@@ -163,9 +175,13 @@ namespace YE {
         debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_POINT , true);
         debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_NORMAL , true);
         debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_BROADPHASE_AABB , true);
+
+        EXIT_FUNCTION_TRACE();
     }
 
     rp3d::RigidBody* PhysicsEngine::CreateRigidBody(components::Transform& transform) {
+        ENTER_FUNCTION_TRACE();
+
         rp3d::Vector3 position = rp3d::Vector3(transform.position.x , transform.position.y , transform.position.z);
         
         glm::quat rotation(transform.rotation);
@@ -173,25 +189,33 @@ namespace YE {
 
         rp3d::Transform physics_transform(position , orientation);
 
+        EXIT_FUNCTION_TRACE();
         return physics_world->createRigidBody(physics_transform);
     }
 
     rp3d::BoxShape* PhysicsEngine::CreateBoxShape(components::Transform& transform) {
+        ENTER_FUNCTION_TRACE();
+
         rp3d::Vector3 half_extents = rp3d::Vector3((transform.scale.x + 0.1f) / 2.f , (transform.scale.y + 0.1f) / 2.f , (transform.scale.z + 0.1f) / 2.f);
+        
+        EXIT_FUNCTION_TRACE();
         return physics_common.createBoxShape(half_extents);
     }
 
     rp3d::SphereShape* PhysicsEngine::CreateSphereShape(float radius) {
+        ENTER_FUNCTION_TRACE();
         return physics_common.createSphereShape(radius);
     }
 
     rp3d::CapsuleShape* PhysicsEngine::CreateCapsuleShape(float radius , float height) {
+        ENTER_FUNCTION_TRACE();
         return physics_common.createCapsuleShape(radius , height);
     }
 
     rp3d::PolyhedronMesh* PhysicsEngine::CreatePolygonMesh(
         const std::vector<float>& vertices , const std::vector<uint32_t>& indices , uint32_t num_faces
     ) {
+        ENTER_FUNCTION_TRACE();
         rp3d::PolygonVertexArray::PolygonFace* faces = ynew rp3d::PolygonVertexArray::PolygonFace[num_faces];
         rp3d::PolygonVertexArray::PolygonFace* face = faces;
 
@@ -210,16 +234,21 @@ VertexDataType vertexDataType, IndexDataType indexDataType
             rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE , rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE
         ); 
 
+        EXIT_FUNCTION_TRACE();
         return physics_common.createPolyhedronMesh(pva);
     }
 
     rp3d::ConvexMeshShape* PhysicsEngine::CreateConvexMeshShape(rp3d::PolyhedronMesh* mesh) {
+        ENTER_FUNCTION_TRACE();
         return physics_common.createConvexMeshShape(mesh);
     }
 
     void PhysicsEngine::StepPhysics() {
-        if (current_context == nullptr) 
+        ENTER_FUNCTION_TRACE();
+        if (current_context == nullptr) {
+            EXIT_FUNCTION_TRACE();
             return;
+        }
         
         float time_step = Engine::Instance()->TargetTimeStep();
         accumulator += time_step;
@@ -233,38 +262,50 @@ VertexDataType vertexDataType, IndexDataType indexDataType
 
         if (debug_rendering)
             SubmitDebugRendering();
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void PhysicsEngine::DestroyRigidBody(rp3d::RigidBody* body) {
+        ENTER_FUNCTION_TRACE();
         physics_world->destroyRigidBody(body);
     }
     
     void PhysicsEngine::DestroyBoxShape(rp3d::BoxShape* shape) {
+        ENTER_FUNCTION_TRACE();
         physics_common.destroyBoxShape(shape);
     }
 
     void PhysicsEngine::DestroySphereShape(rp3d::SphereShape* shape) {
+        ENTER_FUNCTION_TRACE();
         physics_common.destroySphereShape(shape);
     }
 
     void PhysicsEngine::DestroyCapsuleShape(rp3d::CapsuleShape* shape) {
+        ENTER_FUNCTION_TRACE();
         physics_common.destroyCapsuleShape(shape);
     }
     
     void PhysicsEngine::DestroyPolygonMesh(rp3d::PolyhedronMesh* shape) {
+        ENTER_FUNCTION_TRACE();
         physics_common.destroyPolyhedronMesh(shape);
     }
     
     void PhysicsEngine::DestroyConvexMeshShape(rp3d::ConvexMeshShape* shape) {
+        ENTER_FUNCTION_TRACE();
         physics_common.destroyConvexMeshShape(shape);
     }
 
     void PhysicsEngine::Cleanup() {
+        ENTER_FUNCTION_TRACE();
+
         if (physics_world != nullptr)
             physics_common.destroyPhysicsWorld(physics_world);
 
         if (singleton != nullptr)
             ydelete singleton;
+
+        EXIT_FUNCTION_TRACE();
     }
     
 }

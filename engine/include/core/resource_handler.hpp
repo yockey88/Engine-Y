@@ -65,7 +65,7 @@ namespace YE {
         template<typename T>
         bool CheckID(UUID id , const std::string& name , const ResourceMap<T>& map) {
             if (map.find(id) != map.end()) {
-                YE_WARN("Failed to register resource :: [{0}] | Name already exists" , name);
+                ENGINE_WARN("Failed to register resource :: [{0}] | Name already exists" , name);
                 return false;
             }
             return true;

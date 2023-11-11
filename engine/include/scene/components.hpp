@@ -291,7 +291,7 @@ namespace components {
                     ydelete instance->instance;
                     instance->instance = nullptr;
                 } else {
-                    YE_WARN("Attempted to destroy an unbound native entity script");
+                    ENGINE_WARN("Attempted to destroy an unbound native entity script");
                 }
             };
 
@@ -304,7 +304,7 @@ namespace components {
             if (instance != nullptr) {
                 instance->Update(dt);
             } else {
-                YE_WARN("Attempted to update an unbound native entity script");
+                ENGINE_WARN("Attempted to update an unbound native entity script");
             }
         }
 
@@ -316,7 +316,7 @@ namespace components {
                 unbind_script = nullptr;
                 bound = false;
             } else {
-                YE_WARN("Attempted to destroy an unbound native entity script");
+                ENGINE_WARN("Attempted to destroy an unbound native entity script");
             }
         }
     };
@@ -344,7 +344,7 @@ namespace components {
             object = ScriptEngine::Instance()->CreateObject(instance , class_name);
             bound = (object != nullptr);
             if (!bound) {
-                YE_WARN("Failed to bind entity to script");
+                ENGINE_WARN("Failed to bind entity to script");
                 return;
             }
         }

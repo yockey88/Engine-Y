@@ -93,7 +93,6 @@ namespace YE {
 
             /// \note checking for duplicate IDs
             sm.name = std::string{ mono_method_full_name(method , 0) }; // 0 for false
-            // YE_INFO("Method: {0}" , sm.name);
 
             std::string hash_str = sm.name;
             UUID32 ID{ Hash::FNV32(hash_str) };
@@ -126,7 +125,6 @@ namespace YE {
 
             /// \todo since entity is special we might want to handle this seperately
             // if (class_namespace.find("YE") != std::string::npos && class_name.find("Entity") != std::string::npos) {
-            //     YE_DEBUG("Found Entity Class");
             //     curr_class = nullptr;
             //     continue;
             // }
@@ -290,7 +288,7 @@ namespace YE {
                 prop_flags |= static_cast<uint64_t>(FieldAccess::READONLY);
 
             if (mtype == nullptr) {
-                YE_ERROR("Failed to retrieve type for property: {0}" , name);
+                ENGINE_ERROR("Failed to retrieve type for property: {0}" , name);
                 continue;
             }
 
@@ -635,15 +633,15 @@ namespace YE {
     void ScriptMap::PrintAll() {
         YE_CRITICAL_ASSERTION(script_map != nullptr , "Attempting to access script map before creation");
         for (auto& obj : script_map->script_objs) {
-            YE_INFO("[Object {0}] :: {1}" , obj.first.uuid , obj.second.name);
+            LOG_INFO("[Object {0}] :: {1}" , obj.first.uuid , obj.second.name);
         }
         for (auto& field : script_map->script_fields) {
-            YE_INFO("[Field {0}] :: {1}" , field.first.uuid , field.second.name);
+            LOG_INFO("[Field {0}] :: {1}" , field.first.uuid , field.second.name);
         }
         for (auto& method : script_map->script_methods) {
-            YE_INFO("[{0} Methods] :: " , method.second.size());
+            LOG_INFO("[{0} Methods] :: " , method.second.size());
             for (auto& m : method.second) {
-                YE_INFO("    {0} - {1}" , m.IDU32.uuid , m.name);
+                LOG_INFO("    {0} - {1}" , m.IDU32.uuid , m.name);
             }
         }
     }

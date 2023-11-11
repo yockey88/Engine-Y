@@ -206,9 +206,8 @@ namespace EngineY {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-#ifdef YE_PLATFORM_WIN                                                     
+#ifdef YE_PLATFORM_WIN              
 HINSTANCE YE2_hinstance = nullptr;
-
 int WINAPI WinMain(HINSTANCE hInstance , HINSTANCE hPrevInstance , LPSTR lpCmdLine , int nCmdShow) {     
     YE2_hinstance = hInstance;     
 #ifdef YE_DEBUG_BUILD                                                           

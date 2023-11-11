@@ -39,7 +39,7 @@ namespace YE {
     void Scene::DestroyEntity(Entity* entity) {
         auto& id = entity->GetComponent<components::ID>();
         if (id.id == 0) {
-            YE_WARN("Failed to destroy entity | Entity has no ID or does not exist");
+            ENGINE_WARN("Failed to destroy entity | Entity has no ID or does not exist");
             return;
         }
 

@@ -89,7 +89,7 @@ namespace YE {
 
     void HeightMap2D::GenerateHeightMap(GeneratorArgs args) {
         if (noise_generator == nullptr) {
-            YE_ERROR("HeightMap2D::GenerateHeightMap() :: noise generator is nullptr");
+            ENGINE_ERROR("HeightMap2D::GenerateHeightMap() :: noise generator is nullptr");
             return;
         }
 

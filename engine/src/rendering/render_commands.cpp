@@ -19,7 +19,7 @@ namespace YE {
     
     void DrawVao::Execute(Camera* camera , const ShaderUniforms& uniforms) {
         if (vao == nullptr) {
-            YE_WARN("Failed to execute DrawVao :: VAO is null");
+            ENGINE_WARN("Failed to execute DrawVao :: VAO is null");
             return;
         }
 
@@ -36,7 +36,7 @@ namespace YE {
 
     void DrawRenderable::Execute(Camera* camera , const ShaderUniforms& uniforms) {
         if (renderable.vao == nullptr) {
-            YE_WARN("Failed to execute DrawTexturedVao :: VAO is null");
+            ENGINE_WARN("Failed to execute DrawTexturedVao :: VAO is null");
             renderable.corrupted = true;
             return;
         }
@@ -52,14 +52,14 @@ namespace YE {
 
     void DrawTexturedRenderable::Execute(Camera* camera , const ShaderUniforms& uniforms) {
         if (renderable.vao == nullptr) {
-            YE_WARN("Failed to execute DrawTexturedVao :: VAO is null");
+            ENGINE_WARN("Failed to execute DrawTexturedVao :: VAO is null");
             renderable.corrupted = true;
             return;
         }
 
         for (uint32_t i = 0; i < renderable.textures.size(); ++i)
             if (renderable.textures[i] == nullptr) {
-                YE_WARN("Failed to execute DrawTexturedVao :: Texture [{0}] is null" , i);
+                ENGINE_WARN("Failed to execute DrawTexturedVao :: Texture [{0}] is null" , i);
                 renderable.corrupted = true;
                 return;
             }
@@ -81,7 +81,7 @@ namespace YE {
     
     void DrawRenderableModel::Execute(Camera* camera , const ShaderUniforms& uniforms) {
         if (renderable.model == nullptr) {
-            YE_WARN("Failed to execute DrawTexturedVao :: VAO is null");
+            ENGINE_WARN("Failed to execute DrawTexturedVao :: VAO is null");
             renderable.corrupted = true;
             return;
         }
@@ -97,13 +97,13 @@ namespace YE {
     
     void DrawPointLight::Execute(Camera* camera , const ShaderUniforms& uniforms) {
         if (renderable.vao == nullptr) {
-            YE_WARN("Failed to execute DrawTexturedVao :: VAO is null");
+            ENGINE_WARN("Failed to execute DrawTexturedVao :: VAO is null");
             renderable.corrupted = true;
             return;
         }
 
         if (light == nullptr) {
-            YE_WARN("Failed to execute DrawPointLight :: Light is null");
+            ENGINE_WARN("Failed to execute DrawPointLight :: Light is null");
             return;
         }
 

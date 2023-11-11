@@ -55,7 +55,7 @@ namespace YE {
         template<typename T>
         bool CheckID(UUID32 id , const std::string& name , const CallbackMap<T>& map) {
             if (map.find(id) != map.end()) {
-                YE_WARN("Failed to register callback :: [{0}] | Name already exists" , name);
+                ENGINE_WARN("Failed to register callback :: [{0}] | Name already exists" , name);
                 return false;
             }
             return true;

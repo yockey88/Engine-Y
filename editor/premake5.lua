@@ -51,8 +51,7 @@ workspace (projectname)
     
         files {
             "%{prj.name}/include**.hpp" ,
-            "%{prj.name}/src/**.cpp",
-            "%{prj.name}/editor.cpp",
+            "%{prj.name}/**.cpp",
         }
 
         externalincludedirs {

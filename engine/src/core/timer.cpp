@@ -28,13 +28,14 @@ namespace time {
         }
     }
 
-    void Timer::Tick() {
+    bool Timer::Tick() {
         if (running) {
             end = Clock::now();
             remaining_time = duration - (end - start);
             if (remaining_time.count() <= 0)
                 running = false;
         }
+        return running;
     }
 
     void Timer::Reset() {

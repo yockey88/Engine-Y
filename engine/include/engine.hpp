@@ -46,6 +46,7 @@ namespace YE {
         ResourceHandler* resource_handler = nullptr;
 
         CmndLineHandler cmnd_line_handler;
+        std::string program_files;
 
         time::DeltaTime delta_time;
         time::FrameRateEnforcer<kTargetFps> frame_rate;
@@ -61,6 +62,8 @@ namespace YE {
         bool running = false;
 
         std::filesystem::path FindProjectFile();
+        bool FindCoreDirectories();
+        bool ValidateConfiguration();
         void InitializeSubSytems();
         void Update(float dt);
         void HandleShutdownEvent();

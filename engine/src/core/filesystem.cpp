@@ -8,14 +8,14 @@
 #include "log.hpp"
 
 namespace YE {
-    std::string Filesystem::build_config = BUILD_CONFIG;
-    std::string Filesystem::script_engine_mono_path = MONO_DLLS_PATH;
-    std::string Filesystem::script_engine_mono_config_path = MONO_CONFIG_PATH;
+    std::string Filesystem::build_config = "";
+    std::string Filesystem::script_engine_mono_path = "";
+    std::string Filesystem::script_engine_mono_config_path = "";
     
     std::string Filesystem::internal_modules_path = ""; 
     std::string Filesystem::project_modules_path = "";
 
-    std::string Filesystem::engine_root = ENGINE_ROOT;
+    std::string Filesystem::engine_root = "";
     std::string Filesystem::engine_code_dir = "";
     std::string Filesystem::engine_respath = "";
     std::string Filesystem::engine_modulepath = "";
@@ -34,11 +34,23 @@ namespace YE {
     std::string Filesystem::texturepath = "";
     std::string Filesystem::modelpath = "";
 
-    void Filesystem::Initialize(const std::string& project_name) {
-        project_bin = "bin/"+ build_config + "/" + project_name;
+    void Filesystem::Initialize(const EngineConfig& config) {
+#ifdef YE_DEBUG_BUILD
+        build_config = "Debug";
+#elif YE_RELEASE_BUILD
+        build_config = "Release";
+#else
+        YE_CRITICAL_ASSERTION(false , "UNREACHABLE | NON-EXHAUSTIVE MATCH");
+#endif
+        script_engine_mono_path = config.mono_dll_path;
+        script_engine_mono_config_path = config.mono_config_path;
+
+        engine_root = config.engine_root; 
+
+        project_bin =  config.project_path + "/bin/"+ build_config + "/" + config.project_name;
         
-        internal_modules_path = project_bin + "/modules.dll";
-        project_modules_path = project_bin + "/" + project_name + "_modules.dll";
+        internal_modules_path = engine_root + "/bin/" + build_config + "/modules" + "/modules.dll";
+        project_modules_path = project_bin + "/" + config.project_name + "_modules.dll";
 
         engine_code_dir = engine_root + "/engine";
         engine_respath = engine_code_dir + "/resources";
@@ -48,8 +60,8 @@ namespace YE {
         engine_modelpath = engine_respath + "/models";
         gui_ini_path = engine_respath + "/imgui.ini";
 
-        project_directory = GetCWD() + "/" + project_name;
-        project_code_dir = project_directory + "/" + project_name;
+        project_directory = config.project_path;
+        project_code_dir = project_directory + "/" + config.project_name;
         respath = project_code_dir + "/resources";    
         modulepath = project_code_dir + "/modules";
         shaderpath = respath + "/shaders";
@@ -58,6 +70,7 @@ namespace YE {
 
     }
 
+    /// \todo make this check engine directories and project dirs it knows about
     bool Filesystem::FileExists(const std::string& path) {
         return std::filesystem::exists(path);
     }
@@ -73,7 +86,7 @@ namespace YE {
         std::ifstream file(path);
 
         if (!file.is_open()) {
-            YE_ERROR("Failed to open file :: [{0}]" , path);
+            ENGINE_ERROR("Failed to open file :: [{0}]" , path);
             return "";
         }
 
@@ -105,13 +118,22 @@ namespace YE {
 
     void Filesystem::OverrideResourcePath(const std::string& path) {
         if (!std::filesystem::exists(path)) {
-            YE_ERROR("Attempting to override resource path with nonexistent path :: [{0}]" , path);
+            ENGINE_ERROR("Attempting to override resource path with nonexistent path :: [{0}]" , path);
             return;
         }        
         respath = path;       
         shaderpath = respath + "/shaders";
         texturepath = respath + "/textures";
         modelpath = respath + "/models";
+    }
+
+    void Filesystem::OverrideProjectModulePath(const std::string& path) {
+        if (!std::filesystem::exists(path)) {
+            ENGINE_ERROR("Attempting to override module path with nonexistent path :: [{0}]" , path);
+            return;
+        }
+
+        project_modules_path = path;
     }
 
 }

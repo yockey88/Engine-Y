@@ -442,7 +442,7 @@ namespace YS {
                     for (uint32_t i = 0; i < prop.values.size(); ++i) {
                         Texture* tex = ResourceHandler::Instance()->GetTexture(*prop.values[i].value.string);
                         if (tex == nullptr) {
-                            YE_WARN("Invalid texture name {}" , *prop.values[i].value.string);
+                            ENGINE_WARN("Invalid texture name {}" , *prop.values[i].value.string);
                             continue;
                         }
                         textures.push_back(tex);
@@ -642,7 +642,7 @@ namespace YS {
             for (const auto& node : ast)
                 node->Walk(&builder);
         } catch (const node_builder_exception& e) {
-            YE_ERROR("{}" , e.what());
+            ENGINE_ERROR("{}" , e.what());
             return nullptr;
         }
         
@@ -657,7 +657,7 @@ namespace YS {
                 }
             }
         } catch (const yscript_interpreter_error& e) {
-            YE_ERROR("{}" , e.what());
+            ENGINE_ERROR("{}" , e.what());
             return nullptr;
         }
         

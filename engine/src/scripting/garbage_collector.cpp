@@ -28,7 +28,7 @@ namespace YE {
     void ScriptGC::Shutdown() {
 
         if (gc_state->strong_refs.size() > 0) {
-            YE_ERROR("ScriptGC: {0} strong references not freed , memory leak detected" , gc_state->strong_refs.size());
+            ENGINE_ERROR("ScriptGC: {0} strong references not freed , memory leak detected" , gc_state->strong_refs.size());
 
             for (auto[handle , object] : gc_state->strong_refs) 
                 mono_gchandle_free_v2(handle);
@@ -37,7 +37,7 @@ namespace YE {
         }
 
         if (gc_state->weak_refs.size() > 0) {
-            YE_ERROR("ScriptGC: {0} weak references not freed , memory leak detected" , gc_state->weak_refs.size());
+            ENGINE_ERROR("ScriptGC: {0} weak references not freed , memory leak detected" , gc_state->weak_refs.size());
 
             for (auto[handle , object] : gc_state->weak_refs) 
                 mono_gchandle_free_v2(handle);
@@ -108,7 +108,7 @@ namespace YE {
         if (mono_gchandle_get_target_v2(handle) != nullptr) {
             mono_gchandle_free_v2(handle);
         } else {
-            YE_ERROR("Tried to release invalid GCHandle");
+            ENGINE_ERROR("Tried to release invalid GCHandle");
             return;
         }
 

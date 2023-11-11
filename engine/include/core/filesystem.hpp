@@ -5,8 +5,11 @@
 #include <vector>
 #include <filesystem>
 
+#include "core/defines.hpp"
+
 namespace YE {
 
+    struct EngineConfig;
     class Filesystem {
         static std::string build_config;
         static std::string script_engine_mono_path;
@@ -32,15 +35,17 @@ namespace YE {
         static std::string texturepath;
         static std::string modelpath;
 
+        friend struct EngineConfig;
+
         public:
-            static void Initialize(const std::string& project_name);
+            static void Initialize(const EngineConfig& config);
             static bool FileExists(const std::string& path);
             static void ReadFileAsCStr(char* buffer , const std::string& path);
             static std::string ReadFileAsStr(const std::string& path);
             static std::vector<char> ReadFileAsSBytes(const std::string& path);
 
             static void OverrideResourcePath(const std::string& path);
-            static void RegisterProjectPath(const std::string& path) {}
+            static void OverrideProjectModulePath(const std::string& path);
 
             inline static std::filesystem::path GetCWDPath() { return std::filesystem::current_path(); }
             inline static std::string GetCWD() { return std::filesystem::current_path().string(); }

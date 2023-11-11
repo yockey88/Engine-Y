@@ -106,7 +106,7 @@ namespace components {
             void RegisterPreRenderCallback(std::function<void()> callback , const std::string& name);
             void RegisterPostRenderCallback(std::function<void()> callback , const std::string& name);
 
-            void Initialize(App* app);
+            void Initialize(App* app , WindowConfig& config);
             
             void PushFramebuffer(const std::string& name , Framebuffer* framebuffer);
             void SubmitRenderCmnd(std::unique_ptr<RenderCommand>& cmnd);

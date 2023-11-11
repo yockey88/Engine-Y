@@ -197,7 +197,6 @@ namespace ScriptInternalCalls {
     void LogInfo(MonoString* msg);
     void LogWarn(MonoString* msg);
     void LogError(MonoString* msg);
-    void LogFatal(MonoString* msg);
     /////////////////////////////
 
 }

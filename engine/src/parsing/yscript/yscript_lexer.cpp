@@ -333,7 +333,7 @@ namespace YE {
                     continue;
                 }
             } catch (const yscript_lexer_error& e) {
-                YE_ERROR("Project File Lexer Error :: <{0}>" , e.what());
+                ENGINE_ERROR("Project File Lexer Error :: <{0}>" , e.what());
                 return {};
             }
         }

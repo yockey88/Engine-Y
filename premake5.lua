@@ -84,10 +84,6 @@ workspace "engine"
         
         defines {
             "GLFW_INCLUDE_NONE" ,
-            "BUILD_CONFIG=\"%{cfg.buildcfg}\"" ,
-            "MONO_DLLS_PATH=\"" .. engine_root .. "/external\"" ,
-            "MONO_CONFIG_PATH=\"" .. engine_root .. "/external\"" ,
-            "ENGINE_ROOT=\"" .. engine_root .. "\"" ,
         }
 
         links {

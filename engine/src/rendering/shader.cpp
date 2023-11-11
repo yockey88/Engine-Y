@@ -12,6 +12,8 @@
 namespace YE {
 
     uint32_t Shader::GetUniformLocation(const std::string& name) {
+        ENTER_FUNCTION_TRACE();
+
         UUID32 id = Hash::FNV32(name);
         
         if (uniform_locations.find(id) != uniform_locations.end())
@@ -20,10 +22,13 @@ namespace YE {
         int32_t location = glGetUniformLocation(program , name.c_str());
         uniform_locations[id] = location;
 
+        EXIT_FUNCTION_TRACE();
         return location;
     }
     
     void Shader::ShaderError(ShaderType type , uint32_t shader) {
+        ENTER_FUNCTION_TRACE();
+
         char info_log[512];
         glGetShaderInfoLog(shader , 512 , nullptr , info_log);
         std::string path = "";
@@ -33,14 +38,18 @@ namespace YE {
             case ShaderType::GEOMETRY: path = geometry_path; break;
             default: path = "UNKNOWN SHADER TYPE"; break;
         };
-        YE_WARN("Failed to compile shader :: [{0}]" , path);
+        ENGINE_WARN("Failed to compile shader :: [{0}]" , path);
         std::cout << "\t" << info_log << "\n";
         valid = false;
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void Shader::CompileShader(ShaderType type , uint32_t& shader , const char* buffer) {
+        ENTER_FUNCTION_TRACE();
+
         if (ShaderType::GEOMETRY == type && (!has_geometry || geometry_path == "")) {
-            YE_WARN("Failed to compile geometry shader :: [{0}]" , geometry_path);
+            ENGINE_WARN("Failed to compile geometry shader :: [{0}]" , geometry_path);
             valid = false;
         } else {
             int32_t compile_check = 0;
@@ -52,9 +61,13 @@ namespace YE {
             if (compile_check != GL_TRUE)
                 ShaderError(type , shader);
         }
+
+        EXIT_FUNCTION_TRACE();
     }
     
     void Shader::Link() {
+        ENTER_FUNCTION_TRACE();
+
         int32_t compile_check = 0;
 
         program = glCreateProgram();
@@ -69,8 +82,8 @@ namespace YE {
         if (compile_check != GL_TRUE) {
             char info_log[512];
             glGetProgramInfoLog(program , 512 , nullptr , info_log);
-            YE_WARN("Failed to link shader program");
-            YE_ERROR("Error: {0}" , info_log);
+            ENGINE_WARN("Failed to link shader program");
+            ENGINE_ERROR("Error: {0}" , info_log);
             valid = false;
         }
         
@@ -78,6 +91,8 @@ namespace YE {
         glDeleteShader(fragment_shader);
         if (has_geometry)
             glDeleteShader(geometry_shader);
+
+        EXIT_FUNCTION_TRACE();
     }
 
     Shader::~Shader() {
@@ -86,6 +101,8 @@ namespace YE {
     }
     
     bool Shader::Compile() {
+        ENTER_FUNCTION_TRACE();
+
         valid = true;
 
         std::string vert_str = YE::Filesystem::ReadFileAsStr(vertex_path);
@@ -105,10 +122,13 @@ namespace YE {
 
         Link();
 
+        EXIT_FUNCTION_TRACE();
         return valid;
     }
     
     void Shader::SetUniform(const Uniform& uniform) {
+        ENTER_FUNCTION_TRACE();
+
         YE_CRITICAL_ASSERTION(uniform.data.data_handle != nullptr , "Attempting to set uniform with no data");
 
         uint32_t ival;
@@ -150,34 +170,64 @@ namespace YE {
             default:
                 YE_CRITICAL_ASSERTION(false , "Invalid uniform type");
         }
+
+        EXIT_FUNCTION_TRACE();
     }
 
     void Shader::SetUniformInt(const std::string& name , uint32_t val) {
+		ENTER_FUNCTION_TRACE();
+
         glUniform1i(GetUniformLocation(name) , val);
+
+		EXIT_FUNCTION_TRACE();
     }
 
     void Shader::SetUniformFloat(const std::string& name , float val) {
+		ENTER_FUNCTION_TRACE();
+
         glUniform1f(GetUniformLocation(name) , val);
+
+		EXIT_FUNCTION_TRACE();
     }
 
     void Shader::SetUniformVec2(const std::string& name , const glm::vec2& val) {
+		ENTER_FUNCTION_TRACE();
+
         glUniform2f(GetUniformLocation(name) , val.x , val.y);
+
+		EXIT_FUNCTION_TRACE();
     }
 
     void Shader::SetUniformVec3(const std::string& name , const glm::vec3& val) {
+		ENTER_FUNCTION_TRACE();
+  
         glUniform3f(GetUniformLocation(name) , val.x , val.y , val.z);
+		
+        EXIT_FUNCTION_TRACE();
     }
 
     void Shader::SetUniformVec4(const std::string& name , const glm::vec4& val) {
+		ENTER_FUNCTION_TRACE();
+        
         glUniform4f(GetUniformLocation(name) , val.x , val.y , val.z , val.w);
+        
+		EXIT_FUNCTION_TRACE();
     }
 
     void Shader::SetUniformMat3(const std::string& name , const glm::mat3& mat) {
+		ENTER_FUNCTION_TRACE();
+  
         glUniformMatrix3fv(GetUniformLocation(name) , 1 , GL_FALSE , glm::value_ptr(mat));
+		
+        EXIT_FUNCTION_TRACE();
     }
     
     void Shader::SetUniformMat4(const std::string& name , const glm::mat4& mat) {
+		ENTER_FUNCTION_TRACE();
+  
         glUniformMatrix4fv(GetUniformLocation(name) , 1 , GL_FALSE , glm::value_ptr(mat));
+
+		EXIT_FUNCTION_TRACE();
     }
     
 }

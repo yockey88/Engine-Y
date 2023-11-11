@@ -91,7 +91,7 @@ namespace YE {
     
     void TerrainGenerator::Draw(Camera* camera , DrawMode mode) {
         if (shader == nullptr) {
-            YE_ERROR("TerrainGenerator::Draw() : shader is nullptr!");
+            ENGINE_ERROR("TerrainGenerator::Draw() : shader is nullptr!");
             return;
         }
 

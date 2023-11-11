@@ -93,7 +93,7 @@ namespace YE {
     
     void VertexArray::Draw(DrawMode mode) const {
         if (!valid) {
-            YE_ERROR("Rendering Invalid Vertex Array");
+            ENGINE_ERROR("Rendering Invalid Vertex Array");
         } else {
             glBindVertexArray(VAO);
 

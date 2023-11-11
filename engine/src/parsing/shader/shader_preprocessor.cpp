@@ -179,7 +179,7 @@ namespace YE {
                 Check(GlslTokenType::PREPROCESSOR) ? 
                     ProcessDirective() : PushToken();
             } catch (const glsl_preprocessor_error& e) {
-                YE_ERROR(e.what());
+                ENGINE_ERROR(e.what());
                 return { "<n>" , {} };
             }
         }

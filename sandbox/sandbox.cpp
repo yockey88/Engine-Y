@@ -11,16 +11,16 @@ class Sandbox : public YE::App {
         Sandbox() {}
         virtual ~Sandbox() override {}
 
-        virtual YE::WindowConfig GetWindowConfig() override {
-            YE::WindowConfig config;
-            config.title = "Engine Y";
-            config.size.x = 1920;
-            config.size.y = 1080;
-            config.clear_color = { 0.1f , 0.1f , 0.1f , 1.f };
-            config.fullscreen = false;
-            config.vsync = false;
-            config.rendering_to_screen = true;
-            config.flags |= SDL_WINDOW_RESIZABLE;
+        virtual YE::EngineConfig GetEngineConfig() override {
+            YE::EngineConfig config;
+            config.window_config.title = "Engine Y";
+            config.window_config.size.x = 1920;
+            config.window_config.size.y = 1080;
+            config.window_config.clear_color = { 0.1f , 0.1f , 0.1f , 1.f };
+            config.window_config.fullscreen = false;
+            config.window_config.vsync = false;
+            config.window_config.rendering_to_screen = true;
+            config.window_config.flags |= SDL_WINDOW_RESIZABLE;
             return config;
         }
 

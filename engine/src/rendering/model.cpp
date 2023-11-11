@@ -164,7 +164,7 @@ namespace YE {
                                                         aiProcess_JoinIdenticalVertices | aiProcess_GenNormals);
 
         if (scene == nullptr || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode){
-            YE_ERROR("Unable to Load File -> {} | Assimp Error -> {}" , path , importer.GetErrorString());
+            ENGINE_ERROR("Unable to Load File -> {} | Assimp Error -> {}" , path , importer.GetErrorString());
             return;
         }
 
