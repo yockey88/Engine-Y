@@ -36,6 +36,7 @@ workspace "engine"
     include(externals_folder .. "/ReactPhysics3d")
     include(externals_folder .. "/zep")
     include(externals_folder .. "/nativefiledialog")
+    include(externals_folder .. "/msdf-atlas-gen")
 
     include "modules"
 
@@ -73,9 +74,12 @@ workspace "engine"
             "%{externals.react}/include" ,
             "%{externals.magic_enum}" ,
             "%{externals.zep}/include" ,
-            "%{externals.nfd}/src"
+            "%{externals.nfd}/src" ,
+            "%{externals.msdfgen}" ,
+            "%{externals.msdfatlasgen}" ,
         }
-        
+
+
         libdirs {
             "%{externals.sdl2}/lib/x64" ,
             "%{externals.mono}/lib/%{cfg.buildcfg}" ,
@@ -96,7 +100,8 @@ workspace "engine"
             "mono-2.0-sgen" ,
             "reactphysics3d" ,
             "zep" ,
-            "nfd"
+            "nfd" ,
+            "msdf" ,
         }
 
         filter { "system:windows" , "configurations:*" }

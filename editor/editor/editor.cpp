@@ -6,10 +6,16 @@
 class Editor : public YE::App {
     bool show_file_menu = false;
 
-    YE::time::Timer timer{ std::chrono::milliseconds(1000) }; 
+    YE::Camera* camera = nullptr;
+    YE::Shader* shader = nullptr;
+    YE::Font* font = nullptr;
+    glm::mat4 model{ 1.f };
+
+    YE::Scene scene = YE::Scene("font-atlas-testing");
+
     std::unique_ptr<YE::EngineConsole> console = nullptr;
     
-    char command_buffer[256] = "$> ";
+    bool render = false;
     int count = 0;
     
     public:
@@ -49,81 +55,97 @@ class Editor : public YE::App {
 
             console = std::make_unique<YE::EngineConsole>();
             
-            timer.Start();
+            std::filesystem::path p =  
+                std::filesystem::path(YE::Filesystem::GetEngineResPath()) / 
+                "fonts" / "IBMPlexMono" / "BlexMonoNerdFontMono-Regular.ttf"; 
+            font = ynew YE::Font(p);
+            if (!font->Load(true)) {
+                LOG_WARN("Could not load font atlas");
+            } else {
+                shader = EngineY::ResourceHandler()->GetCoreShader("msdf_text");
+                if (shader == nullptr) {
+                    LOG_WARN("Could not load shader");
+                } else {
+                    render = true;
+                }
+
+                scene.InitializeScene();
+
+                camera = scene.AttachCamera("main-camera");
+                camera->SetFront({ 0.f , 0.f , -1.f });
+                camera->SetUp({ 0.f , 1.f , 0.f });
+                camera->SetRight({ 1.f , 0.f , 0.f });
+                camera->SetPosition({ 0.f , 0.f , 3.f });
+                camera->Recalculate();
+
+                // YE::Entity* font_atlas = scene.CreateEntity("font-atlas");
+
+                // auto& transform = font_atlas->GetComponent<YE::components::Transform>();
+                // transform.position = glm::vec3(0.f);
+                // transform.rotation = glm::vec3(0);
+                // transform.scale = glm::vec3(1.f);
+
+                // font_atlas->AddComponent<YE::components::TexturedRenderable>(
+                //     EngineY::GetPrimitiveVAO("quad") , YE::Material{} , 
+                //     "default" , std::vector<YE::Texture*>{ font->GetAtlasTexture() }
+                // );
+
+                scene.LoadScene();
+                scene.Start();
+
+                model = glm::translate(model , glm::vec3(-0.5f , 0.f , 0.f));
+            }
 
             return true;
         }
 
         void Update(float delta) override {
-            if (!timer.Tick()) {
-                LOG_DEBUG("Editor Update {}" , count);
-                timer.Restart();
-                count++;
-            }
+            scene.Update(delta);
         }
 
-        void Draw() override {}
+        void Draw() override {
+            if (render) {
+                scene.Draw();
+                DRAW(
+                    YE::DrawFont ,
+                    font , shader ,
+                    "Yock" , model  
+                );
+            } 
+        }
 
         void DrawGui() override {
-                if (ImGui::BeginMainMenuBar()) {
-                    if (ImGui::BeginMenu("File")) {
-                        if (ImGui::MenuItem("New Project" , "Ctrl+N")) {}
-                        if (ImGui::MenuItem("Open Project")) {}
-                        if (ImGui::MenuItem("Save Project")) {}
-                        ImGui::EndMenu();
-                    }
-                    if (ImGui::BeginMenu("Edit")) {
-                        ImGui::EndMenu();
-                    }
-                    if (ImGui::BeginMenu("Options")) {
-                        if (ImGui::MenuItem("Reload Shaders" , "Crtl+Shift+S")) { EngineY::ShaderReload(); }
-                        if (ImGui::MenuItem("Reload Scripts" , "Crtl+Shift+R")) { EngineY::ScriptReload(); }
-                        ImGui::EndMenu();
-                    }
-                    if (ImGui::BeginMenu("Tools")) {
-                        ImGui::EndMenu();
-                    }
-
-                    ImGui::EndMainMenuBar();
+            if (ImGui::BeginMainMenuBar()) {
+                if (ImGui::BeginMenu("File")) {
+                    if (ImGui::MenuItem("New Project" , "Ctrl+N")) {}
+                    if (ImGui::MenuItem("Open Project")) {}
+                    if (ImGui::MenuItem("Save Project")) {}
+                    ImGui::EndMenu();
                 }
-            // ImGuiWindowFlags main_win_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBackground | 
-            //                                   ImGuiWindowFlags_NoBringToFrontOnFocus;
-            //if (ImGui::Begin("YE2" , nullptr , main_win_flags)) {
-            // }
-            // ImGui::End();
-
-            ImGui::ShowDemoWindow();
-
-            console->DrawGui({
-                { 
-                    "Command Bar" , 
-                    [cmnd_buffer = command_buffer](const std::vector<void*>&) {
-
-                        ImGui::PushStyleColor(ImGuiCol_FrameBg , ImVec4(0x0E / 255 , 0x0E / 255 , 0x0E / 255 , 1.f));
-                        if (ImGui::BeginChild("##command-bar")) {
-                            ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll; 
-                            if (ImGui::InputText("##command-bar" , cmnd_buffer , 256 , input_text_flags)) {
-                                std::string input = cmnd_buffer;
-                                input = input.substr(2 , input.size() - 2); // remove '$>'
-
-                                // trim whitespace
-                                size_t beginning = input.find_first_not_of(' ');
-                                size_t end = input.find_last_not_of(' ');
-                                size_t range = end - beginning + 1;
-                                input = input.substr(beginning , range);
-
-                                YE::EngineConsole::SinkMessage({ YE::ConsoleMessageType::COMMAND , input });
-                                strcpy(cmnd_buffer , "$>  ");
-                            }
-                        }
-                        ImGui::EndChild();
-                        ImGui::PopStyleColor();
-                    } 
+                if (ImGui::BeginMenu("Edit")) {
+                    ImGui::EndMenu();
                 }
-            });
+                if (ImGui::BeginMenu("Options")) {
+                    if (ImGui::MenuItem("Reload Shaders" , "Crtl+Shift+S")) { EngineY::ShaderReload(); }
+                    if (ImGui::MenuItem("Reload Scripts" , "Crtl+Shift+R")) { EngineY::ScriptReload(); }
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("Tools")) {
+                    ImGui::EndMenu();
+                }
+
+                ImGui::EndMainMenuBar();
+            }
+
+            console->DrawGui();
         }
 
-        void Shutdown() override {}
+        void Shutdown() override {
+            scene.End();
+            scene.UnloadScene();
+            scene.Shutdown();
+            ydelete font;
+        }
 };
 
 DECLARE_APP(Editor);

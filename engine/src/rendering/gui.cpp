@@ -29,7 +29,7 @@ namespace YE {
         ImGui_ImplSDL2_InitForOpenGL(win , gl_context);
         ImGui_ImplOpenGL3_Init("#version 460");
 
-        io.IniFilename = YE::Filesystem::GetGuiIniPathCStr();        
+        io.IniFilename = Filesystem::GetGuiIniPathCStr();  
     }
 
     void Gui::Update() {}
@@ -60,5 +60,5 @@ namespace YE {
         ImPlot::DestroyContext();
         ImGui::DestroyContext();
     }
-
+    
 }

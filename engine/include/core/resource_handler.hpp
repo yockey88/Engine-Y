@@ -5,6 +5,10 @@
 #include <vector>
 #include <unordered_map>
 
+#include <msdfgen/msdfgen.h>
+#include <msdfgen/msdfgen-ext.h>
+#include <msdf-atlas-gen/msdf-atlas-gen.h>
+
 #include "log.hpp"
 #include "UUID.hpp"
 #include "rendering/vertex_array.hpp"
@@ -12,7 +16,20 @@
 #include "rendering/texture.hpp"
 #include "rendering/model.hpp"
 
+struct ImFont;
+
 namespace YE {
+
+    /// temporary until find better palce to put this 
+    struct FontResource {
+        std::string name;
+        std::string path;
+        ImFont* font;
+    };
+
+    enum class ResourceType {
+        CORE , APP
+    };    
     
     template<typename T>
     using ResourceMap = std::unordered_map<UUID , T>;
@@ -21,8 +38,11 @@ namespace YE {
 
         static ResourceHandler* singleton;
 
+        msdfgen::FreetypeHandle* freetype = nullptr;
+
         ResourceMap<ShaderResource> engine_shaders;
         ResourceMap<TextureResource> engine_textures;
+        ResourceMap<FontResource> engine_fonts;
 
         ResourceMap<ShaderResource> app_shaders;
         ResourceMap<TextureResource> app_textures;
@@ -46,6 +66,7 @@ namespace YE {
 
         void StoreShaders(const std::string& dir_path , ResourceMap<ShaderResource>& shaders);
         void StoreTextures(const std::string& dir_path , ResourceMap<TextureResource>& textures);
+        void StoreFonts(const std::string& dir_path , ResourceMap<FontResource>& fonts);
         void GeneratePrimitiveVAOs(ResourceMap<VertexArrayResource>& vaos);
         void StoreModels(const std::string& dir_path , ResourceMap<ModelResource>& models);
 
@@ -56,6 +77,7 @@ namespace YE {
 
         void CleanupShaders(ResourceMap<ShaderResource>& shaders);
         void CleanupTextures(ResourceMap<TextureResource>& textures);
+        void CleanupFonts(ResourceMap<FontResource>& fonts);
         void CleanupPrimitiveVAOs(ResourceMap<VertexArrayResource>& vaos);
         void CleanupModels(ResourceMap<ModelResource>& models);
 
@@ -83,16 +105,23 @@ namespace YE {
             void Load();
             void Offload();
 
-            void AddShader(const std::string& vert_path , const std::string& frag_path ,
-                           const std::string& geom_path = "");
-            void AddTexture(const std::string& path);
-            void AddModel(const std::string& path);
-
+            void AddShader(
+                const std::string& vert_path , const std::string& frag_path ,
+                const std::string& geom_path = "" , ResourceType type = ResourceType::CORE
+            );
+            void AddShader(const std::string& name , Shader* shader , ResourceType type = ResourceType::CORE) {}
+            void AddTexture(const std::string& path , ResourceType type = ResourceType::CORE);
+            void AddTexture(const std::string& name , Texture* texture , ResourceType type = ResourceType::CORE); 
+            void AddModel(const std::string& path , ResourceType type = ResourceType::CORE);
+            void AddModel(const std::string& name , Model* model , ResourceType type = ResourceType::CORE) {}
+            
             Shader* GetCoreShader(const std::string& name);
             Shader* GetShader(const std::string& name);
 
             Texture* GetCoreTexture(const std::string& name);
             Texture* GetTexture(const std::string& name);
+
+            ImFont* GetCoreFont(const std::string& name);
 
             VertexArray* GetPrimitiveVAO(const std::string& name);
 
@@ -105,6 +134,7 @@ namespace YE {
 
             inline void AcknowledgeShaderReload() { shaders_reloaded = false; }
             inline bool ShadersReloaded() const { return shaders_reloaded; }
+            inline msdfgen::FreetypeHandle* Freetype() const { return freetype; }
     };
 
 }

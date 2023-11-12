@@ -64,6 +64,8 @@ workspace "<projectname>"
             "%{externals.magic_enum}" ,
             "%{externals.zep}/include" ,
             "%{externals.nfd}/src" ,
+            "%{externals.msdfgen}" ,
+            "%{externals.msdfatlasgen}" ,
         }
         
         libdirs {
@@ -76,6 +78,7 @@ workspace "<projectname>"
             "<engine-folder>/bin/%{cfg.buildcfg}/reactphysics3d" ,
             "<engine-folder>/bin/%{cfg.buildcfg}/zep" ,
             "<engine-folder>/bin/%{cfg.buildcfg}/nfd" ,
+            "<engine-folder>/bin/%{cfg.buildcfg}/msdf" ,
             "%{externals.sdl2}/lib/x64" ,
             "%{externals.mono}/lib/%{cfg.buildcfg}" ,
             "%{externals.assimp}/lib/%{cfg.buildcfg}"
@@ -94,7 +97,8 @@ workspace "<projectname>"
             "mono-2.0-sgen" ,
             "reactphysics3d" ,
             "zep" ,
-            "nfd"
+            "nfd" ,
+            "msdf" ,
         }
 
         filter { "system:windows" , "configurations:*" }

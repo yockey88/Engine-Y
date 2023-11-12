@@ -17,5 +17,7 @@ externals["react"] = externals_folder .. "/ReactPhysics3d"
 externals["magic_enum"] = externals_folder .. "/magic_enum"
 externals["zep"] = externals_folder .. "/zep"
 externals["nfd"] = externals_folder .. "/nativefiledialog"
+externals["msdfgen"] = externals_folder .. "/msdf-atlas-gen/msdfgen"
+externals["msdfatlasgen"] = externals_folder .. "/msdf-atlas-gen"
 
 return externals

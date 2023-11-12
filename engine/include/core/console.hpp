@@ -1,9 +1,12 @@
 #ifndef YE_CONSOLE_HPP
 #define YE_CONSOLE_HPP
 
+#include <sstream>
 #include <string>
 #include <vector>
 #include <functional>
+
+#include <imgui/imgui.h>
 
 #include "defines.hpp"
 
@@ -24,6 +27,7 @@ namespace YE {
         std::string message;
     };
 
+
     using ConsolePanelCallback = std::function<void(const std::vector<void*>&)>; 
     using ConsolePanel = std::pair<std::string , ConsolePanelCallback>;
 
@@ -32,14 +36,18 @@ namespace YE {
         static std::vector<ConsoleMessage> message_history;
         static std::vector<ConsoleMessage> messages;
 
+        bool is_initialized = false;
+        std::string fonts_directory;
         uint16_t filter_flags = (uint16_t)ConsoleMessageType::ALL;
-        
+
+        static constexpr size_t kCmndBufferSize = 512; 
+        static char cmnd_buffer[kCmndBufferSize];
         static void ExecuteCommand(const ConsoleMessage& cmd);
 
         public:
             void Initialize();
             void Update();
-            void DrawGui(const std::vector<ConsolePanel>& panels = {});
+            void DrawGui();
             void Shutdown(); 
 
             static void SinkMessage(const ConsoleMessage& msg); 

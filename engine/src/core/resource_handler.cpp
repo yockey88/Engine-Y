@@ -1,6 +1,9 @@
 #include "core/resource_handler.hpp"
 
 #include <stb_image.h>
+#include <imgui/imgui.h>
+#include <msdfgen/msdfgen-ext.h>
+#include <msdfgen/ext/import-font.h>
 
 #include "log.hpp"
 #include "core/filesystem.hpp"
@@ -100,6 +103,20 @@ namespace YE {
         EXIT_FUNCTION_TRACE();
     }
     
+    void ResourceHandler::StoreFonts(const std::string& dir_path , ResourceMap<FontResource>& fonts) {
+        std::string res = Filesystem::GetEngineResPath();
+        
+        ENGINE_INFO("Loading fonts from :: [{0}]" , res + "/fonts/IBMPlexMono/BlexMonoNerdFontMono-Regular.ttf");
+
+        FontResource blex_mono {
+            "BlexMono" , 
+            res + "/fonts/IBMPlexMono/BlexMonoNerdFontMono-Regular.ttf" , 
+            ImGui::GetIO().Fonts->AddFontFromFileTTF((res + "/fonts/IBMPlexMono/BlexMonoNerdFontMono-Regular.ttf").c_str() , 16.f)
+        };
+
+        fonts[Hash::FNV(blex_mono.name)] = blex_mono;
+    }
+
     // quad , cube , sphere , icosphere , cylinder , cone , torus , plane
     void ResourceHandler::GeneratePrimitiveVAOs(ResourceMap<VertexArrayResource>& vaos) {
         ENTER_FUNCTION_TRACE();
@@ -222,6 +239,15 @@ namespace YE {
         EXIT_FUNCTION_TRACE();
     }
     
+    void ResourceHandler::CleanupFonts(ResourceMap<FontResource>& fonts) {
+        ENTER_FUNCTION_TRACE();
+        
+        /// imgui deletes the fonts itself
+        fonts.clear();
+
+        EXIT_FUNCTION_TRACE();
+    }
+
     void ResourceHandler::CleanupPrimitiveVAOs(ResourceMap<VertexArrayResource>& vaos) {
         ENTER_FUNCTION_TRACE();
 
@@ -244,19 +270,17 @@ namespace YE {
     }
 
     ResourceHandler* ResourceHandler::Instance() {
-        ENTER_FUNCTION_TRACE();
-
         if (singleton == nullptr)
             singleton = ynew ResourceHandler;
         return singleton;
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void ResourceHandler::Load() {
         ENTER_FUNCTION_TRACE();
 
-        stbi_set_flip_vertically_on_load(true);
+        // how to determine which textures need this and which dont?
+        // stbi_set_flip_vertically_on_load(true);
+        freetype = msdfgen::initializeFreetype();
 
         engine_resource_dir = Filesystem::GetEngineResPath();
         engine_shader_dir = Filesystem::GetEngineShaderPath();
@@ -267,6 +291,8 @@ namespace YE {
         app_shader_dir = Filesystem::GetShaderPath();
         app_texture_dir = Filesystem::GetTexturePath();
         app_model_dir = Filesystem::GetModelPath();
+        
+        std::string font_dir = engine_resource_dir + "/fonts";
 
         StoreShaders(engine_shader_dir , engine_shaders);
         StoreShaders(app_shader_dir , app_shaders);
@@ -277,6 +303,8 @@ namespace YE {
         StoreTextures(app_texture_dir , app_textures);
         LoadTextures(engine_textures);
         LoadTextures(app_textures);
+
+        StoreFonts(font_dir , engine_fonts);
 
         GeneratePrimitiveVAOs(primitive_vaos);
         UploadPrimitiveVAOs(primitive_vaos);
@@ -296,15 +324,20 @@ namespace YE {
         CleanupShaders(app_shaders);
         CleanupTextures(engine_textures);
         CleanupTextures(app_textures);
+        CleanupFonts(engine_fonts);
         CleanupPrimitiveVAOs(primitive_vaos);
         CleanupModels(engine_models);
         CleanupModels(app_models);
+        
+        msdfgen::deinitializeFreetype(freetype);
 
         EXIT_FUNCTION_TRACE();
     }
 
-    void ResourceHandler::AddShader(const std::string& vert_path , const std::string& frag_path ,
-                                    const std::string& geom_path) {
+    void ResourceHandler::AddShader(
+        const std::string& vert_path , const std::string& frag_path ,
+        const std::string& geom_path , ResourceType type
+    ) {
         ENTER_FUNCTION_TRACE_MSG(vert_path + " | " + frag_path + " | " + geom_path);
         
         // UUID id = Hash::FNV(vert_path + frag_path + geom_path);
@@ -319,7 +352,7 @@ namespace YE {
         EXIT_FUNCTION_TRACE();
     }
 
-    void ResourceHandler::AddTexture(const std::string& path) {
+    void ResourceHandler::AddTexture(const std::string& path , ResourceType type) {
         ENTER_FUNCTION_TRACE_MSG(path);
 
         // UUID id = Hash::FNV(path);
@@ -329,8 +362,31 @@ namespace YE {
 
         EXIT_FUNCTION_TRACE();
     }
+    
+    void ResourceHandler::AddTexture(const std::string& name , Texture* texture , ResourceType type) {
+        ENTER_FUNCTION_TRACE_MSG(name);
 
-    void ResourceHandler::AddModel(const std::string& path) {
+        UUID id = Hash::FNV(name);
+        switch (type) {
+            case ResourceType::CORE: {
+                if (!CheckID(id , name , engine_textures)) return;
+                engine_textures[id].texture = texture;
+                break;
+            } 
+            case ResourceType::APP: {
+                if (!CheckID(id , name , app_textures)) return;
+                app_textures[id].texture = texture;
+                break;
+            }
+            default:
+                ENGINE_WARN("Failed to add texture :: [{0}] | Invalid resource type" , name);
+                break;
+        }
+
+        EXIT_FUNCTION_TRACE();
+    } 
+
+    void ResourceHandler::AddModel(const std::string& path , ResourceType type) {
         ENTER_FUNCTION_TRACE_MSG(path);
 
         // UUID id = Hash::FNV(path);
@@ -342,16 +398,12 @@ namespace YE {
     }
 
     Shader* ResourceHandler::GetCoreShader(const std::string& name) {
-        ENTER_FUNCTION_TRACE_MSG(name);
-
         for (auto& [id , shader] : engine_shaders)
             if (shader.name == name) return shader.shader;
         return nullptr;
     }
 
     Shader* ResourceHandler::GetShader(const std::string& name) {
-        ENTER_FUNCTION_TRACE_MSG(name);
-
         for (auto& [id , shader] : app_shaders)
             if (shader.name == name) return shader.shader;
         
@@ -359,40 +411,36 @@ namespace YE {
     }
     
     Texture* ResourceHandler::GetCoreTexture(const std::string& name) {
-        ENTER_FUNCTION_TRACE_MSG(name);
-
         for (auto& [id , texture] : engine_textures)
             if (texture.name == name) return texture.texture;
         return nullptr;
     }
 
     Texture* ResourceHandler::GetTexture(const std::string& name) {
-        ENTER_FUNCTION_TRACE_MSG(name);
-
         for (auto& [id , texture] : app_textures)
             if (texture.name == name) return texture.texture;
         return nullptr;
     }
+    
+    ImFont* ResourceHandler::GetCoreFont(const std::string& name) {
+        for (auto& [id , font] : engine_fonts)
+            if (font.name == name) return font.font;
+        return nullptr;
+    }
 
     VertexArray* ResourceHandler::GetPrimitiveVAO(const std::string& name) {
-        ENTER_FUNCTION_TRACE_MSG(name);
-
         for (auto& [id , vao] : primitive_vaos)
             if (vao.name == name) return vao.vao;
         return nullptr;
     }
 
     Model* ResourceHandler::GetCoreModel(const std::string& name) {
-        ENTER_FUNCTION_TRACE_MSG(name);
-
         for (auto& [id , model] : engine_models)
             if (model.name == name) return model.model;
         return nullptr;
     }
 
     Model* ResourceHandler::GetModel(const std::string& name) {
-        ENTER_FUNCTION_TRACE_MSG(name);
-
         for (auto& [id , model] : app_models)
             if (model.name == name) return model.model;
         return nullptr;

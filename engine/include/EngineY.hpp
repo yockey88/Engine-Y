@@ -58,6 +58,7 @@
 #include "core/text_editor.hpp"
 #include "core/command_line_args.hpp"
 #include "core/console.hpp"
+#include "core/font.hpp"
 #include "parsing/yscript/node_builder.hpp"
 #include "parsing/shader/shader_parser.hpp"
 #include "event/events.hpp"

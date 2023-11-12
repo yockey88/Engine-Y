@@ -12,6 +12,7 @@
 #include "systems.hpp"
 #include "core/RNG.hpp"
 #include "core/UUID.hpp"
+#include "rendering/camera.hpp"
 #include "rendering/renderer.hpp"
 
 constexpr uint32_t kMaxPointLights = 128;

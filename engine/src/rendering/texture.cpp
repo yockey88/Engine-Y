@@ -6,6 +6,31 @@
 #include "log.hpp"
 
 namespace YE {
+    
+    Texture::Texture(
+        const glm::ivec2& size , void* pixels , 
+        ChannelType channels , TargetType target
+    ) {
+        this->size = size;
+        this->pixels = reinterpret_cast<uint8_t*>(pixels);
+        this->channels = channels;
+        this->target = target;
+        
+        glGenTextures(1 , &texture);
+        glBindTexture(target , texture);
+
+        glTexParameteri(target , GL_TEXTURE_WRAP_S , GL_REPEAT);
+        glTexParameteri(target , GL_TEXTURE_WRAP_T , GL_REPEAT);
+
+        glTexImage2D(target , 0 , channels , size.x , size.y , 0 , channels , GL_UNSIGNED_BYTE , pixels);
+
+        glTexParameteri(target , GL_TEXTURE_MIN_FILTER , GL_LINEAR);
+        glTexParameteri(target , GL_TEXTURE_MAG_FILTER , GL_LINEAR);
+        
+        glGenerateMipmap(target);
+
+        loaded = true;
+    }
 
     Texture::~Texture() {
         stbi_image_free(pixels);
@@ -15,15 +40,14 @@ namespace YE {
     }
 
     void Texture::Load(TargetType target , ChannelType channels) {
+        if (loaded)
+            return;
+
         this->target = target;
         this->channels = channels;
         
         glGenTextures(1 , &texture);
-
-        glBindTexture(GL_TEXTURE_2D , texture);
-        
-        glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_WRAP_S , GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_WRAP_T , GL_REPEAT);
+        glBindTexture(target , texture);
 
         int num_channels = 0;
         pixels = stbi_load(path.c_str() , &size.x , &size.y , &num_channels , 0);
@@ -32,6 +56,9 @@ namespace YE {
             ENGINE_ERROR("Failed to load texture :: {0}" , path);
             ENGINE_WARN("Using default texture");
 
+            glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_WRAP_S , GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_WRAP_T , GL_REPEAT);
+            
             float def_pixels[] = {
                 1.f , 1.f , 1.f ,   1.f , 0.f , 0.f ,   0.f , 1.f , 0.f ,   0.f , 0.f , 1.f ,
                 0.f , 0.f , 1.f ,   1.f , 1.f , 1.f ,   1.f , 0.f , 0.f ,   0.f , 1.f , 0.f ,
@@ -46,7 +73,9 @@ namespace YE {
             glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MIN_FILTER , GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MAG_FILTER , GL_NEAREST);
         } else {
-
+            glTexParameteri(target , GL_TEXTURE_WRAP_S , GL_REPEAT);
+            glTexParameteri(target , GL_TEXTURE_WRAP_T , GL_REPEAT);
+           
             if (num_channels == 1) {
                 channels = RED;
             } else if (num_channels == 3) {
@@ -57,13 +86,15 @@ namespace YE {
                 YE_CRITICAL_ASSERTION(false , "Invalid number of channels");
             }
 
-            glTexImage2D(GL_TEXTURE_2D , 0 , channels , size.x , size.y , 0 , channels , GL_UNSIGNED_BYTE , pixels);
+            glTexImage2D(target , 0 , channels , size.x , size.y , 0 , channels , GL_UNSIGNED_BYTE , pixels);
 
-            glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MIN_FILTER , GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MAG_FILTER , GL_LINEAR);
+            glTexParameteri(target , GL_TEXTURE_MIN_FILTER , GL_LINEAR);
+            glTexParameteri(target , GL_TEXTURE_MAG_FILTER , GL_LINEAR);
             
-            glGenerateMipmap(GL_TEXTURE_2D);
+            glGenerateMipmap(target);
         }
+
+        loaded = true;
     }
             
     void Texture::SetFilterType(FilterType filter) {

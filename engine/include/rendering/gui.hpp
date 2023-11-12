@@ -1,16 +1,16 @@
 #ifndef YE_GUI_HPP
 #define YE_GUI_HPP
 
+#include <map>
+
 #include <SDL.h>
+#include <imgui/imgui.h>
 
 #include "core/window.hpp"
 
 namespace YE {
-
+    
     class Gui {
-        void RenderMainMenuBar(Window* window);
-        void RenderMainWindow(Window* window);
-
         public:
             Gui() {}
             ~Gui() {}

@@ -33,6 +33,9 @@ namespace components {
         rp3d::DebugRenderer::DebugLine* debug_lines = nullptr;
         rp3d::DebugRenderer::DebugTriangle* debug_triangles = nullptr;
 
+        // components::Renderable debug_line_renderable;
+        // components::Renderable debug_triangle_renderable;
+
         uint32_t debug_line_count = 0;
         uint32_t debug_triangle_count = 0;
 

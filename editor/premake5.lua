@@ -3,7 +3,7 @@ externals = require("externals")
 
 version = "0.0.2"
 projectname = "editor"
-engine_root = "C:/Program Files/EngineY" 
+engine_root = os.getcwd() 
 
 workspace (projectname)
     architecture "x64"
@@ -72,6 +72,8 @@ workspace (projectname)
             "%{externals.magic_enum}" ,
             "%{externals.zep}/include" ,
             "%{externals.nfd}/src" ,
+            "%{externals.msdfgen}" ,
+            "%{externals.msdfatlasgen}"
         }
         
         libdirs {
@@ -84,6 +86,7 @@ workspace (projectname)
             binaries .. "/reactphysics3d" ,
             binaries .. "/zep" ,
             binaries .. "/nfd" ,
+            binaries .. "/msdf" ,
             "%{externals.sdl2}/lib/x64" ,
             "%{externals.mono}/lib/%{cfg.buildcfg}" ,
             "%{externals.assimp}/lib/%{cfg.buildcfg}"
@@ -103,6 +106,7 @@ workspace (projectname)
             "reactphysics3d" ,
             "zep" ,
             "nfd" ,
+            "msdf" ,
         }
 
         filter { "system:windows" , "configurations:*" }

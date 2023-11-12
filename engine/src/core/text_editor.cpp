@@ -9,7 +9,7 @@ namespace YE {
         
     Zep::Msg TextEditor::MsgIdFromString(const std::string& message) {
         if (message == "RequestQuit") return Zep::Msg::RequestQuit;
-        YE_CRITICAL_ASSERTION(false , "Unknown or Unimplemented Message :: {}" , message);
+        LOG_WARN("Unknown or Unimplemented Message :: {}" , message);
     }
  
     void TextEditor::Initialize(const glm::vec2& pixel_scale) {

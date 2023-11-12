@@ -99,7 +99,7 @@ class Launcher : public YE::App {
             if (!std::filesystem::exists(engine_folder)) {
                 std::filesystem::create_directory(engine_folder);
                 std::filesystem::create_directory(project_folder);
-            }
+            } 
 
             return true;
         }

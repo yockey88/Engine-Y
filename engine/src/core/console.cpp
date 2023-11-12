@@ -3,6 +3,8 @@
 #include <imgui/imgui.h>
 
 #include "log.hpp"
+#include "core/filesystem.hpp"
+#include "core/resource_handler.hpp"
 #include "rendering/renderer.hpp"
 
 namespace YE {
@@ -10,6 +12,8 @@ namespace YE {
     std::vector<ConsoleMessage> EngineConsole::command_history;
     std::vector<ConsoleMessage> EngineConsole::message_history;
     std::vector<ConsoleMessage> EngineConsole::messages;
+
+    char EngineConsole::cmnd_buffer[kCmndBufferSize] = "$>  "; 
 
     void EngineConsole::ExecuteCommand(const ConsoleMessage& cmd) {
         ENTER_FUNCTION_TRACE_MSG(cmd.message);
@@ -29,11 +33,21 @@ namespace YE {
         EXIT_FUNCTION_TRACE();
     }
     
-    void EngineConsole::Initialize() {}
+    void EngineConsole::Initialize() {
+        ENTER_FUNCTION_TRACE();
+
+        is_initialized = true;
+
+        EXIT_FUNCTION_TRACE();
+    }
     
     void EngineConsole::Update() {}
     
-    void EngineConsole::DrawGui(const std::vector<ConsolePanel>& panels) {
+    void EngineConsole::DrawGui() {
+        if (!is_initialized) {
+            Initialize();
+        }
+
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar;
         glm::ivec2 win_size = Renderer::Instance()->ActiveWindow()->GetSize();
 
@@ -41,6 +55,13 @@ namespace YE {
 
         ImGui::PushStyleColor(ImGuiCol_WindowBg , console_bg_color);
         ImGui::PushStyleColor(ImGuiCol_ChildBg , console_bg_color);
+
+        ImFont* blex = ResourceHandler::Instance()->GetCoreFont("BlexMono");
+        if (blex != nullptr) {
+            ImGui::PushFont(blex);
+        } else {
+            LOG_WARN("Failed to load BlexMono font");
+        }
 
         ImGui::SetNextWindowSize(ImVec2(win_size.x , (win_size.y / 2) - 200), ImGuiCond_FirstUseEver);
         if (ImGui::Begin("Editor Console" , nullptr , window_flags)) {
@@ -72,12 +93,30 @@ namespace YE {
             }
             ImGui::EndChild();
 
-            for (const ConsolePanel& panel : panels) {
-                panel.second({});
+            ImGui::PushStyleColor(ImGuiCol_FrameBg , ImVec4(0x0E / 255 , 0x0E / 255 , 0x0E / 255 , 1.f));
+            // ImGui::PushFont()
+            if (ImGui::BeginChild("##command-bar")) {
+                ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll; 
+                if (ImGui::InputText("##command-bar" , cmnd_buffer , kCmndBufferSize , input_text_flags)) {
+                    std::string input = cmnd_buffer;
+                    input = input.substr(2 , input.size() - 2); // remove '$>'
+
+                    // trim whitespace
+                    size_t beginning = input.find_first_not_of(' ');
+                    size_t end = input.find_last_not_of(' ');
+                    size_t range = end - beginning + 1;
+                    input = input.substr(beginning , range);
+
+                    YE::EngineConsole::SinkMessage({ YE::ConsoleMessageType::COMMAND , input });
+                    std::strcpy(cmnd_buffer , "$>  ");    
+                }
             }
+            ImGui::EndChild();
+            ImGui::PopStyleColor();
         }
         ImGui::End();
-        
+
+        if (blex != nullptr) ImGui::PopFont();
         ImGui::PopStyleColor(2);
     }
     

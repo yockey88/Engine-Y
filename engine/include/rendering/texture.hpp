@@ -71,6 +71,8 @@ namespace YE {
 
         uint8_t* pixels = nullptr;
 
+        bool loaded = false;
+
         std::string name;
         std::string path;
         
@@ -80,6 +82,10 @@ namespace YE {
         Texture& operator=(const Texture&) = delete;
         
         public:
+            Texture(
+                const glm::ivec2& size , void* pixels , 
+                ChannelType channels = RGB , TargetType target = TEX_2D
+            ); 
             Texture(const std::string& path) 
                 : path(path) {}
             ~Texture();
@@ -94,6 +100,7 @@ namespace YE {
 
             std::string GetTypeName() const;
 
+            inline const glm::ivec2& Size() const { return size; }
             inline std::string Name() const { return name; }
             inline void SetName(const std::string& name) { this->name = name; }
     };

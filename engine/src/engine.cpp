@@ -244,7 +244,7 @@ namespace YE {
 #endif
 
         app_config = app->GetEngineConfig();
-        app_config.engine_root = program_files + "/EngineY";
+        app_config.engine_root = std::filesystem::current_path().string(); // program_files + "/EngineY";
         app_config.mono_dll_path = app_config.engine_root + "/external";
 
         if (app->ProjectName() == "editor") 

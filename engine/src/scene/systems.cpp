@@ -268,8 +268,6 @@ namespace YE {
     }
 
     void Systems::UpdateScene(Scene* context , float dt) {
-        ENTER_FUNCTION_TRACE();
-
         PhysicsEngine::Instance()->StepPhysics();
 
         if (ResourceHandler::Instance()->ShadersReloaded()) {
@@ -281,26 +279,18 @@ namespace YE {
             BindScripts(context);
             ScriptEngine::Instance()->AcknowledgeModuleReload();
         }
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::UpdateTransform(components::Transform& transform) {
-        ENTER_FUNCTION_TRACE();
-
         transform.model = glm::mat4(1.f);
         transform.model = glm::translate(transform.model , transform.position);
         transform.model = glm::rotate(transform.model , transform.rotation.x , glm::vec3(1.f , 0.f , 0.f));
         transform.model = glm::rotate(transform.model , transform.rotation.y , glm::vec3(0.f , 1.f , 0.f));
         transform.model = glm::rotate(transform.model , transform.rotation.z , glm::vec3(0.f , 0.f , 1.f));
         transform.model = glm::scale(transform.model , transform.scale);
-
-        EXIT_FUNCTION_TRACE();
     }
  
     void Systems::UpdatePhysicsBody(components::PhysicsBody& body , components::Transform& transform) {
-        ENTER_FUNCTION_TRACE();
-
         const rp3d::Transform& physics_transform = body.body->getTransform();
         const rp3d::Transform& inter_transform = rp3d::Transform::interpolateTransforms(
             body.GetInterpolationTransform() , physics_transform , PhysicsEngine::Instance()->Alpha()
@@ -329,21 +319,13 @@ namespace YE {
         };
 
         body.SetInterpolationTransform(physics_transform);
-
-        EXIT_FUNCTION_TRACE();
     }
     
     void Systems::UpdateRenderable(components::Renderable& renderable , const std::vector<components::PointLight>& lights) {
-        ENTER_FUNCTION_TRACE();
-
-        EXIT_FUNCTION_TRACE();
     }
     
     void Systems::UpdateTexturedRenderable(components::TexturedRenderable& renderable , const std::vector<components::PointLight>& plights) {
-        ENTER_FUNCTION_TRACE();
-
         if (renderable.corrupted || renderable.shader == nullptr) { 
-            EXIT_FUNCTION_TRACE();
             return; 
         }
 
@@ -363,15 +345,9 @@ namespace YE {
         }
         renderable.shader->SetUniformFloat("material.shininess" , renderable.material.shininess);
         renderable.shader->Unbind();
-
-        EXIT_FUNCTION_TRACE();
     }
     
     void Systems::UpdateRenderableModel(components::RenderableModel& renderable , const std::vector<components::PointLight>& lights) {
-        ENTER_FUNCTION_TRACE();
-
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::UnbindScripts(Scene* context) {

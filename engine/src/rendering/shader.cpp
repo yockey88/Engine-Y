@@ -11,9 +11,9 @@
 
 namespace YE {
 
+    /// \todo save locations of shaders to avoid glGetUniformLocations call
+    ///     every time a uniform is set
     uint32_t Shader::GetUniformLocation(const std::string& name) {
-        ENTER_FUNCTION_TRACE();
-
         UUID32 id = Hash::FNV32(name);
         
         if (uniform_locations.find(id) != uniform_locations.end())
@@ -21,8 +21,6 @@ namespace YE {
 
         int32_t location = glGetUniformLocation(program , name.c_str());
         uniform_locations[id] = location;
-
-        EXIT_FUNCTION_TRACE();
         return location;
     }
     
@@ -127,8 +125,6 @@ namespace YE {
     }
     
     void Shader::SetUniform(const Uniform& uniform) {
-        ENTER_FUNCTION_TRACE();
-
         YE_CRITICAL_ASSERTION(uniform.data.data_handle != nullptr , "Attempting to set uniform with no data");
 
         uint32_t ival;
@@ -170,64 +166,34 @@ namespace YE {
             default:
                 YE_CRITICAL_ASSERTION(false , "Invalid uniform type");
         }
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Shader::SetUniformInt(const std::string& name , uint32_t val) {
-		ENTER_FUNCTION_TRACE();
-
         glUniform1i(GetUniformLocation(name) , val);
-
-		EXIT_FUNCTION_TRACE();
     }
 
     void Shader::SetUniformFloat(const std::string& name , float val) {
-		ENTER_FUNCTION_TRACE();
-
         glUniform1f(GetUniformLocation(name) , val);
-
-		EXIT_FUNCTION_TRACE();
     }
 
     void Shader::SetUniformVec2(const std::string& name , const glm::vec2& val) {
-		ENTER_FUNCTION_TRACE();
-
         glUniform2f(GetUniformLocation(name) , val.x , val.y);
-
-		EXIT_FUNCTION_TRACE();
     }
 
     void Shader::SetUniformVec3(const std::string& name , const glm::vec3& val) {
-		ENTER_FUNCTION_TRACE();
-  
         glUniform3f(GetUniformLocation(name) , val.x , val.y , val.z);
-		
-        EXIT_FUNCTION_TRACE();
     }
 
     void Shader::SetUniformVec4(const std::string& name , const glm::vec4& val) {
-		ENTER_FUNCTION_TRACE();
-        
         glUniform4f(GetUniformLocation(name) , val.x , val.y , val.z , val.w);
-        
-		EXIT_FUNCTION_TRACE();
     }
 
     void Shader::SetUniformMat3(const std::string& name , const glm::mat3& mat) {
-		ENTER_FUNCTION_TRACE();
-  
         glUniformMatrix3fv(GetUniformLocation(name) , 1 , GL_FALSE , glm::value_ptr(mat));
-		
-        EXIT_FUNCTION_TRACE();
     }
     
     void Shader::SetUniformMat4(const std::string& name , const glm::mat4& mat) {
-		ENTER_FUNCTION_TRACE();
-  
         glUniformMatrix4fv(GetUniformLocation(name) , 1 , GL_FALSE , glm::value_ptr(mat));
-
-		EXIT_FUNCTION_TRACE();
     }
     
 }

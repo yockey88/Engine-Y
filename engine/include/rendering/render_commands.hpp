@@ -7,13 +7,16 @@
 
 #include <glm/glm.hpp>
 
-#include "rendering/vertex_array.hpp"
-#include "rendering/shader.hpp"
-#include "rendering/texture.hpp"
-#include "rendering/model.hpp"
-#include "rendering/camera.hpp"
+#include "core/resource_handler.hpp"
 
 namespace YE {
+
+    class Font;
+    class VertexArray;
+    class Shader;
+    class Texture;
+    class Model;
+    class Camera;
 
 namespace components {
     
@@ -31,65 +34,87 @@ namespace components {
             virtual void Execute(Camera* camera , const ShaderUniforms& uniforms) = 0;
     };
 
-    class DrawVao : public RenderCommand {
+    /* Eventually ::
+        using ColoredGlyph = std::pair<color , glyph>;
+        RenderText {
+            std::vector<ColoredGlyph> glyphs;
+        }
+        FontRenderable {
+            Font* font;
+            RenderText text; 
+            Shader* shader;
+            std::string shader_name;
+        };
+    */
+
+    class DrawFont : public RenderCommand {
         VertexArray* vao = nullptr;
+        Font* font = nullptr;
         Shader* shader = nullptr;
-        glm::mat4 model;
+        std::string text;
+        const glm::mat4& model; 
         DrawMode mode;
 
         public:
-            DrawVao(VertexArray* vao , Shader* shader , const glm::mat4& model , DrawMode mode = DrawMode::TRIANGLES) 
-                    : vao(vao) , shader(shader) , model(model) , mode(mode) {}
+            DrawFont(
+                Font* font , Shader* shader , const std::string& text , 
+                const glm::mat4& model , DrawMode mode = DrawMode::TRIANGLES
+            ) : vao(ResourceHandler::Instance()->GetPrimitiveVAO("quad")) , 
+                font(font) , shader(shader) , text(text) , model(model) , mode(mode) {}
             virtual void Execute(Camera* camera , const ShaderUniforms& uniforms) override;
     };
 
     class DrawRenderable : public RenderCommand {
         components::Renderable& renderable;
-        const glm::mat4 model;
+        const glm::mat4& model;
         DrawMode mode;
 
         public:
-            DrawRenderable(components::Renderable& renderable , const glm::mat4& model , 
-                    DrawMode mode = DrawMode::TRIANGLES) 
-                    : renderable(renderable) , model(model) , mode(mode) {}
+            DrawRenderable(
+                components::Renderable& renderable , const glm::mat4& model , 
+                DrawMode mode = DrawMode::TRIANGLES
+            ) : renderable(renderable) , model(model) , mode(mode) {}
             virtual void Execute(Camera* camera , const ShaderUniforms& uniforms) override;
 
     };
 
     class DrawTexturedRenderable : public RenderCommand {
         components::TexturedRenderable& renderable;
-        const glm::mat4 model;
+        const glm::mat4& model;
         DrawMode mode;
 
         public:
-            DrawTexturedRenderable(components::TexturedRenderable& renderable , const glm::mat4& model ,
-                            DrawMode mode = DrawMode::TRIANGLES) 
-                            : renderable(renderable) , model(model) , mode(mode) {}
+            DrawTexturedRenderable(
+                components::TexturedRenderable& renderable , const glm::mat4& model ,
+                DrawMode mode = DrawMode::TRIANGLES
+            ) : renderable(renderable) , model(model) , mode(mode) {}
             virtual void Execute(Camera* camera , const ShaderUniforms& uniforms) override;
     };
 
     class DrawRenderableModel : public RenderCommand {
         components::RenderableModel& renderable;
-        const glm::mat4 model_matrix;
+        const glm::mat4& model_matrix;
         DrawMode mode;
 
         public:
-            DrawRenderableModel(components::RenderableModel& renderable , const glm::mat4& model_matrix , 
-                      DrawMode mode = DrawMode::TRIANGLES) 
-                      : renderable(renderable) , model_matrix(model_matrix) , mode(mode) {}
+            DrawRenderableModel(
+                components::RenderableModel& renderable , const glm::mat4& model_matrix , 
+                DrawMode mode = DrawMode::TRIANGLES
+            ) : renderable(renderable) , model_matrix(model_matrix) , mode(mode) {}
             virtual void Execute(Camera* camera , const ShaderUniforms& uniforms) override;
     };
 
     class DrawPointLight : public RenderCommand {
         components::Renderable& renderable;
         components::PointLight* light = nullptr;
-        const glm::mat4 model_matrix;
+        const glm::mat4& model_matrix;
         DrawMode mode;
 
         public:
-            DrawPointLight(components::Renderable& renderable , components::PointLight* light , const glm::mat4& model_matrix , 
-                           DrawMode mode = DrawMode::TRIANGLES) 
-                           : renderable(renderable) , light(light) , model_matrix(model_matrix) , mode(mode) {}
+            DrawPointLight(
+                components::Renderable& renderable , components::PointLight* light , const glm::mat4& model_matrix , 
+                DrawMode mode = DrawMode::TRIANGLES
+            ) : renderable(renderable) , light(light) , model_matrix(model_matrix) , mode(mode) {}
             virtual void Execute(Camera* camera , const ShaderUniforms& uniforms) override;
     };
 

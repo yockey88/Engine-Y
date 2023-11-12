@@ -90,37 +90,39 @@ namespace YE {
             line_vertices.push_back((lines[i].color2 & 0xFF) / 255);
         }
 
-        VertexArray* debug_triangle_vao = ynew VertexArray(triangle_vertices , {} , std::vector<uint32_t> {
-            3 , 3
-        });
-        debug_triangle_vao->Upload();
+        // temporary until better rendering system is in place
+        // ydelete debug_triangle_renderable.vao;
+        // debug_triangle_renderable.vao = ynew VertexArray(triangle_vertices , {} , std::vector<uint32_t> {
+        //     3 , 3
+        // });
+        // debug_triangle_vao->Upload();
 
-        VertexArray* debug_line_vao = ynew VertexArray(line_vertices , {} , std::vector<uint32_t> {
-            3 , 3
-        });
-        debug_line_vao->Upload();
+        // ydelete debug_line_renderable.vao;
+        // debug_line_renderable.vao = ynew VertexArray(line_vertices , {} , std::vector<uint32_t> {
+        //     3 , 3
+        // });
+        // debug_line_vao->Upload();
 
-        std::unique_ptr<RenderCommand> debug_triangles = std::make_unique<DrawVao>(
-            debug_triangle_vao ,
-            ResourceHandler::Instance()->GetCoreShader("default") ,
-            glm::mat4(1.f) , DrawMode::TRIANGLES
-        );
-        std::unique_ptr<RenderCommand> debug_lines = std::make_unique<DrawVao>(
-            debug_line_vao , 
-            ResourceHandler::Instance()->GetCoreShader("default") ,
-            glm::mat4(1.f) , DrawMode::LINES
-        );
+        // std::unique_ptr<RenderCommand> debug_triangles = std::make_unique<DrawVao>(
+        //     debug_triangle_vao ,
+        //     ResourceHandler::Instance()->GetCoreShader("default") ,
+        //     glm::mat4(1.f) , DrawMode::TRIANGLES
+        // );
+        // std::unique_ptr<RenderCommand> debug_lines = std::make_unique<DrawVao>(
+        //     debug_line_vao , 
+        //     ResourceHandler::Instance()->GetCoreShader("default") ,
+        //     glm::mat4(1.f) , DrawMode::LINES
+        // );
 
-        Renderer::Instance()->SubmitDebugRenderCmnd(debug_triangles);
-        Renderer::Instance()->SubmitDebugRenderCmnd(debug_lines);
+        // Renderer::Instance()->SubmitDebugRenderCmnd(debug_triangles);
+        // Renderer::Instance()->SubmitDebugRenderCmnd(debug_lines);
+        // end temporary
 
         EXIT_FUNCTION_TRACE();
     }
 
 
     PhysicsEngine* PhysicsEngine::Instance() {
-        ENTER_FUNCTION_TRACE();
-
         if (singleton == nullptr)
             singleton = ynew PhysicsEngine;
         return singleton;
@@ -129,13 +131,13 @@ namespace YE {
     void PhysicsEngine::ToggleDebugRendering() {
         ENTER_FUNCTION_TRACE();
 
-        debug_rendering = !debug_rendering;
-        if (physics_world != nullptr)
-            physics_world->setIsDebugRenderingEnabled(debug_rendering);
+        // debug_rendering = !debug_rendering;
+        // if (physics_world != nullptr)
+        //     physics_world->setIsDebugRenderingEnabled(debug_rendering);
 
-        if (debug_rendering) {
-
-        }
+        // if (debug_rendering) {
+        // } else {
+        // }
     }
 
     void PhysicsEngine::SetSceneContext(Scene* scene) {
@@ -244,9 +246,7 @@ VertexDataType vertexDataType, IndexDataType indexDataType
     }
 
     void PhysicsEngine::StepPhysics() {
-        ENTER_FUNCTION_TRACE();
         if (current_context == nullptr) {
-            EXIT_FUNCTION_TRACE();
             return;
         }
         
@@ -260,10 +260,8 @@ VertexDataType vertexDataType, IndexDataType indexDataType
 
         alpha = accumulator / time_step;
 
-        if (debug_rendering)
-            SubmitDebugRendering();
-
-        EXIT_FUNCTION_TRACE();
+        // if (debug_rendering)
+            // SubmitDebugRendering();
     }
 
     void PhysicsEngine::DestroyRigidBody(rp3d::RigidBody* body) {
@@ -301,7 +299,7 @@ VertexDataType vertexDataType, IndexDataType indexDataType
 
         if (physics_world != nullptr)
             physics_common.destroyPhysicsWorld(physics_world);
-
+        
         if (singleton != nullptr)
             ydelete singleton;
 
