@@ -28,6 +28,7 @@ namespace YE {
     RenderableUpdateSignal Systems::renderable_update_signal{};
     TexturedRenderableUpdateSignal Systems::textured_renderable_update_signal{};
     RenderableModelUpdateSignal Systems::renderable_model_update_signal{};
+    TextComponentUpdateSignal Systems::text_component_update_signal{};
 
     EntityCreatedSink Systems::create_entity_sink{ Systems::entity_created_signal };
     EntityDestroyedSink Systems::destroy_entity_sink{ Systems::entity_destroyed_signal };
@@ -41,6 +42,7 @@ namespace YE {
     RenderableUpdateSink Systems::renderable_update_sink{ Systems::renderable_update_signal };
     TexturedRenderableUpdateSink Systems::textured_renderable_update_sink{ Systems::textured_renderable_update_signal };
     RenderableModelUpdateSink Systems::renderable_model_update_sink{ Systems::renderable_model_update_signal };
+    TextComponentUpdateSink Systems::text_component_update_sink{ Systems::text_component_update_signal };
 
     void Systems::LoadShader(Shader *& shader , const std::string& entity_name , const std::string& shader_name , bool& corrupted) {
         ENTER_FUNCTION_TRACE();
@@ -74,6 +76,7 @@ namespace YE {
         renderable_update_sink.connect<&UpdateRenderable>();
         textured_renderable_update_sink.connect<&UpdateTexturedRenderable>();
         renderable_model_update_sink.connect<&UpdateRenderableModel>();
+        text_component_update_sink.connect<&UpdateTextComponent>();
 
         EXIT_FUNCTION_TRACE();
     }
@@ -350,6 +353,9 @@ namespace YE {
     void Systems::UpdateRenderableModel(components::RenderableModel& renderable , const std::vector<components::PointLight>& lights) {
     }
 
+    void Systems::UpdateTextComponent(components::TextComponent& text , const std::vector<components::PointLight>& lights) {
+    }
+
     void Systems::UnbindScripts(Scene* context) {
         ENTER_FUNCTION_TRACE();
 
@@ -364,10 +370,21 @@ namespace YE {
         EXIT_FUNCTION_TRACE();
     }
 
+    // Dont't need to remove every component because Entt does that on destruction,
+    //  we only need to remove the ones that have extra cleanup triggered by their removal
+    //  or that is required to avoid leaks
     void Systems::EntityDestroyed(Scene* context , Entity* entity) {
         ENTER_FUNCTION_TRACE();
 
         auto& id = entity->GetComponent<components::ID>();
+
+        if (entity->HasComponent<components::TextComponent>()) {
+            auto& text = entity->GetComponent<components::TextComponent>();
+            if (text.vao != nullptr) {
+                ydelete text.vao;
+                text.vao = nullptr;
+            }
+        }
 
         if (entity->HasComponent<components::Script>()) {
             ScriptEngine* script_engine = ScriptEngine::Instance();
@@ -536,6 +553,10 @@ namespace YE {
     void Systems::Teardown() {
         ENTER_FUNCTION_TRACE();
 
+        text_component_update_sink.disconnect<&UpdateTextComponent>();
+        renderable_model_update_sink.disconnect<&UpdateRenderableModel>();
+        textured_renderable_update_sink.disconnect<&UpdateTexturedRenderable>();
+        renderable_update_sink.disconnect<&UpdateRenderable>();
         physics_body_update_sink.disconnect<&UpdatePhysicsBody>();
         update_entity_sink.disconnect<&UpdateTransform>();
         update_sink.disconnect<&UpdateScene>();

@@ -39,8 +39,6 @@ namespace YE {
         uint32_t EBO = 0;
         BufferType buffer_type;
 
-        uint32_t stride = 0;
-
         bool has_indices = false;
         bool valid = false;
 
@@ -51,7 +49,12 @@ namespace YE {
         std::vector<uint32_t> indices;
         std::vector<uint32_t> layout;
 
+        void Generate();
         void LoadVertices();
+        void BufferData(uint32_t buffer , size_t size , const void* data);
+        uint32_t SetLayout();
+        void SetAttributes(uint32_t stride);
+        void Upload();
         
         VertexArray(VertexArray&&) = delete;
         VertexArray(const VertexArray&) = delete;
@@ -59,15 +62,22 @@ namespace YE {
         VertexArray& operator=(const VertexArray&) = delete;
 
         public:
-            VertexArray(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices , BufferType buffer_type = BufferType::STATIC) 
-                        : yvertices(vertices) , indices(indices) , layout(Vertex::Layout()) , buffer_type(buffer_type) , yverts(true) {}
-            VertexArray(const std::vector<float>& vertices, const std::vector<uint32_t>& indices , const std::vector<uint32_t>& layout ,
-                        BufferType buffer_type = BufferType::STATIC) 
-                        : vertices(vertices) , indices(indices) , layout(layout) , buffer_type(buffer_type) , yverts(false) {}
+            VertexArray(uint32_t size); 
+            VertexArray(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices); 
+            VertexArray(
+                const std::vector<float>& vertices, const std::vector<uint32_t>& indices , 
+                const std::vector<uint32_t>& layout 
+            ); 
             ~VertexArray();
 
-            void Upload();
+            void Bind() const;
+            void SetData(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
+            void SetData(
+                const std::vector<float>& vertices , const std::vector<uint32_t>& indices ,
+                const std::vector<uint32_t>& layout
+            );
             void Draw(DrawMode mode) const;
+            void Unbind() const;
 
             inline bool Valid() const { return valid; }
     };

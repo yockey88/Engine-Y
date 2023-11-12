@@ -21,6 +21,5 @@ uniform float world_scale = 1.0;
 
 void main() {
     gl_Position = proj * view * model * vec4(in_pos , 1.0);
-
-    frag_texcoord = vec2(1.0 - in_texcoord.x , 1.0- in_texcoord.y);
+    frag_texcoord = vec2(1.0 - in_texcoord.x , 1.0 - in_texcoord.y);
 }

@@ -50,7 +50,6 @@ namespace YE {
         }
 
         vao = ynew VertexArray(vertices , indices , { 3 , 2 });
-        vao->Upload();
 
         generated = true;
     }

@@ -1,10 +1,11 @@
-#include "core/font.hpp"
+#include "rendering/font.hpp"
 
 #include <msdf-atlas-gen/AtlasGenerator.h>
 #include <msdf-atlas-gen/ImmediateAtlasGenerator.h>
 #include <msdf-atlas-gen/BitmapAtlasStorage.h>
 
 #include "log.hpp"
+#include "core/defines.hpp"
 #include "core/resource_handler.hpp"
 #include "rendering/texture.hpp"
 

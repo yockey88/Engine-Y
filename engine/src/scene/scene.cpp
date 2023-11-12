@@ -255,7 +255,9 @@ namespace YE {
             renderer->SubmitRenderCmnd(cmnd);
         });
 
-        registry.view<components::Transform , components::TexturedRenderable>().each(
+        registry.view<components::Transform , components::TexturedRenderable>( 
+            entt::exclude<components::TextComponent>
+        ).each(
             [reg = &registry , renderer](auto& transform , auto& renderable) {
                 if (renderable.corrupted) return;
 
@@ -266,6 +268,24 @@ namespace YE {
             }
         );
 
+        registry.view<components::Transform , components::TexturedRenderable , components::TextComponent>().each(
+            [reg = &registry , renderer](auto& transform , auto& renderable , auto& text_overlay) {
+                if (renderable.corrupted) return;
+
+                std::unique_ptr<RenderCommand> cmnd = std::make_unique<DrawTexturedRenderable>(
+                    renderable , transform.model
+                );
+                renderer->SubmitRenderCmnd(cmnd);
+
+                if (text_overlay.corrupted) return;
+                
+                std::unique_ptr<RenderCommand> text = std::make_unique<DrawTextComponent>(
+                    text_overlay , transform.model
+                );
+                renderer->SubmitRenderCmnd(text);
+            }
+        );
+        
         registry.view<components::Transform , components::RenderableModel>().each(
             [reg = &registry , renderer](auto& transform , auto& renderable) {
                 if (renderable.corrupted) return;
@@ -274,6 +294,19 @@ namespace YE {
                     renderable , transform.model
                 );
                 renderer->SubmitRenderCmnd(cmnd);
+            }
+        );
+        
+        registry.view<components::Transform , components::TextComponent>(
+            entt::exclude<components::TexturedRenderable>
+        ).each(
+            [reg = &registry , renderer](auto& transform , auto& text) {
+                if (text.corrupted) return;
+
+                std::unique_ptr<RenderCommand> text_cmnd = std::make_unique<DrawTextComponent>(
+                    text , transform.model
+                );
+                renderer->SubmitRenderCmnd(text_cmnd);
             }
         );
     }

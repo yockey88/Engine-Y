@@ -19,22 +19,8 @@ constexpr uint32_t kMaxPointLights = 128;
 
 namespace YE {
 
-namespace components {
-
-    struct ID;
-    struct Grouping;
-    struct Transform;
-    struct Movable;
-    struct Renderable;
-    struct TexturedRenderable;
-    struct NativeScript;
-    struct Script;
-}
-
     class Entity;
-    class VertexArray;
     class Shader;
-    class Texture;
     class Camera;
 
     template<typename T>

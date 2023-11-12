@@ -23,6 +23,7 @@ namespace components {
     struct Renderable;
     struct TexturedRenderable;
     struct RenderableModel;
+    struct TextComponent;
     struct PointLight;
 
 }
@@ -31,6 +32,7 @@ namespace components {
         protected:
             void SetCameraUniforms(Shader* shader , Camera* camera);
         public:
+            virtual ~RenderCommand() {}
             virtual void Execute(Camera* camera , const ShaderUniforms& uniforms) = 0;
     };
 
@@ -47,20 +49,27 @@ namespace components {
         };
     */
 
-    class DrawFont : public RenderCommand {
+    class DrawTextComponent : public RenderCommand {
         VertexArray* vao = nullptr;
-        Font* font = nullptr;
-        Shader* shader = nullptr;
-        std::string text;
+        components::TextComponent& text_component;
         const glm::mat4& model; 
-        DrawMode mode;
+
+        // this function is called for every glyph which seems slow, need to set up
+        //      a buffer that buffers all vertex data on creation that we simply render 
+        //      during Execute
+        void BufferGlyphData(
+            const msdf_atlas::GlyphGeometry* glyph , 
+            const glm::vec2& offset , float fscale
+        );
+
+        float AdjustSpacing(
+            const msdf_atlas::FontGeometry& font_geometry ,     
+            float fscale , double space_advance , 
+            size_t char_index
+        );
 
         public:
-            DrawFont(
-                Font* font , Shader* shader , const std::string& text , 
-                const glm::mat4& model , DrawMode mode = DrawMode::TRIANGLES
-            ) : vao(ResourceHandler::Instance()->GetPrimitiveVAO("quad")) , 
-                font(font) , shader(shader) , text(text) , model(model) , mode(mode) {}
+            DrawTextComponent(components::TextComponent& text , const glm::mat4& model);
             virtual void Execute(Camera* camera , const ShaderUniforms& uniforms) override;
     };
 

@@ -3,6 +3,58 @@
 #include "editor_key_bindings.hpp"
 #include "ui_utils.hpp"
 
+void CameraKeyboardCallback(YE::Camera* camera , float dt) {
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_W)) camera->SetPosition(camera->Position() + camera->Front() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_S)) camera->SetPosition(camera->Position() - camera->Front() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_A)) camera->SetPosition(camera->Position() - camera->Right() * camera->Speed());
+    if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_D)) camera->SetPosition(camera->Position() + camera->Right() * camera->Speed());
+
+    camera->Recalculate();
+}
+
+void CameraMouseCallback(YE::Camera* camera , float dt) {
+    YE::Mouse::SnapToCenter();
+    SDL_SetRelativeMouseMode(SDL_TRUE);
+
+    camera->SetLastMouse(camera->Mouse());
+    
+    int x, y;
+    SDL_GetGlobalMouseState(&x, &y);
+    camera->SetMousePos({ 
+        static_cast<float>(x) , 
+        static_cast<float>(y) 
+    });
+
+    camera->SetDeltaMouse({ 
+        camera->Mouse().x - camera->LastMouse().x ,
+        camera->LastMouse().y - camera->Mouse().y
+    });
+
+    glm::vec3 front = camera->Front();
+
+    int relx , rely;
+    SDL_GetRelativeMouseState(&relx , &rely);
+    camera->SetYaw(camera->Yaw() + (relx * camera->Sensitivity()));
+    camera->SetPitch(camera->Pitch() - (rely * camera->Sensitivity()));
+
+    if (camera->ConstrainPitch()) {
+
+        if (camera->Pitch() > 89.0f) camera->SetPitch(89.0f);
+        if (camera->Pitch() < -89.0f) camera->SetPitch(-89.0f);
+
+    }
+
+    front.x = cos(glm::radians(camera->Yaw())) * cos(glm::radians(camera->Pitch()));
+    front.y = sin(glm::radians(camera->Pitch()));
+    front.z = sin(glm::radians(camera->Yaw())) * cos(glm::radians(camera->Pitch()));
+    camera->SetFront(glm::normalize(front));
+
+    camera->SetRight(glm::normalize(glm::cross(camera->Front() , camera->WorldUp())));
+    camera->SetUp(glm::normalize(glm::cross(camera->Right() , camera->Front())));
+
+    camera->Recalculate();
+}
+
 class Editor : public YE::App {
     bool show_file_menu = false;
 
@@ -16,6 +68,7 @@ class Editor : public YE::App {
     std::unique_ptr<YE::EngineConsole> console = nullptr;
     
     bool render = false;
+    bool moving_camera = false;
     int count = 0;
     
     public:
@@ -51,6 +104,25 @@ class Editor : public YE::App {
                 EditorKeyBindings , "editor-key-press"
             );
 
+            EngineY::EventManager()->RegisterKeyPressedCallback(
+                [&](YE::KeyPressed* event) -> bool {
+                    if (
+                        event->Key() == YE::Keyboard::Key::YE_C &&
+                        YE::Keyboard::LCtrlLayer()
+                    ) {
+                        if (moving_camera) {
+                            camera->UnregisterKeyboardCallback();
+                            camera->UnregisterMouseCallback();
+                        } else {
+                            camera->RegisterKeyboardCallback(CameraKeyboardCallback);
+                            camera->RegisterMouseCallback(CameraMouseCallback);
+                        }
+                        moving_camera = !moving_camera;
+                    }
+                    return true;
+                } , "camera-movement"
+            );
+
             EditorUtils::LoadImGuiStyle();
 
             console = std::make_unique<YE::EngineConsole>();
@@ -62,12 +134,10 @@ class Editor : public YE::App {
             if (!font->Load(true)) {
                 LOG_WARN("Could not load font atlas");
             } else {
-                shader = EngineY::ResourceHandler()->GetCoreShader("msdf_text");
+                shader = EngineY::GetCoreShader("msdf_text");
                 if (shader == nullptr) {
                     LOG_WARN("Could not load shader");
-                } else {
-                    render = true;
-                }
+                } 
 
                 scene.InitializeScene();
 
@@ -78,22 +148,27 @@ class Editor : public YE::App {
                 camera->SetPosition({ 0.f , 0.f , 3.f });
                 camera->Recalculate();
 
-                // YE::Entity* font_atlas = scene.CreateEntity("font-atlas");
+                glm::vec4 bgcolor = EngineY::Window()->ClearColor();
 
-                // auto& transform = font_atlas->GetComponent<YE::components::Transform>();
-                // transform.position = glm::vec3(0.f);
-                // transform.rotation = glm::vec3(0);
-                // transform.scale = glm::vec3(1.f);
+                YE::Entity* yock = scene.CreateEntity("yock");
 
-                // font_atlas->AddComponent<YE::components::TexturedRenderable>(
-                //     EngineY::GetPrimitiveVAO("quad") , YE::Material{} , 
-                //     "default" , std::vector<YE::Texture*>{ font->GetAtlasTexture() }
-                // );
+                auto& transform = yock->GetComponent<YE::components::Transform>();
+                transform.position = glm::vec3(0.f);
+                transform.rotation = glm::vec3(0.f);
+                transform.scale = glm::vec3(1.f);
+
+                yock->AddComponent<YE::components::TextComponent>(
+                    font , "msdf_text" , "Chris Yockey\nEngine Developer" , 
+                    bgcolor , glm::vec4(0.f , 0.f , 1.f , 1.f) ,
+                    0.f , 0.2f 
+                );
 
                 scene.LoadScene();
                 scene.Start();
 
                 model = glm::translate(model , glm::vec3(-0.5f , 0.f , 0.f));
+                
+                render = true;
             }
 
             return true;
@@ -102,15 +177,10 @@ class Editor : public YE::App {
         void Update(float delta) override {
             scene.Update(delta);
         }
-
+        
         void Draw() override {
             if (render) {
                 scene.Draw();
-                DRAW(
-                    YE::DrawFont ,
-                    font , shader ,
-                    "Yock" , model  
-                );
             } 
         }
 

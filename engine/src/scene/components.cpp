@@ -1,5 +1,11 @@
 #include "scene/components.hpp"
 
+#include "rendering/vertex_array.hpp"
+#include "rendering/shader.hpp"
+#include "rendering/texture.hpp"
+#include "rendering/font.hpp"
+#include "rendering/model.hpp"
+
 namespace YE {
 
 namespace components {

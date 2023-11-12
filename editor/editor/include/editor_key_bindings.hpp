@@ -3,7 +3,7 @@
 
 #include "event/keyboard_events.hpp"
 
-static bool EditorKeyBindings(YE::KeyPressed* event)  {
+inline static bool EditorKeyBindings(YE::KeyPressed* event)  {
     if (event->Key() == YE::Keyboard::Key::YE_ESCAPE) {
         EngineY::DispatchEvent(ynew YE::ShutdownEvent);
     }

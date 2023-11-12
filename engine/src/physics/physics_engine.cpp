@@ -95,13 +95,11 @@ namespace YE {
         // debug_triangle_renderable.vao = ynew VertexArray(triangle_vertices , {} , std::vector<uint32_t> {
         //     3 , 3
         // });
-        // debug_triangle_vao->Upload();
 
         // ydelete debug_line_renderable.vao;
         // debug_line_renderable.vao = ynew VertexArray(line_vertices , {} , std::vector<uint32_t> {
         //     3 , 3
         // });
-        // debug_line_vao->Upload();
 
         // std::unique_ptr<RenderCommand> debug_triangles = std::make_unique<DrawVao>(
         //     debug_triangle_vao ,

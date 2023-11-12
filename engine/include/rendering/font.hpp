@@ -9,8 +9,6 @@
 #include <msdf-atlas-gen/GlyphGeometry.h>
 #include <msdf-atlas-gen/FontGeometry.h>
 
-#include "defines.hpp"
-
 namespace YE {
 
     class Texture;
@@ -19,7 +17,7 @@ namespace YE {
         std::vector<msdf_atlas::GlyphGeometry> glyphs;
         msdf_atlas::FontGeometry font_geometry;
     };
-    
+
     class Font {
         std::filesystem::path path;
 

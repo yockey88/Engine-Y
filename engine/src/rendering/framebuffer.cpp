@@ -17,7 +17,6 @@ namespace YE {
         complete = true;
 
         vao = ynew VertexArray(vertices , indices , layout);
-        vao->Upload();
         model = glm::mat4(1.0f);
         clear_color = glm::vec4(0.1f , 0.1f , 0.1f , 1.0f);
 

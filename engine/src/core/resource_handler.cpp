@@ -197,11 +197,6 @@ namespace YE {
     
     void ResourceHandler::UploadPrimitiveVAOs(ResourceMap<VertexArrayResource>& vaos) {
         ENTER_FUNCTION_TRACE();
-
-        for (auto& [id , vao] : vaos) {
-            vao.vao->Upload();
-        }
-
         EXIT_FUNCTION_TRACE();
     }
 

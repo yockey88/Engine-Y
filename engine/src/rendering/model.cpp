@@ -171,9 +171,6 @@ namespace YE {
         directory = path.substr(0 , path.find_last_of('/'));
         ProcessNode(scene->mRootNode , scene);
 
-        for (auto& vao : vaos)
-            vao->Upload();
-
         for (auto& texture : textures)
             texture->Load();
         

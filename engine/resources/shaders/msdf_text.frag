@@ -6,7 +6,7 @@ out vec4 FragColor;
 
 uniform sampler2D msdf;
 
-uniform float px_range; // set to distance field's pixel range
+const float px_range = 2.0; // set to distance field's pixel range
 uniform vec4 bgcolor;
 uniform vec4 fgcolor;
 

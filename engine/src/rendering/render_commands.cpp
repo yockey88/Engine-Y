@@ -2,10 +2,10 @@
 
 #include "log.hpp"
 #include "core/resource_handler.hpp"
-#include "core/font.hpp"
 #include "rendering/vertex_array.hpp"
 #include "rendering/shader.hpp"
 #include "rendering/texture.hpp"
+#include "rendering/font.hpp"
 #include "rendering/model.hpp"
 #include "rendering/camera.hpp"
 #include "scene/components.hpp"
@@ -23,33 +23,132 @@ namespace YE {
         }
     }
     
-    void DrawFont::Execute(Camera* camera , const ShaderUniforms& uniforms) {
-        if (shader == nullptr) {
-            ENGINE_WARN("Failed to execute DrawFont :: Shader is null");
+    void DrawTextComponent::BufferGlyphData(
+        const msdf_atlas::GlyphGeometry* glyph , 
+        const glm::vec2& offset , float fscale
+    ) {
+        double al , ab , ar , at;
+        glyph->getQuadAtlasBounds(al , ab , ar , at);
+        glm::vec2 tex_min((float)al , (float)ab);
+        glm::vec2 tex_max((float)ar , (float)at);
+
+        double pl , pb , pr , pt;
+        glyph->getQuadPlaneBounds(pl , pb , pr , pt);
+        glm::vec2 pos_min((float)pl , (float)pb);
+        glm::vec2 pos_max((float)pr , (float)pt);
+
+        Texture* atlas_texture = text_component.font_atlas->GetAtlasTexture();
+        float texel_width = 1.f / atlas_texture->Size().x;
+        float texel_height = 1.f / atlas_texture->Size().y;
+        tex_min *= glm::vec2(texel_width , texel_height);
+        tex_max *= glm::vec2(texel_width , texel_height);
+
+        pos_min *= fscale , pos_max *= fscale;
+        pos_min += offset , pos_max += offset;
+
+        glm::vec4 pos1 = model * glm::vec4(pos_min , 0.f , 1.f);
+        glm::vec4 pos2 = model * glm::vec4(pos_min.x , pos_max.y , 0.f , 1.f);
+        glm::vec4 pos3 = model * glm::vec4(pos_max , 0.f , 1.f);
+        glm::vec4 pos4 = model * glm::vec4(pos_max.x , pos_min.y , 0.f , 1.f);
+
+        std::vector<float> vertices = {
+            pos1.x , pos1.y , 0.f , tex_min.x , tex_min.y ,
+            pos2.x , pos2.y , 0.f , tex_min.x , tex_max.y ,
+            pos3.x , pos3.y , 0.f , tex_max.x , tex_max.y ,
+            pos4.x , pos4.y , 0.f , tex_max.x , tex_min.y 
+        };
+
+        std::vector<uint32_t> indices = {
+            0 , 1 , 3 , 
+            1 , 2 , 3
+        };
+
+        text_component.vao->SetData(vertices , indices , { 3 , 2 });
+    }
+    
+    float DrawTextComponent::AdjustSpacing(
+        const msdf_atlas::FontGeometry& font_geometry ,     
+        float fscale , double space_advance , 
+        size_t char_index
+    ) {
+        float advance = space_advance;
+        if (char_index < text_component.text.size() - 1) {
+            char next_char = text_component.text[char_index + 1];
+            double real_advance;
+            font_geometry.getAdvance(real_advance , text_component.text[char_index] , next_char);
+            advance = (float)real_advance;
+        }
+        return fscale * advance + text_component.kerning_offset;
+    }
+    
+    DrawTextComponent::DrawTextComponent(components::TextComponent& text , const glm::mat4& model)
+            : text_component(text) , model(model) {
+        if (text_component.vao == nullptr)
+            text_component.vao = ynew VertexArray(5 * 4 * sizeof(float));
+    }
+
+    void DrawTextComponent::Execute(Camera* camera , const ShaderUniforms& uniforms) {
+        if (text_component.font_atlas == nullptr) {
+            ENGINE_WARN("Attempting to render text with a null font altas");
+            text_component.corrupted = true;
             return;
+        }
+
+        if (text_component.shader == nullptr)
+            text_component.shader = ResourceHandler::Instance()->GetShader(text_component.shader_name);
+        if (text_component.shader == nullptr) {
+            text_component.shader = ResourceHandler::Instance()->GetCoreShader(text_component.shader_name);
+
+            if (text_component.shader == nullptr) {
+                ENGINE_WARN("Failed to execute DrawTextComponent :: Shader [{0}] is null" , text_component.shader_name);
+                text_component.corrupted = true;
+                return;
+            }
         }
         
-        const auto& font_geometry = font->GetGeometryData().font_geometry;
-        const auto& metrics = font_geometry.getMetrics();
-
-        Texture* font_atlas = font->GetAtlasTexture();
+        Texture* font_atlas = text_component.font_atlas->GetAtlasTexture();
         if (font_atlas == nullptr) {
-            ENGINE_WARN("Failed to execute DrawFont :: Font atlas is null");
+            ENGINE_WARN("Failed to execute DrawTextComponent :: Font atlas is null");
             return;
         }
 
-        const glm::ivec2& atlas_size = font_atlas->Size();
+        const auto& font_geometry = text_component.font_atlas->GetGeometryData().font_geometry;
+        const auto& metrics = font_geometry.getMetrics();
 
-        /// temporary until background color for text is implemented (i.e rendering text onto a wall or other surface)
-        const glm::ivec4& bgcolor = Renderer::Instance()->ActiveWindow()->ClearColor();
-        /// end temporary
+        const glm::ivec2& atlas_size = font_atlas->Size();
 
         double x = 0.f;
         double fscale = 1.0 / (metrics.ascenderY - metrics.descenderY);
         double y = 0.f;
+        
+        const float space_advance = font_geometry.getGlyph(' ')->getAdvance();
 
-        for (size_t i = 0; i < text.size(); ++i) {
-            char c = text[i];
+        for (size_t i = 0; i < text_component.text.size(); ++i) {
+            char c = text_component.text[i];
+
+            if (c == '\r') continue;
+
+            if (c == '\n') {
+                x = 0;
+                y -= fscale * metrics.lineHeight + text_component.line_spacing; 
+                continue;
+            }
+
+            if (c == ' ') {
+                x += AdjustSpacing(font_geometry , fscale , space_advance , i);
+                continue;
+            }
+
+            if (c == '\t') {
+                for (uint32_t j = 0; j < 4; ++j) {
+                    x += AdjustSpacing(font_geometry , fscale , space_advance , i);
+                    if (i < text_component.text.size() - 1)
+                        ++i;
+                    else 
+                        break;
+                }
+                continue;
+            }
 
             const msdf_atlas::GlyphGeometry* glyph = font_geometry.getGlyph(c);
             if (glyph == nullptr) {
@@ -57,75 +156,32 @@ namespace YE {
             } 
 
             if (glyph == nullptr) {
-                LOG_WARN("Rendering corrupter font atlas :: [{}]" , font->Path().string());
+                LOG_WARN("Rendering corrupter font atlas :: [{}]" , text_component.font_atlas->Path().string());
                 return;
             }
 
-            // double al , ab , ar , at;
-            // glyph->getQuadPlaneBounds(al , ab , ar , at);
-            // glm::vec2 tex_min((float)al , (float)ab);
-            // glm::vec2 tex_max((float)ar , (float)at);
+            BufferGlyphData(glyph , { x , y } , fscale);
 
-            double pl , pb , pr , pt;
-            glyph->getQuadPlaneBounds(pl , pb , pr , pt);
-            glm::vec2 pos_min((float)pl , (float)pb);
-            glm::vec2 pos_max((float)pr , (float)pt);
-
-            float texel_width = 1.f / font_atlas->Size().x;
-            float texel_height = 1.f / font_atlas->Size().y;
-            glm::vec2 tex_min = pos_min * glm::vec2(texel_width , texel_height);
-            glm::vec2 tex_max = pos_max * glm::vec2(texel_width , texel_height);
-
-            pos_min *= fscale , pos_max *= fscale;
-            pos_min += glm::vec2(x , y) , pos_max += glm::vec2(x , y);
-
-            glm::vec4 pos1 = model * glm::vec4(pos_min , 0.f , 1.f);
-            glm::vec4 pos2 = model * glm::vec4(pos_min.x , pos_max.y , 0.f , 1.f);
-            glm::vec4 pos3 = model * glm::vec4(pos_max , 0.f , 1.f);
-            glm::vec4 pos4 = model * glm::vec4(pos_max.x , pos_min.y , 0.f , 1.f);
-
-            std::vector<float> vertices = {
-                pos1.x , pos1.y , 0.f , tex_min.x , tex_min.y ,
-                pos2.x , pos2.y , 0.f , tex_min.x , tex_max.y ,
-                pos3.x , pos3.y , 0.f , tex_max.x , tex_max.y ,
-                pos4.x , pos4.y , 0.f , tex_max.x , tex_min.y
-            };
-
-            std::vector<uint32_t> indices = {
-                0 , 1 , 3 , 
-                1 , 2 , 3
-            };
-
-            vao = ynew VertexArray(vertices , indices , { 3 , 2 });
-            vao->Upload();
-
-            // Render here
-            if (vao->Valid()) {
-                shader->Bind();
-                SetCameraUniforms(shader , camera);
-                shader->SetUniformMat4("model" , model);
-                shader->SetUniformVec4("bgcolor" , bgcolor);
-                shader->SetUniformVec4("fgcolor" , glm::vec4(1.f));
-                shader->SetUniformInt("msdf" , 0);
-                shader->SetUniformFloat("px_range" , 2);
-                font_atlas->Bind();
-                vao->Draw(mode);
-                font_atlas->Unbind();
-                shader->Unbind();
+            if (text_component.vao->Valid()) {
+                text_component.shader->Bind();
+                text_component.shader->SetUniformVec4("bgcolor" , text_component.background_color);
+                text_component.shader->SetUniformVec4("fgcolor" , text_component.text_color);
+                text_component.shader->SetUniformInt("msdf" , 0);
+                font_atlas->Bind(0);
+                SetCameraUniforms(text_component.shader , camera);
+                text_component.shader->SetUniformMat4("model" , model);
+                text_component.vao->Draw(DrawMode::TRIANGLES);
+                font_atlas->Unbind(0);
+                text_component.shader->Unbind();
             }
 
-            if (i < text.size() - 1) {
+            if (i < text_component.text.size() - 1) {
                 double advance = glyph->getAdvance();
-                char next = text[i + 1];
+                char next = text_component.text[i + 1];
                 font_geometry.getAdvance(advance , c , next);
 
-                float kerning_offset = 0.f;
-                x += advance * fscale + kerning_offset;
+                x += advance * fscale + text_component.kerning_offset;
             }
-
-            ydelete vao;
-
-            // Advance to next glyph
         }
     }
 

@@ -12,6 +12,7 @@ namespace components {
     struct Renderable;
     struct TexturedRenderable;
     struct RenderableModel;
+    struct TextComponent;
     struct PointLight;
 
 }
@@ -57,6 +58,9 @@ namespace components {
     using RenderableModelUpdateSignal = entt::sigh<void(components::RenderableModel& renderable , const std::vector<components::PointLight>& lights)>;
     using RenderableModelUpdateSink = entt::sink<RenderableModelUpdateSignal>;
 
+    using TextComponentUpdateSignal = entt::sigh<void(components::TextComponent& text , const std::vector<components::PointLight>& lights)>;
+    using TextComponentUpdateSink = entt::sink<TextComponentUpdateSignal>;
+
     class Systems {
         static void LoadShader(Shader *& shader , const std::string& entity_name , const std::string& shader_name , bool& corrupted);
 
@@ -73,6 +77,7 @@ namespace components {
             static RenderableUpdateSignal renderable_update_signal;
             static TexturedRenderableUpdateSignal textured_renderable_update_signal;
             static RenderableModelUpdateSignal renderable_model_update_signal;
+            static TextComponentUpdateSignal text_component_update_signal;
 
             static void Initialize();
 
@@ -99,6 +104,7 @@ namespace components {
             static void UpdateRenderable(components::Renderable& renderable , const std::vector<components::PointLight>& lights);
             static void UpdateTexturedRenderable(components::TexturedRenderable& renderable , const std::vector<components::PointLight>& lights);
             static void UpdateRenderableModel(components::RenderableModel& renderable , const std::vector<components::PointLight>& lights);
+            static void UpdateTextComponent(components::TextComponent& text , const std::vector<components::PointLight>& lights);
 
             static void UnbindScripts(Scene* context);
 
@@ -131,6 +137,7 @@ namespace components {
             static RenderableUpdateSink renderable_update_sink;
             static TexturedRenderableUpdateSink textured_renderable_update_sink;
             static RenderableModelUpdateSink renderable_model_update_sink;
+            static TextComponentUpdateSink text_component_update_sink;
     };
 
 }

@@ -14,16 +14,18 @@
 #include "native_script_entity.hpp"
 #include "core/UUID.hpp"
 #include "core/RNG.hpp"
-#include "rendering/vertex_array.hpp"
-#include "rendering/shader.hpp"
-#include "rendering/texture.hpp"
-#include "rendering/model.hpp"
 #include "physics/physics_engine.hpp"
 #include "scripting/script_engine.hpp"
 
 namespace YE {
     
     static constexpr uint32_t kSizeOfTransformMat = 16;
+
+    class VertexArray;
+    class Shader;
+    class Texture;
+    class Font;
+    class Model;
 
 namespace components {
 
@@ -51,8 +53,8 @@ namespace components {
 
     struct Transform {
         glm::vec3 position = glm::vec3(0.0f);
+        glm::vec3 rotation = glm::vec3(0.0f);
         glm::vec3 scale = glm::vec3(1.0f);
-        glm::vec3 rotation = glm::vec3(1.0f);
 
         glm::mat4 model = glm::mat4(1.0f);
 
@@ -64,8 +66,10 @@ namespace components {
             : position(other.position) , scale(other.scale) ,
             rotation(other.rotation) ,
             model(other.model) {} 
-        Transform(const glm::vec3& pos , const glm::vec3& scale ,
-                  const glm::vec3& rotation);
+        Transform(
+            const glm::vec3& pos , const glm::vec3& scale ,
+            const glm::vec3& rotation
+        );
     };
 
     struct Renderable {
@@ -97,9 +101,10 @@ namespace components {
         TexturedRenderable(const TexturedRenderable& other) 
             : vao(other.vao) , shader_name(other.shader_name) , textures(other.textures) ,
             corrupted(other.corrupted) {}
-        TexturedRenderable(VertexArray* vao , Material material , const std::string& shader_name , 
-                           const std::vector<Texture*>& textures) 
-            : vao(vao) , material(material) , 
+        TexturedRenderable(
+            VertexArray* vao , Material material , const std::string& shader_name , 
+            const std::vector<Texture*>& textures
+        ) : vao(vao) , material(material) , 
             shader_name(shader_name) , textures(textures) {}
     };
 
@@ -126,6 +131,42 @@ namespace components {
             : material(material) , model_name(model_name) , shader_name(shader_name) {}
     };
 
+    //// How to color each glyph differently in a nice way ???
+    // maps character index to glyphy color
+    // using FontCharacter = std::pair<uint32_t , glm::vec4>;
+    // struct RenderString {
+    //     std::string text;
+    //     std::vector<FontCharacter> characters;
+    // };
+    
+    struct TextComponent {
+        VertexArray* vao = nullptr;
+        Font* font_atlas = nullptr;
+        Shader* shader = nullptr;
+        std::string shader_name = "";
+        glm::vec4 background_color = glm::vec4(0.f);
+        glm::vec4 text_color = glm::vec4(1.f);
+        float kerning_offset = 0.0f;
+        float line_spacing = 0.2f;
+        bool corrupted = false;
+        std::string text;
+
+        TextComponent() {}
+        TextComponent(const TextComponent& other) 
+            : font_atlas(other.font_atlas) , shader(other.shader) , shader_name(other.shader_name) ,
+            background_color(other.background_color) ,
+            text_color(other.text_color) , kerning_offset(other.kerning_offset) ,
+            text(other.text) {}
+        TextComponent(
+            Font* font_atlas , const std::string& shader_name , 
+            const std::string& text , const glm::vec4& background_color ,
+            const glm::vec4& text_color , float kerning_offset , 
+            float line_spacing 
+        ) : font_atlas(font_atlas) , shader_name(shader_name) , background_color(background_color) ,
+            text_color(text_color) , kerning_offset(kerning_offset) ,
+            line_spacing(line_spacing) , text(text) {}
+    };
+
     struct DirectionalLight {
         glm::vec3 direction = glm::vec3(1.0f);
         glm::vec3 ambient = glm::vec3(1.0f);
@@ -136,9 +177,10 @@ namespace components {
         DirectionalLight(const DirectionalLight& other) 
             : direction(other.direction) , ambient(other.ambient) , diffuse(other.diffuse) ,
             specular(other.specular) {}
-        DirectionalLight(const glm::vec3& direction , const glm::vec3& ambient , const glm::vec3& diffuse ,
-                         const glm::vec3& specular) 
-                         : direction(direction) , ambient(ambient) , diffuse(diffuse) , specular(specular) {}
+        DirectionalLight(
+            const glm::vec3& direction , const glm::vec3& ambient , const glm::vec3& diffuse ,
+            const glm::vec3& specular
+        ) : direction(direction) , ambient(ambient) , diffuse(diffuse) , specular(specular) {}
     };
 
     struct PointLight {
@@ -156,12 +198,13 @@ namespace components {
             : position(other.position) , ambient(other.ambient) , diffuse(other.diffuse) ,
             specular(other.specular) , constant_attenuation(other.constant_attenuation) ,
             linear_attenuation(other.linear_attenuation) , quadratic_attenuation(other.quadratic_attenuation) {}
-        PointLight(const glm::vec3& position , const glm::vec3& ambient , const glm::vec3& diffuse ,
-                   const glm::vec3& specular , float constant_attenuation , float linear_attenuation ,
-                   float quadratic_attenuation) 
-                   : position(position) , ambient(ambient) , diffuse(diffuse) , specular(specular) ,
-                   constant_attenuation(constant_attenuation) , linear_attenuation(linear_attenuation) ,
-                   quadratic_attenuation(quadratic_attenuation) {}
+        PointLight(
+            const glm::vec3& position , const glm::vec3& ambient , const glm::vec3& diffuse ,
+            const glm::vec3& specular , float constant_attenuation , float linear_attenuation ,
+            float quadratic_attenuation
+        ) : position(position) , ambient(ambient) , diffuse(diffuse) , specular(specular) ,
+            constant_attenuation(constant_attenuation) , linear_attenuation(linear_attenuation) ,
+            quadratic_attenuation(quadratic_attenuation) {}
     };
 
     struct SpotLight {
@@ -184,12 +227,13 @@ namespace components {
             diffuse(other.diffuse) , specular(other.specular) , constant_attenuation(other.constant_attenuation) ,
             linear_attenuation(other.linear_attenuation) , quadratic_attenuation(other.quadratic_attenuation) ,
             cutoff(other.cutoff) , outer_cutoff(other.outer_cutoff) {}
-        SpotLight(const glm::vec3& position , const glm::vec3& direction , const glm::vec3& ambient ,
-                  const glm::vec3& diffuse , const glm::vec3& specular , float constant_attenuation ,
-                  float linear_attenuation , float quadratic_attenuation , float cutoff , float outer_cutoff) 
-                  : position(position) , direction(direction) , ambient(ambient) , diffuse(diffuse) ,
-                  specular(specular) , constant_attenuation(constant_attenuation) , linear_attenuation(linear_attenuation) ,
-                  quadratic_attenuation(quadratic_attenuation) , cutoff(cutoff) , outer_cutoff(outer_cutoff) {}
+        SpotLight(
+            const glm::vec3& position , const glm::vec3& direction , const glm::vec3& ambient ,
+            const glm::vec3& diffuse , const glm::vec3& specular , float constant_attenuation ,
+            float linear_attenuation , float quadratic_attenuation , float cutoff , float outer_cutoff
+        ) : position(position) , direction(direction) , ambient(ambient) , diffuse(diffuse) ,
+            specular(specular) , constant_attenuation(constant_attenuation) , linear_attenuation(linear_attenuation) ,
+            quadratic_attenuation(quadratic_attenuation) , cutoff(cutoff) , outer_cutoff(outer_cutoff) {}
     };
 
     /// \note this will override any rotation by the transform component
