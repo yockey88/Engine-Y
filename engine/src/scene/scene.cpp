@@ -69,16 +69,18 @@ namespace YE {
 
     void Scene::InitializeScene() {
         Systems::SetSceneContext(this);
-        ScriptEngine::Instance()->SetSceneContext(this);
-        PhysicsEngine::Instance()->SetSceneContext(this);
-        Renderer::Instance()->RegisterSceneContext(this);
     }
 
     void Scene::LoadScene(/* not sure what would be passed here */) {
+        ScriptEngine::Instance()->SetSceneContext(this);
+        PhysicsEngine::Instance()->SetSceneContext(this);
+        Renderer::Instance()->RegisterSceneContext(this);
         Systems::scene_load_signal.publish(this);
     }
 
     void Scene::UnloadScene(/* not sure what would be passed here */) {
+        PhysicsEngine::Instance()->UnsetSceneContext();
+        ScriptEngine::Instance()->UnsetSceneContext();
         Systems::scene_unload_signal.publish(this);
     }
 

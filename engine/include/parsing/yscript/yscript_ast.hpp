@@ -27,6 +27,7 @@ namespace YSC {} // namespace YSC
 
     class ExprStmnt;
     class ProjectMetadataStmnt;
+    class WindowStmnt;
     class NodeDeclStmnt;
     class FunctionStmnt;
     class VarDeclStmnt;
@@ -52,6 +53,7 @@ namespace YSC {} // namespace YSC
             virtual void WalkAssign(AssignExpr& assign) = 0;
             virtual void WalkExpr(ExprStmnt& expr) = 0;
             virtual void WalkProject(ProjectMetadataStmnt& project) = 0;
+            virtual void WalkWindow(WindowStmnt& window) = 0;
             virtual void WalkNodeDecl(NodeDeclStmnt& node_decl) = 0;
             virtual void WalkFunction(FunctionStmnt& function) = 0;
             virtual void WalkVarDecl(VarDeclStmnt& var_decl) = 0;
@@ -76,6 +78,7 @@ namespace YSC {} // namespace YSC
             virtual void WalkAssign(AssignExpr& assign) override;
             virtual void WalkExpr(ExprStmnt& expr) override;
             virtual void WalkProject(ProjectMetadataStmnt& project) override;
+            virtual void WalkWindow(WindowStmnt& window) override;
             virtual void WalkNodeDecl(NodeDeclStmnt& node_decl) override;
             virtual void WalkFunction(FunctionStmnt& function) override;
             virtual void WalkVarDecl(VarDeclStmnt& var_decl) override;
@@ -267,6 +270,19 @@ namespace YSC {} // namespace YSC
                 : identifier(identifier) , metadata(std::move(metadata)) {}
             virtual ~ProjectMetadataStmnt() override {}
             virtual void Walk(YScriptTreeWalker* walker) override { walker->WalkProject(*this); }
+            virtual void Print(PrinterData& data) override;
+    };
+
+    // Represents a window declaration
+    class WindowStmnt : public ASTStmnt {
+        public:
+            YScriptToken identifier;
+            std::vector<std::unique_ptr<ASTExpr>> description;
+
+            WindowStmnt(YScriptToken identifier , std::vector<std::unique_ptr<ASTExpr>>& description)
+                : identifier(identifier) , description(std::move(description)) {}
+            virtual ~WindowStmnt() override {}
+            virtual void Walk(YScriptTreeWalker* walker) override { walker->WalkWindow(*this); }
             virtual void Print(PrinterData& data) override;
     };
 

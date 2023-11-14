@@ -8,7 +8,6 @@
 namespace YE {
 
     struct SceneNode {
-        std::string name = "";
         Scene* scene = nullptr;
         std::vector<SceneNode*> connections = {};
     };

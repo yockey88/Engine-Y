@@ -1,7 +1,7 @@
 #ifndef YE_EDITOR_TEST_NATIVE_SCRIPT_HPP
 #define YE_EDITOR_TEST_NATIVE_SCRIPT_HPP
 
-#include "scene/native_script_entity.hpp"
+#include "scripting/native_script_entity.hpp"
 
 class Foo : public YE::NativeScriptEntity {
     

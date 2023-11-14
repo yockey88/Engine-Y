@@ -3,6 +3,8 @@
 #include "editor_key_bindings.hpp"
 #include "ui_utils.hpp"
 
+#include "panels/scene_panel.hpp"
+
 void CameraKeyboardCallback(YE::Camera* camera , float dt) {
     if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_W)) camera->SetPosition(camera->Position() + camera->Front() * camera->Speed());
     if (!YE::Keyboard::Released(YE::Keyboard::Key::YE_S)) camera->SetPosition(camera->Position() - camera->Front() * camera->Speed());
@@ -56,21 +58,15 @@ void CameraMouseCallback(YE::Camera* camera , float dt) {
 }
 
 class Editor : public YE::App {
-    bool show_file_menu = false;
+    YE::Scene* scene = nullptr;
 
-    YE::Camera* camera = nullptr;
-    YE::Shader* shader = nullptr;
-    YE::Font* font = nullptr;
-    glm::mat4 model{ 1.f };
-
-    YE::Scene scene = YE::Scene("font-atlas-testing");
-
+    std::unique_ptr<editor::ScenePanel> scene_panel = nullptr;
     std::unique_ptr<YE::EngineConsole> console = nullptr;
     
-    bool render = false;
-    bool moving_camera = false;
-    int count = 0;
-    
+    bool scene_load_successful = false;
+
+    ImVec4 color = { 0.0f , 0.0f , 0.0f , 1.0f };
+
     public:
         Editor() 
             : YE::App("editor") {}
@@ -104,87 +100,40 @@ class Editor : public YE::App {
                 EditorKeyBindings , "editor-key-press"
             );
 
-            EngineY::EventManager()->RegisterKeyPressedCallback(
-                [&](YE::KeyPressed* event) -> bool {
-                    if (
-                        event->Key() == YE::Keyboard::Key::YE_C &&
-                        YE::Keyboard::LCtrlLayer()
-                    ) {
-                        if (moving_camera) {
-                            camera->UnregisterKeyboardCallback();
-                            camera->UnregisterMouseCallback();
-                        } else {
-                            camera->RegisterKeyboardCallback(CameraKeyboardCallback);
-                            camera->RegisterMouseCallback(CameraMouseCallback);
-                        }
-                        moving_camera = !moving_camera;
-                    }
-                    return true;
-                } , "camera-movement"
-            );
-
-            EditorUtils::LoadImGuiStyle();
+            gui::LoadImGuiStyle();
 
             console = std::make_unique<YE::EngineConsole>();
-            
-            std::filesystem::path p =  
-                std::filesystem::path(YE::Filesystem::GetEngineResPath()) / 
-                "fonts" / "IBMPlexMono" / "BlexMonoNerdFontMono-Regular.ttf"; 
-            font = ynew YE::Font(p);
-            if (!font->Load(true)) {
-                LOG_WARN("Could not load font atlas");
+           
+            scene_panel = std::make_unique<editor::ScenePanel>();
+            scene = EngineY::SceneManager()->CurrentScene();
+
+            if (scene == nullptr) {
+                ENGINE_WARN("Could not load scene");
+                return false;
             } else {
-                shader = EngineY::GetCoreShader("msdf_text");
-                if (shader == nullptr) {
-                    LOG_WARN("Could not load shader");
-                } 
+                scene->LoadScene();
+                scene->Start();
 
-                scene.InitializeScene();
+                scene_load_successful = true;
 
-                camera = scene.AttachCamera("main-camera");
-                camera->SetFront({ 0.f , 0.f , -1.f });
-                camera->SetUp({ 0.f , 1.f , 0.f });
-                camera->SetRight({ 1.f , 0.f , 0.f });
-                camera->SetPosition({ 0.f , 0.f , 3.f });
-                camera->Recalculate();
-
-                glm::vec4 bgcolor = EngineY::Window()->ClearColor();
-
-                YE::Entity* yock = scene.CreateEntity("yock");
-
-                auto& transform = yock->GetComponent<YE::components::Transform>();
-                transform.position = glm::vec3(0.f);
-                transform.rotation = glm::vec3(0.f);
-                transform.scale = glm::vec3(1.f);
-
-                yock->AddComponent<YE::components::TextComponent>(
-                    font , "msdf_text" , "Chris Yockey\nEngine Developer" , 
-                    bgcolor , glm::vec4(0.f , 0.f , 1.f , 1.f) ,
-                    0.f , 0.2f 
-                );
-
-                scene.LoadScene();
-                scene.Start();
-
-                model = glm::translate(model , glm::vec3(-0.5f , 0.f , 0.f));
-                
-                render = true;
+                scene_panel->SetSceneContext(scene);
             }
 
+            
             return true;
         }
 
         void Update(float delta) override {
-            scene.Update(delta);
+            scene->Update(delta);
         }
         
         void Draw() override {
-            if (render) {
-                scene.Draw();
-            } 
+            scene->Draw();
         }
 
         void DrawGui() override {
+            ImGuiIO& io = ImGui::GetIO();
+
             if (ImGui::BeginMainMenuBar()) {
                 if (ImGui::BeginMenu("File")) {
                     if (ImGui::MenuItem("New Project" , "Ctrl+N")) {}
@@ -207,14 +156,43 @@ class Editor : public YE::App {
                 ImGui::EndMainMenuBar();
             }
 
+            scene_panel->DrawGui(scene_load_successful);
+            // if (ImGui::Begin("Scenes")) {
+            //     if (ImGui::BeginChild(scene->SceneName().c_str())) { 
+            //         ImGui::Text("Scene Name :: %s" , scene->SceneName().c_str());
+            //         ImGui::Separator();
+            //         ImGui::Separator();
+
+            //         for (auto& [id , ent] : *scene->Entities()) {
+            //             auto& name = ent->GetComponent<YE::components::ID>().name;
+            //             auto& transform = ent->GetComponent<YE::components::Transform>();
+            //             
+            //             ImGui::Text("Name :: [%s] | ID :: [%llu]" , name.c_str() , id.uuid);
+            //             ImGui::Separator();
+            // 
+            //             ImGui::Text("Components");
+            //             ImGui::Separator();
+            //             
+            //             DrawTransformComponent(transform);
+            //         }
+            //     }
+            //     ImGui::EndChild();
+            // }
+            // ImGui::End();
+            
+            if (ImGui::Begin("Theme Design")) {
+                ImGui::ColorEdit4("Color" , &color.x);
+            }
+            ImGui::End();
+
             console->DrawGui();
         }
 
         void Shutdown() override {
-            scene.End();
-            scene.UnloadScene();
-            scene.Shutdown();
-            ydelete font;
+            if (scene_load_successful) {
+                scene->End();
+                scene->UnloadScene();
+            }
         }
 };
 

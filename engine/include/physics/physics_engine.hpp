@@ -63,6 +63,7 @@ namespace components {
 
             void ToggleDebugRendering();
             void SetSceneContext(Scene* scene);
+            void UnsetSceneContext();
 
             rp3d::RigidBody* CreateRigidBody(components::Transform& transform);
             rp3d::BoxShape* CreateBoxShape(components::Transform& transform);

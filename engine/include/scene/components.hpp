@@ -11,11 +11,11 @@
 #include <glm/gtx/quaternion.hpp>
 #include <mono/metadata/object.h>
 
-#include "native_script_entity.hpp"
 #include "core/UUID.hpp"
 #include "core/RNG.hpp"
 #include "physics/physics_engine.hpp"
 #include "scripting/script_engine.hpp"
+#include "scripting/native_script_entity.hpp"
 
 namespace YE {
     

@@ -1,0 +1,19 @@
+project editor_dev {
+    author: "Y" ,
+    version: 0.1 ,
+    description: "project for editor development and testing" ,
+    path: "editor_dev" // #engine_root ++ "editor_dev" ,
+}
+
+node<scene> test_scene {
+    node<camera> main_cam {
+        position: { 0 , 0 , 3 };
+        front: { 0 , 0 , -1 };
+    }
+    node<entity> ent1 {
+        node<renderable> _ {
+            mesh: "quad";
+            shader: { "basic" };
+        }
+    }
+}

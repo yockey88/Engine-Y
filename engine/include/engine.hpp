@@ -12,8 +12,6 @@
 #include "core/defines.hpp"
 #include "core/UUID.hpp"
 #include "core/command_line_args.hpp"
-#include "parsing/yscript/node_builder.hpp"
-
 namespace YE {
 
     class Logger;
@@ -23,7 +21,7 @@ namespace YE {
     class TaskManager;
     class EventManager;
     class ResourceHandler;
-    class Scene;
+    class SceneManager;
 
     static constexpr uint32_t kFrameTimeBufferSize = 1000;
 
@@ -44,6 +42,7 @@ namespace YE {
         TaskManager* task_manager = nullptr;
         EventManager* event_manager = nullptr;
         ResourceHandler* resource_handler = nullptr;
+        SceneManager* scene_manager = nullptr;
 
         CmndLineHandler cmnd_line_handler;
         std::string program_files;
@@ -53,7 +52,6 @@ namespace YE {
 
         App* app = nullptr;
         EngineConfig app_config;
-        /* SceneGraph* */ Scene* project_scene_graph = nullptr;
         std::string project_file_src;
 
         UUID32 root_window_id{ 0 };
@@ -61,7 +59,6 @@ namespace YE {
         bool app_loaded = false;
         bool running = false;
 
-        std::filesystem::path FindProjectFile();
         bool FindCoreDirectories();
         bool ValidateConfiguration();
         void InitializeSubSytems();
@@ -89,7 +86,6 @@ namespace YE {
             inline EngineStats* GetStats() const { return stats; }
             inline float TargetTimeStep() const { return frame_rate.TimeStep(); }
             inline const bool AppLoaded() const { return app_loaded; }
-            inline /* \todo SceneGraph* */ Scene* ProjectSceneGraph() const { return project_scene_graph; }
             inline CmndLineHandler& CmndLineHandler() { return cmnd_line_handler; }
     };
 

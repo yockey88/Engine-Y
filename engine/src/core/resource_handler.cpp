@@ -15,7 +15,7 @@ namespace YE {
     ResourceHandler* ResourceHandler::singleton = nullptr;
     
     void ResourceHandler::StoreShaders(const std::string& dir_path , ResourceMap<ShaderResource>& shaders) {
-        ENTER_FUNCTION_TRACE_MSG(dir_path);
+        ENTER_FUNCTION_TRACE_MSG("{}" , dir_path);
 
         std::filesystem::path path = dir_path;
         if (!std::filesystem::exists(path)) {
@@ -70,7 +70,7 @@ namespace YE {
     }
 
     void ResourceHandler::StoreTextures(const std::string& dir_path , ResourceMap<TextureResource>& textures) {
-        ENTER_FUNCTION_TRACE_MSG(dir_path);
+        ENTER_FUNCTION_TRACE_MSG("{}" , dir_path);
 
         std::filesystem::path path = dir_path;
         if (!std::filesystem::exists(path)) {
@@ -111,7 +111,7 @@ namespace YE {
         FontResource blex_mono {
             "BlexMono" , 
             res + "/fonts/IBMPlexMono/BlexMonoNerdFontMono-Regular.ttf" , 
-            ImGui::GetIO().Fonts->AddFontFromFileTTF((res + "/fonts/IBMPlexMono/BlexMonoNerdFontMono-Regular.ttf").c_str() , 16.f)
+            ImGui::GetIO().Fonts->AddFontFromFileTTF((res + "/fonts/IBMPlexMono/BlexMonoNerdFontMono-Regular.ttf").c_str() , 18.f)
         };
 
         fonts[Hash::FNV(blex_mono.name)] = blex_mono;
@@ -135,7 +135,7 @@ namespace YE {
     }
 
     void ResourceHandler::StoreModels(const std::string& dir_path , ResourceMap<ModelResource>& models) {
-        ENTER_FUNCTION_TRACE_MSG(dir_path);
+        ENTER_FUNCTION_TRACE_MSG("{}" , dir_path);
 
         // std::filesystem::path path = dir_path;
         // if (!std::filesystem::exists(path)) {
@@ -333,7 +333,7 @@ namespace YE {
         const std::string& vert_path , const std::string& frag_path ,
         const std::string& geom_path , ResourceType type
     ) {
-        ENTER_FUNCTION_TRACE_MSG(vert_path + " | " + frag_path + " | " + geom_path);
+        ENTER_FUNCTION_TRACE_MSG("{}" , vert_path + " | " + frag_path + " | " + geom_path);
         
         // UUID id = Hash::FNV(vert_path + frag_path + geom_path);
         // if (!CheckID(id , vert_path , shaders)) return;
@@ -348,7 +348,7 @@ namespace YE {
     }
 
     void ResourceHandler::AddTexture(const std::string& path , ResourceType type) {
-        ENTER_FUNCTION_TRACE_MSG(path);
+        ENTER_FUNCTION_TRACE_MSG("{}" , path);
 
         // UUID id = Hash::FNV(path);
         // if (!CheckID(id , path , textures)) return;
@@ -359,7 +359,7 @@ namespace YE {
     }
     
     void ResourceHandler::AddTexture(const std::string& name , Texture* texture , ResourceType type) {
-        ENTER_FUNCTION_TRACE_MSG(name);
+        ENTER_FUNCTION_TRACE_MSG("{}" , name);
 
         UUID id = Hash::FNV(name);
         switch (type) {
@@ -382,7 +382,7 @@ namespace YE {
     } 
 
     void ResourceHandler::AddModel(const std::string& path , ResourceType type) {
-        ENTER_FUNCTION_TRACE_MSG(path);
+        ENTER_FUNCTION_TRACE_MSG("{}" , path);
 
         // UUID id = Hash::FNV(path);
         // if (!CheckID(id , path , models)) return;

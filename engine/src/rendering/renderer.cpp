@@ -296,6 +296,14 @@ namespace YE {
         }
         render_camera = camera;
     }
+    
+    void Renderer::PopCamera() {
+        if (render_camera == nullptr) {
+            ENGINE_WARN("Attmpting to pop camera from renderer when there is none");
+            return;
+        }
+        render_camera = nullptr;
+    }
 
     void Renderer::SetSceneRenderMode(RenderMode mode) {
         scene_render_mode = mode;

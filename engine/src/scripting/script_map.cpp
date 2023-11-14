@@ -633,15 +633,15 @@ namespace YE {
     void ScriptMap::PrintAll() {
         YE_CRITICAL_ASSERTION(script_map != nullptr , "Attempting to access script map before creation");
         for (auto& obj : script_map->script_objs) {
-            LOG_INFO("[Object {0}] :: {1}" , obj.first.uuid , obj.second.name);
+            ENGINE_INFO("[Object {0}] :: {1}" , obj.first.uuid , obj.second.name);
         }
         for (auto& field : script_map->script_fields) {
-            LOG_INFO("[Field {0}] :: {1}" , field.first.uuid , field.second.name);
+            ENGINE_INFO("[Field {0}] :: {1}" , field.first.uuid , field.second.name);
         }
         for (auto& method : script_map->script_methods) {
-            LOG_INFO("[{0} Methods] :: " , method.second.size());
+            ENGINE_INFO("[{0} Methods] :: " , method.second.size());
             for (auto& m : method.second) {
-                LOG_INFO("    {0} - {1}" , m.IDU32.uuid , m.name);
+                ENGINE_INFO("    {0} - {1}" , m.IDU32.uuid , m.name);
             }
         }
     }

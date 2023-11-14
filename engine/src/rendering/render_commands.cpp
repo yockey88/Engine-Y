@@ -156,7 +156,7 @@ namespace YE {
             } 
 
             if (glyph == nullptr) {
-                LOG_WARN("Rendering corrupter font atlas :: [{}]" , text_component.font_atlas->Path().string());
+                ENGINE_WARN("Rendering corrupted font atlas :: [{}]" , text_component.font_atlas->Path().string());
                 return;
             }
 

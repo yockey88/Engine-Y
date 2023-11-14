@@ -152,6 +152,7 @@ namespace YE {
             void SetSceneContext(Scene* scene);
             void StartScene();
             void StopScene();
+            void UnsetSceneContext();
 
             inline ScriptData* GetInternalScriptData() { return &internal_script_data; }
             inline ScriptData* GetProjectScriptData() { return &project_script_data; }

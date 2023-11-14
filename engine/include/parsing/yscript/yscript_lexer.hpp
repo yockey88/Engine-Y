@@ -30,6 +30,9 @@ namespace YE {
 
         // keywords 
         PROJECT , NAME , AUTHOR , VERSION , DESCRIPTION , RESOURCES , PATH ,
+        WINDOW , TITLE , MIN_SCALE , CLEAR_COLOR , FLAGS , COLOR_BITS , STENCIL_SIZE ,
+            MULTISAMPLE_BUFFERS , MULTISAMPLE_SAMPLES , FULLSCREEN , VSYNC , RENDERING_TO_SCREEN ,
+            ACCELERATED_VISUAL ,
         NODE , 
         SCENE ,
         ENTITY ,
@@ -153,6 +156,9 @@ namespace YE {
         const std::vector<std::string> keywords = {
             /* node type | properties for node type (not exclusive) */
             "project" , "name" , "author" , "version" , "description" , "resources" , "path" ,
+            "window" , "title" , "min_scale" , "clear_color" , "flags" , "color_bits" , "stencil_size" ,
+                "multisample_buffers" , "multisample_samples" , "fullscreen" , "vsync" , "rendering_to_screen" ,
+                "accelerated_visual" ,
             "node" ,
             "scene" ,
             "entity" ,

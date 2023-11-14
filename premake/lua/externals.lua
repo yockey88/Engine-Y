@@ -1,5 +1,5 @@
 local program_files = os.getenv("PROGRAMFILES")
-local externals_folder = program_files .. "/EngineY/external"
+local externals_folder = "C:/Yock/Projects/code/engine2.2/external"
 
 externals = {}
 externals["sdl2"] = externals_folder .. "/SDL2-2.24.2"
@@ -19,5 +19,6 @@ externals["zep"] = externals_folder .. "/zep"
 externals["nfd"] = externals_folder .. "/nativefiledialog"
 externals["msdfgen"] = externals_folder .. "/msdf-atlas-gen/msdfgen"
 externals["msdfatlasgen"] = externals_folder .. "/msdf-atlas-gen"
+externals["choc"] = externals_folder .. "/choc"
 
 return externals

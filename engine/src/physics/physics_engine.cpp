@@ -178,6 +178,19 @@ namespace YE {
 
         EXIT_FUNCTION_TRACE();
     }
+    
+    void PhysicsEngine::UnsetSceneContext() {
+        if (current_context == nullptr) {
+            ENGINE_WARN("Attempting to unset scene context when no scene is set");
+            return;
+        }
+
+        if (physics_world != nullptr)
+            physics_common.destroyPhysicsWorld(physics_world);
+        physics_world = nullptr;
+
+        current_context = nullptr;
+    }
 
     rp3d::RigidBody* PhysicsEngine::CreateRigidBody(components::Transform& transform) {
         ENTER_FUNCTION_TRACE();

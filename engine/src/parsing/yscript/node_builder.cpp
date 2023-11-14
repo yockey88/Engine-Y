@@ -19,6 +19,7 @@ namespace util {
 
     NodeType NodeTypeFromToken(const YScriptToken& token) {
         switch (token.type) {
+            case YScriptTokenType::WINDOW: return NodeType::WINDOW;
             case YScriptTokenType::SCENE: return NodeType::SCENE;
             case YScriptTokenType::ENTITY: return NodeType::ENTITY;
             case YScriptTokenType::TRANSFORM: return NodeType::TRANSFORM;
@@ -45,6 +46,17 @@ namespace util {
             case YScriptTokenType::DESCRIPTION: return PropertyType::DESCRIPTION;
             case YScriptTokenType::RESOURCES: return PropertyType::RESOURCES;
             case YScriptTokenType::PATH: return PropertyType::PATH;
+            case YScriptTokenType::MIN_SCALE: return PropertyType::MIN_SCALE;
+            case YScriptTokenType::CLEAR_COLOR: return PropertyType::CLEAR_COLOR;  
+            case YScriptTokenType::FLAGS: return PropertyType::FLAGS;
+            case YScriptTokenType::COLOR_BITS: return PropertyType::COLOR_BITS;
+            case YScriptTokenType::STENCIL_SIZE: return PropertyType::STENCIL_SIZE;
+            case YScriptTokenType::MULTISAMPLE_BUFFERS: return PropertyType::MULTISAMPLE_BUFFERS;
+            case YScriptTokenType::MULTISAMPLE_SAMPLES: return PropertyType::MULTISAMPLE_SAMPLES;
+            case YScriptTokenType::FULLSCREEN: return PropertyType::FULLSCREEN; 
+            case YScriptTokenType::VSYNC: return PropertyType::VSYNC;
+            case YScriptTokenType::RENDERING_TO_SCREEN: return PropertyType::RENDERING_TO_SCREEN;
+            case YScriptTokenType::ACCELERATED_VISUAL: return PropertyType::ACCELERATED_VISUAL; 
             case YScriptTokenType::POSITION: return PropertyType::POSITION;
             case YScriptTokenType::ROTATION: return PropertyType::ROTATION;
             case YScriptTokenType::SCALE: return PropertyType::SCALE;
@@ -165,7 +177,7 @@ namespace util {
                 lit.type = YS::LiteralType::FLOAT;
                 try {
                     lit.value.floating_point = std::stof(literal.value.value);
-                } catch (const std::invalid_argument& e) {
+                } catch (const std::invalid_argument&) {
                     throw node_builder_exception("Invalid float literal" , literal.value.line , literal.value.col);
                 }
             break;
@@ -288,6 +300,18 @@ namespace util {
 
         project_metadata.project_name = project.identifier.value;
         project_metadata.properties = proj_properties;
+    }
+
+    void NodeBuilder::WalkWindow(WindowStmnt& window) {
+        std::cout << "WindowStmnt\n";
+        std::vector<YS::Property> window_properties;
+
+        for (auto& property : window.description) {
+            property->Walk(this);
+            window_properties.push_back(property_stack.top());
+            property_stack.pop();
+        }
+        // project_metadata.window_properties = window_properties;
     }
 
     void NodeBuilder::WalkFunction(FunctionStmnt& function_decl) {

@@ -14,21 +14,59 @@ namespace YE {
     std::vector<ConsoleMessage> EngineConsole::messages;
 
     char EngineConsole::cmnd_buffer[kCmndBufferSize] = "$>  "; 
+    
+    ImVec4 EngineConsole::MsgTypeToColor(ConsoleMessageType type) {
+        switch (type) {
+            case ConsoleMessageType::TRACE:   return kWhite;
+            case ConsoleMessageType::DEBUG:   return kBlue;
+            case ConsoleMessageType::INFO:    return kGreen;
+            case ConsoleMessageType::WARN:    return kYellow;
+            case ConsoleMessageType::ERR:     return kRed;
+            case ConsoleMessageType::COMMAND: return kBlue;
+            case ConsoleMessageType::ALL:     return kWhite;
+            default:
+                ENGINE_ERROR("Invalid ConsoleMessageType | UNDEFINED BEHAVIOUR OR NON-EXHAUSTIVE SWITCH");
+                break;
+        }
+
+        YE_CRITICAL_ASSERTION(false , "UNREACHABLE");
+        return ImVec4(0.f , 0.f , 0.f , 0.f);
+    }
+    
+    std::string EngineConsole::GetMsgHeader(ConsoleMessageType type) {
+        switch (type) {
+            case ConsoleMessageType::TRACE:   return "[[ TRACE ]]";
+            case ConsoleMessageType::DEBUG:   return "[[ DEBUG ]]";
+            case ConsoleMessageType::INFO:    return "[[ INFO ]]";
+            case ConsoleMessageType::WARN:    return "[[ WARN ]]";
+            case ConsoleMessageType::ERR:     return "[[ ERROR ]]";
+            case ConsoleMessageType::COMMAND: return "<$> ";
+            case ConsoleMessageType::ALL:     return "";
+            default:
+                ENGINE_ERROR("Invalid ConsoleMessageType | UNDEFINED BEHAVIOUR OR NON-EXHAUSTIVE SWITCH");
+                break;
+        }
+
+        YE_CRITICAL_ASSERTION(false , "UNREACHABLE");
+        return "";
+    }
 
     void EngineConsole::ExecuteCommand(const ConsoleMessage& cmd) {
-        ENTER_FUNCTION_TRACE_MSG(cmd.message);
+        ENTER_FUNCTION_TRACE_MSG("{}" , cmd.message);
 
         std::string c = cmd.message;
         if (c == "clear") { 
+            command_history.push_back(cmd);
             message_history.insert(message_history.end() , messages.begin() , messages.end());
             messages.clear();
+            return;
         }
-        if (c == "dump") { Logger::Instance()->DumpBacktrace(); }
-        if (c == "dump-msg") {
-            for (const auto& m : message_history) {
-                SinkMessage(m);
-            }
-        }
+        
+        command_history.push_back(cmd);
+        messages.push_back(cmd);
+        if (c == "dump") Logger::Instance()->DumpBacktrace();
+        if (c == "dump-msg")
+            for (const auto& m : message_history) SinkMessage(m);
 
         EXIT_FUNCTION_TRACE();
     }
@@ -51,16 +89,17 @@ namespace YE {
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar;
         glm::ivec2 win_size = Renderer::Instance()->ActiveWindow()->GetSize();
 
-        ImVec4 console_bg_color = ImVec4(0x0E / 255 , 0x0E / 255 , 0x0E / 255 , 1.f);
+        // ImVec4 active_background = GetActivebackgroundColor();
 
-        ImGui::PushStyleColor(ImGuiCol_WindowBg , console_bg_color);
-        ImGui::PushStyleColor(ImGuiCol_ChildBg , console_bg_color);
+        ImGui::PushStyleColor(ImGuiCol_WindowBg , kDefaultConsoleBg);
+        ImGui::PushStyleColor(ImGuiCol_ChildBg , kDefaultConsoleBg);
 
-        ImFont* blex = ResourceHandler::Instance()->GetCoreFont("BlexMono");
+        // ImFont& active_font = GetActiveFont();
+        ImFont* blex = ResourceHandler::Instance()->GetCoreFont("BlexMono"); 
         if (blex != nullptr) {
             ImGui::PushFont(blex);
         } else {
-            LOG_WARN("Failed to load BlexMono font");
+            ENGINE_WARN("Failed to load BlexMono font");
         }
 
         ImGui::SetNextWindowSize(ImVec2(win_size.x , (win_size.y / 2) - 200), ImGuiCond_FirstUseEver);
@@ -83,9 +122,14 @@ namespace YE {
                     (current_window_size.y + ImGui::GetStyle().ItemSpacing.y * messages.size()) -
                         ImGui::GetFrameHeightWithSpacing()
                 ));
-                
+ 
                 for (const ConsoleMessage& msg : messages) {
-                    ImGui::Text(msg.message.c_str());
+                    ImVec4 color = MsgTypeToColor(msg.type);
+                    ImGui::PushStyleColor(ImGuiCol_Text , color);
+                    ImGui::Text("%s" , GetMsgHeader(msg.type).c_str());
+                    ImGui::PopStyleColor();
+                    ImGui::SameLine();
+                    ImGui::Text("%s" , msg.message.c_str());
                 }
 
                 if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
@@ -93,8 +137,7 @@ namespace YE {
             }
             ImGui::EndChild();
 
-            ImGui::PushStyleColor(ImGuiCol_FrameBg , ImVec4(0x0E / 255 , 0x0E / 255 , 0x0E / 255 , 1.f));
-            // ImGui::PushFont()
+            ImGui::PushStyleColor(ImGuiCol_FrameBg , ImVec4(0x10 / 255 , 0x0F / 255 , 0x0F / 255 , 0.6f));
             if (ImGui::BeginChild("##command-bar")) {
                 ImGuiInputTextFlags input_text_flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_EscapeClearsAll; 
                 if (ImGui::InputText("##command-bar" , cmnd_buffer , kCmndBufferSize , input_text_flags)) {
@@ -123,17 +166,12 @@ namespace YE {
     void EngineConsole::Shutdown() {} 
 
     void EngineConsole::SinkMessage(const ConsoleMessage& msg) {
-        ENTER_FUNCTION_TRACE();
-
         if (msg.type == ConsoleMessageType::COMMAND) {
             command_history.push_back(msg);
             ExecuteCommand(msg);
         } else {
             messages.push_back(msg);
         }
-        
-
-        EXIT_FUNCTION_TRACE();
     }
 
 } // namespace YE 

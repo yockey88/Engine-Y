@@ -74,6 +74,12 @@ namespace YE {
         std::cout << ")\n";
     }
 
+    void YScriptTreePrinter::WalkWindow(WindowStmnt& window) {
+        std::cout << "(";
+        window.Print(data);
+        std::cout << ")\n";
+    }
+
     void YScriptTreePrinter::WalkNodeDecl(NodeDeclStmnt& node_decl) {
         std::cout << "(";
         node_decl.Print(data);
@@ -194,6 +200,27 @@ namespace YE {
             }
 
             std::cout << "\n";
+        }
+
+        data.indent_stack.pop();
+        std::cout << "}";
+    }
+
+    void WindowStmnt::Print(PrinterData& data) {
+        std::cout << "window " << identifier.value << " {\n";
+        data.indent_stack.push('\t');
+        
+        if (description.size() > 0) {
+            std::cout << "\n";
+
+            for (uint32_t i = 0; i < description.size(); ++i) {
+                for (uint32_t i = 0; i < data.indent_stack.size(); ++i)
+                    std::cout << "    ";
+                description[i]->Print(data);
+                
+                if (i != description.size() - 1)
+                    std::cout << "\n";
+            }
         }
 
         data.indent_stack.pop();

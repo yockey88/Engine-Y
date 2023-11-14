@@ -280,7 +280,9 @@ void Launcher::LaunchProject(LaunchType type) {
                             " --mono-config-path "   + engine_root + "/external"  + 
                             " --engine-root "        + engine_root                +
                             " --from-launcher";
-    
+
+    ENGINE_DEBUG("Command Line: {0}" , cmnd_line);
+
     std::string cwd = YE::Filesystem::GetCWD();
 
 #ifdef YE_PLATFORM_WIN
@@ -304,7 +306,7 @@ void Launcher::LaunchProject(LaunchType type) {
     startup_info.cb = sizeof(startup_info);
     
     bool result = CreateProcess(
-        nullptr , cmnd_line_wstr.data() , 
+        exec_wstr.data() , cmnd_line_wstr.data() , 
         nullptr , nullptr , true , 
         DETACHED_PROCESS , 
         nullptr , nullptr , 

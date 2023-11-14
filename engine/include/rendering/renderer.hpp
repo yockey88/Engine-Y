@@ -128,6 +128,7 @@ namespace components {
 
             void RegisterSceneContext(Scene* scene);
             void PushCamera(Camera* camera);
+            void PopCamera();
             
             void SetSceneRenderMode(RenderMode mode);
 

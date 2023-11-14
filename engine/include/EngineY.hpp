@@ -66,6 +66,7 @@
 #include "event/mouse_events.hpp"
 #include "event/scene_events.hpp"
 #include "event/editor_events.hpp"
+#include "scripting/native_script_entity.hpp"
 #include "scripting/script_engine.hpp"
 #include "rendering/vertex.hpp"
 #include "rendering/vertex_array.hpp"
@@ -81,7 +82,7 @@
 #include "scene/entity.hpp"
 #include "scene/components.hpp"
 #include "scene/systems.hpp"
-#include "scene/native_script_entity.hpp"
+#include "scene/scene_manager.hpp"
 #include "world/noise2D.hpp"
 #include "world/height_map2D.hpp"
 #include "world/terrain_generator.hpp"
@@ -109,7 +110,7 @@ namespace EngineY {
     YE::EventManager* EventManager();
     YE::TaskManager* TaskManager();
     YE::PhysicsEngine* PhysicsEngine();
-    /* YE::SceneGraph* */ YE::Scene* ProjectSceneGraph();
+    YE::SceneManager* SceneManager();
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// Engine Functions ////////////////////////////////////////////////////////////////////////////////////////////////////

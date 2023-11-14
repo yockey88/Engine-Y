@@ -88,7 +88,7 @@ namespace YE {
         private: // simply for things the engine needs to set up that should never be overridden
             std::string mono_dll_path;
             
-            friend class Filesystem;
+            friend class Filesystem; // Read only (might make getter)
             friend class Engine;
     };
 

@@ -61,31 +61,31 @@
     } 
 #define ENGINE_DEBUG(...) \
     if (spdlog::get(ENGINE_LOGGER_NAME)) { \
-        spdlog::get(ENGINE_LOGGER_NAME)->trace(__VA_ARGS__); \
+        spdlog::get(ENGINE_LOGGER_NAME)->debug(__VA_ARGS__); \
     } \
     if (spdlog::get(ENGINE_CONSOLE_NAME)) { \
-        spdlog::get(ENGINE_CONSOLE_NAME)->trace(__VA_ARGS__); \
+        spdlog::get(ENGINE_CONSOLE_NAME)->debug(__VA_ARGS__); \
     } 
 #define ENGINE_INFO(...) \
     if (spdlog::get(ENGINE_LOGGER_NAME)) { \
-        spdlog::get(ENGINE_LOGGER_NAME)->trace(__VA_ARGS__); \
+        spdlog::get(ENGINE_LOGGER_NAME)->info(__VA_ARGS__); \
     } \
     if (spdlog::get(ENGINE_CONSOLE_NAME)) { \
-        spdlog::get(ENGINE_CONSOLE_NAME)->trace(__VA_ARGS__); \
+        spdlog::get(ENGINE_CONSOLE_NAME)->info(__VA_ARGS__); \
     } 
 #define ENGINE_WARN(...) \
     if (spdlog::get(ENGINE_LOGGER_NAME)) { \
-        spdlog::get(ENGINE_LOGGER_NAME)->trace(__VA_ARGS__); \
+        spdlog::get(ENGINE_LOGGER_NAME)->warn(__VA_ARGS__); \
     } \
     if (spdlog::get(ENGINE_CONSOLE_NAME)) { \
-        spdlog::get(ENGINE_CONSOLE_NAME)->trace(__VA_ARGS__); \
+        spdlog::get(ENGINE_CONSOLE_NAME)->warn(__VA_ARGS__); \
     } 
 #define ENGINE_ERROR(...) \
     if (spdlog::get(ENGINE_LOGGER_NAME)) { \
-        spdlog::get(ENGINE_LOGGER_NAME)->trace(__VA_ARGS__); \
+        spdlog::get(ENGINE_LOGGER_NAME)->error(__VA_ARGS__); \
     } \
     if (spdlog::get(ENGINE_CONSOLE_NAME)) { \
-        spdlog::get(ENGINE_CONSOLE_NAME)->trace(__VA_ARGS__); \
+        spdlog::get(ENGINE_CONSOLE_NAME)->error(__VA_ARGS__); \
     } 
 
 #define YE_FATAL(...) \
@@ -97,18 +97,17 @@
 #ifdef YE_DEBUG_BUILD
 #define ENTER_FUNCTION_TRACE() \
     { std::string msg = fmt::format("[{}::{}] Enter" , __FUNCTION__ , __LINE__); \
-      TRACE_FILE(msg); }
+      ENGINE_TRACE(msg); }
 #define EXIT_FUNCTION_TRACE() \
     { std::string msg = fmt::format("[{}::{}] Exit" , __FUNCTION__ , __LINE__); \
-      TRACE_FILE(msg); } 
+      ENGINE_TRACE(msg); } 
 
+// Broken rn but dont want to comb through entire codebase to fix it
 #define ENTER_FUNCTION_TRACE_MSG(...) \
-    { std::string msg = fmt::format("[{}::{}] Enter | {}" , __FUNCTION__ , __LINE__ , __VA_ARGS__); \
-      TRACE_FILE(msg); }
+    {  }
 
 #define EXIT_FUNCTION_TRACE_MSG(...) \
-    { std::string msg = fmt::format("[{}::{}] Exit | {}" , __FUNCTION__ , __LINE__ , __VA_ARGS__); \
-      TRACE_FILE(msg); }
+    {  }
 #else
 #define ENTER_FUNCTION_TRACE() (void)0
 #define EXIT_FUNCTION_TRACE() (void)0
@@ -116,7 +115,7 @@
 #define EXIT_FUNCTION_TRACE_MSG(...) (void)0
 #endif
 
-#if 0 // preparing for later (when I can get it to work lmao)
+#if 0 // needs to move to defines.hpp
 #ifdef YE_DEBUG_BUILD
     #define YE_PROFILING_ENABLED 1
 #else 

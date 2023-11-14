@@ -73,7 +73,8 @@ workspace (projectname)
             "%{externals.zep}/include" ,
             "%{externals.nfd}/src" ,
             "%{externals.msdfgen}" ,
-            "%{externals.msdfatlasgen}"
+            "%{externals.msdfatlasgen}" ,
+            "%{externals.choc}" ,
         }
         
         libdirs {

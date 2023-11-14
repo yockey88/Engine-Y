@@ -75,6 +75,7 @@ namespace YE {
 
         std::unique_ptr<ASTStmnt> ParseDeclaration();
         std::unique_ptr<ASTStmnt> ParseProjectMetadata();
+        std::unique_ptr<ASTStmnt> ParseWindowDeclaration();
         std::unique_ptr<ASTStmnt> ParseNodeDeclaration();
         std::unique_ptr<ASTStmnt> ParseEntryPointDeclaration();
         std::unique_ptr<ASTStmnt> ParseFunctionDeclaration(const std::string& kind);

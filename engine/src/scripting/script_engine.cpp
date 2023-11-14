@@ -782,7 +782,7 @@ namespace YE {
         ENTER_FUNCTION_TRACE();
 
         std::filesystem::path internal_proj_path = Filesystem::GetInternalModulesPath();
-        LOG_INFO("Internal modules path: {0}" , internal_proj_path.string());
+        ENGINE_INFO("Internal modules path: {0}" , internal_proj_path.string());
         
         std::filesystem::path module_proj_path = Filesystem::GetProjectModulesPath();
         std::string module_path = Filesystem::GetModulePath();
@@ -842,7 +842,7 @@ namespace YE {
 
                     command = BuildProjectModules(module_proj_path , module_path);
                     if (command == 0) {
-                        LOG_INFO("Attempted rebuild successful");
+                        ENGINE_INFO("Attempted rebuild successful");
                        
                         LoadProjectModules();
 
@@ -896,6 +896,20 @@ namespace YE {
         internal_state->context_entities = scene->Entities();
 
         scene_context_exists = true;
+    }
+    
+    void ScriptEngine::UnsetSceneContext() {
+        if (internal_state->scene_context == nullptr) {
+            ENGINE_WARN("Attempting to unset scene context with null scene context");
+            return;
+        }
+
+        // might be more to do here
+
+        internal_state->context_entities = nullptr;
+        internal_state->scene_context = nullptr;
+
+        scene_context_exists = false;
     }
     
     void ScriptEngine::StartScene() {

@@ -41,9 +41,8 @@ namespace EngineY {
         return YE::PhysicsEngine::Instance();
     }
     
-
-    /* YE::SceneGraph* */ YE::Scene* ProjectSceneGraph() {
-        return YE::Engine::Instance()->ProjectSceneGraph();
+    YE::SceneManager* SceneManager() {
+        return YE::SceneManager::Instance();
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

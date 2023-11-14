@@ -23,7 +23,7 @@ namespace YE {
     
     bool YScriptParser::NodeType() {
         return Match({ 
-            YScriptTokenType::PROJECT , YScriptTokenType::SCENE ,
+            YScriptTokenType::PROJECT , YScriptTokenType::WINDOW , YScriptTokenType::SCENE ,
             YScriptTokenType::ENTITY ,
             YScriptTokenType::TRANSFORM  ,
             YScriptTokenType::RENDERABLE , YScriptTokenType::TEXTURED_RENDERABLE , YScriptTokenType::RENDERABLE_MODEL ,
@@ -37,6 +37,11 @@ namespace YE {
     
     bool YScriptParser::PropertyType() {
         return Match({
+            YScriptTokenType::TITLE , YScriptTokenType::MIN_SCALE , YScriptTokenType::CLEAR_COLOR , 
+                YScriptTokenType::FLAGS , YScriptTokenType::COLOR_BITS , YScriptTokenType::STENCIL_SIZE ,
+                YScriptTokenType::MULTISAMPLE_BUFFERS , YScriptTokenType::MULTISAMPLE_SAMPLES , 
+                YScriptTokenType::FULLSCREEN , YScriptTokenType::VSYNC , YScriptTokenType::RENDERING_TO_SCREEN ,
+                YScriptTokenType::ACCELERATED_VISUAL ,
             YScriptTokenType::NAME , YScriptTokenType::AUTHOR , 
             YScriptTokenType::VERSION , YScriptTokenType::DESCRIPTION , YScriptTokenType::RESOURCES ,
             YScriptTokenType::PATH ,
@@ -44,9 +49,9 @@ namespace YE {
             YScriptTokenType::MESH , YScriptTokenType::SHADER , YScriptTokenType::TEXTURE , YScriptTokenType::MODEL ,
             YScriptTokenType::COLOR , YScriptTokenType::AMBIENT , YScriptTokenType::DIFFUSE , YScriptTokenType::SPECULAR ,
             YScriptTokenType::CONSTANT , YScriptTokenType::LINEAR , YScriptTokenType::QUADRATIC ,
-            YScriptTokenType::FRONT , YScriptTokenType::UP , YScriptTokenType::RIGHT , YScriptTokenType::WORLD_UP , YScriptTokenType::EULER_ANGLES , 
-                YScriptTokenType::VIEWPORT , YScriptTokenType::CLIP , YScriptTokenType::SPEED , YScriptTokenType::SENSITIVITY , 
-                YScriptTokenType::FOV , YScriptTokenType::ZOOM ,
+            YScriptTokenType::FRONT , YScriptTokenType::UP , YScriptTokenType::RIGHT , YScriptTokenType::WORLD_UP , 
+                YScriptTokenType::EULER_ANGLES , YScriptTokenType::VIEWPORT , YScriptTokenType::CLIP , YScriptTokenType::SPEED , 
+                YScriptTokenType::SENSITIVITY , YScriptTokenType::FOV , YScriptTokenType::ZOOM ,
             YScriptTokenType::OBJECT ,
             YScriptTokenType::PHYSICS_BODY_TYPE ,
             YScriptTokenType::RADIUS , YScriptTokenType::HEIGHT , 
@@ -54,7 +59,8 @@ namespace YE {
     }
     
     bool YScriptParser::VerifyNamelessNode(YScriptTokenType type) {
-        return (type == YScriptTokenType::TRANSFORM           || type == YScriptTokenType::RENDERABLE   || 
+        return (type == YScriptTokenType::WINDOW              || 
+                type == YScriptTokenType::TRANSFORM           || type == YScriptTokenType::RENDERABLE   || 
                 type == YScriptTokenType::TEXTURED_RENDERABLE || type == YScriptTokenType::POINT_LIGHT  ||
                 type == YScriptTokenType::RENDERABLE_MODEL    || type == YScriptTokenType::SCRIPT       || 
                 type == YScriptTokenType::PHYSICS_BODY        || type == YScriptTokenType::BOX_COLLIDER ||
@@ -75,6 +81,7 @@ namespace YE {
     std::unique_ptr<ASTStmnt> YScriptParser::ParseDeclaration() {
         try {
             if (Match({ YScriptTokenType::PROJECT })) return ParseProjectMetadata();
+            if (Match({ YScriptTokenType::WINDOW })) return ParseWindowDeclaration();
             if (Match({ YScriptTokenType::NODE })) return ParseNodeDeclaration();
             if (Match({ YScriptTokenType::EXCLAMATION })) return ParseFunctionDeclaration("node-method");
             if (Match({ YScriptTokenType::FN })) return ParseFunctionDeclaration("function");
@@ -115,6 +122,31 @@ namespace YE {
         }
 
         return std::make_unique<ProjectMetadataStmnt>(identifier , metadata);
+    }
+
+    std::unique_ptr<ASTStmnt> YScriptParser::ParseWindowDeclaration() {
+        YScriptToken identifier;
+        if (Match({ YScriptTokenType::IDENTIFIER })) {
+            identifier = Previous();
+        }
+        
+        std::vector<std::unique_ptr<ASTExpr>> description{};
+        if (Match({ YScriptTokenType::OPEN_BRACE })) {
+            
+
+            while (!Check(YScriptTokenType::CLOSE_BRACE) && !IsAtEnd()) {
+                std::unique_ptr<ASTExpr> md = ParseExpression();
+                if (md != nullptr) description.push_back(std::move(md));
+                if (aborted) break;
+            }
+
+            Consume(YScriptTokenType::CLOSE_BRACE , "Expected '}' to close project metadata block");
+
+        } else if (!Match({ YScriptTokenType::SEMICOLON })) {
+            throw GetError("Expected project metadata block or ';' to close project metadata declaration");
+        }
+
+        return std::make_unique<WindowStmnt>(identifier , description);
     }
     
     std::unique_ptr<ASTStmnt> YScriptParser::ParseNodeDeclaration() {

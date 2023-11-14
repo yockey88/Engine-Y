@@ -37,6 +37,9 @@ namespace YS {
 
     enum class PropertyType {
         AUTHOR , VERSION , DESCRIPTION , RESOURCES , PATH , // project properties
+            MIN_SCALE , CLEAR_COLOR , FLAGS , COLOR_BITS , STENCIL_SIZE ,
+            MULTISAMPLE_BUFFERS , MULTISAMPLE_SAMPLES , FULLSCREEN , VSYNC , RENDERING_TO_SCREEN , 
+            ACCELERATED_VISUAL , 
         POSITION , SCALE , ROTATION , // transform properties
         MESH , TEXTURE , SHADER , MODEL , // renderable properties
         COLOR , AMBIENT , DIFFUSE , SPECULAR , CONSTANT , LINEAR , QUADRATIC , // light properties
@@ -52,6 +55,7 @@ namespace YS {
 
     enum class NodeType {
         PROJECT , 
+        WINDOW ,
         SCENE ,
         ENTITY ,
         TRANSFORM ,
@@ -157,6 +161,7 @@ namespace YE {
             virtual void WalkAssign(AssignExpr& assign) override;
             virtual void WalkExpr(ExprStmnt& expr) override;
             virtual void WalkProject(ProjectMetadataStmnt& project) override;
+            virtual void WalkWindow(WindowStmnt& window) override;
             virtual void WalkNodeDecl(NodeDeclStmnt& node_decl) override;
             virtual void WalkFunction(FunctionStmnt& function_decl) override;
             virtual void WalkVarDecl(VarDeclStmnt& var_decl) override;

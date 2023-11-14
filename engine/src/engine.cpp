@@ -13,7 +13,7 @@
 #include "input/mouse.hpp"
 #include "input/keyboard.hpp"
 #include "rendering/renderer.hpp"
-#include "scene/scene.hpp"
+#include "scene/scene_manager.hpp"
 #include "physics/physics_engine.hpp"
 #include "scripting/script_engine.hpp"
 
@@ -31,28 +31,6 @@ namespace YE {
 
     Engine* Engine::singleton = nullptr;
     
-    std::filesystem::path Engine::FindProjectFile() {
-        ENTER_FUNCTION_TRACE();
-        YE_CRITICAL_ASSERTION(app != nullptr , "Application is null");
-
-        std::string project_name = app->ProjectName();
-        std::string file_name = project_name;
-
-        std::vector<std::string> extensions = { "yproj" , ".ysc" , ".ys" , ".y" };
-        std::filesystem::path path = project_name;
-        path /= file_name;
-        for (uint32_t i = 0; i < extensions.size(); ++i) {
-            path.replace_extension(extensions[i]);
-            if (std::filesystem::exists(path)) {
-                EXIT_FUNCTION_TRACE();
-                return path;
-            }
-        }
-
-        EXIT_FUNCTION_TRACE();
-        return std::filesystem::path();
-    }
-
     bool Engine::FindCoreDirectories() {
         ENTER_FUNCTION_TRACE();
 
@@ -187,6 +165,16 @@ namespace YE {
         
         resource_handler->Load(); 
 
+        if (app_config.use_project_file) {
+            if (!scene_manager->LoadProjectFile(app_config.project_file)) {
+                ENGINE_ERROR("Failed to load project file");
+                // scene_manager->LoadDefaultScene();
+            }
+        } else {
+            ENGINE_INFO("No project file specified");
+            // scene_manager->LoadDefaultScene();
+        } 
+
         EXIT_FUNCTION_TRACE();
     }
     
@@ -224,13 +212,15 @@ namespace YE {
     }
 
     void Engine::RegisterApplication(App* app) {
-        ENTER_FUNCTION_TRACE_MSG(app->ProjectName());
+        ENTER_FUNCTION_TRACE();
 
         this->app = app;
         if (app == nullptr) {
             ENGINE_ERROR("Application is null");
             return;
         }
+
+        ENGINE_DEBUG("Registering application: {}", app->ProjectName());
 
 #ifdef YE_PLATFORM_WIN
         try {
@@ -243,12 +233,11 @@ namespace YE {
         YE_CRITICAL_ASSERTION(false , "UNIMPLEMENTED");
 #endif
 
-        app_config = app->GetEngineConfig();
-        app_config.engine_root = std::filesystem::current_path().string(); // program_files + "/EngineY";
-        app_config.mono_dll_path = app_config.engine_root + "/external";
+        cmnd_line_handler.DumpArgs();
 
-        if (app->ProjectName() == "editor") 
-            logger->OpenConsole();
+        app_config = app->GetEngineConfig();
+        app_config.engine_root = std::filesystem::current_path().string(); 
+        app_config.mono_dll_path = app_config.engine_root + "/external";
 
         if (cmnd_line_handler.FlagExists(CmndLineFlag::PROJECT_NAME)) 
             app_config.project_name = cmnd_line_handler.RetrieveValue(CmndLineFlag::PROJECT_NAME);
@@ -258,7 +247,7 @@ namespace YE {
         if (cmnd_line_handler.FlagExists(CmndLineFlag::PROJECT_FILE)) { 
             app_config.use_project_file = true;
             app_config.project_file = cmnd_line_handler.RetrieveValue(CmndLineFlag::PROJECT_FILE);
-        }
+        }         
         
         if (!cmnd_line_handler.FlagExists(CmndLineFlag::WORKING_DIR) || !cmnd_line_handler.FlagExists(CmndLineFlag::PROJECT_PATH)   ||
             !cmnd_line_handler.FlagExists(CmndLineFlag::MODULES_DIR)  || !cmnd_line_handler.FlagExists(CmndLineFlag::MONO_CONFIG_PATH)) {
@@ -292,34 +281,17 @@ namespace YE {
         }
 
         Filesystem::Initialize(app_config);
-        
-        if (app_config.use_project_file) {
-            std::filesystem::path project_path = app_config.project_file;
-            if (project_path.empty()) {
-                ENGINE_ERROR("Project file missing");
-                return;
-            }
-
-            YE::YScriptLexer lexer(project_path.string());
-
-            auto [src , tokens] = lexer.Lex();
-            project_file_src = src;
-
-            YE::YScriptParser parser(tokens);
-            ProjectAst parse_tree = parser.Parse();
-
-            YS::Interpreter interpreter(parse_tree);
-            project_scene_graph = interpreter.BuildScene();
-            YS::ProjectMetadata metadata = interpreter.ProjectMetadata();
-        } 
-        app_loaded = true;
-        
+ 
         task_manager = TaskManager::Instance();
         resource_handler = ResourceHandler::Instance();
         event_manager = EventManager::Instance();
         renderer = Renderer::Instance(); 
         script_engine = ScriptEngine::Instance();
         physics_engine = PhysicsEngine::Instance();
+        scene_manager = SceneManager::Instance();
+
+        app_loaded = true;
+        // scene_manager->LoadSceneGraph(project_scene_graph);
 
         EXIT_FUNCTION_TRACE();
     }
@@ -379,6 +351,8 @@ namespace YE {
 
             Systems::Teardown();
 
+            scene_manager->Cleanup();
+
             resource_handler->Offload();
 
             renderer->CloseWindow();
@@ -392,7 +366,7 @@ namespace YE {
             script_engine->Cleanup();
         }
         
-        LOG_INFO("Goodbye");
+        ENGINE_INFO("Goodbye");
         EXIT_FUNCTION_TRACE();
         if (singleton != nullptr) ydelete singleton;
     }

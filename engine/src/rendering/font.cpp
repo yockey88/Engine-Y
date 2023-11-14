@@ -42,7 +42,7 @@ namespace YE {
             path.string().c_str()
         );
         if (font_handle == nullptr) {
-            LOG_ERROR("Failed to load font: {}" , path.string());
+            ENGINE_ERROR("Failed to load font: {}" , path.string());
             return false;
         }
 
@@ -75,7 +75,7 @@ namespace YE {
         packer.setScale(em_size);
         int remaining = packer.pack(data.glyphs.data() , data.glyphs.size());
         if (remaining > 0) {
-            LOG_ERROR("Failed to pack {} glyphs" , remaining);
+            ENGINE_ERROR("Failed to pack {} glyphs" , remaining);
             msdfgen::destroyFont(font_handle);
             font_handle = nullptr;
             return false;

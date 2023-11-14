@@ -54,6 +54,7 @@ namespace YE {
             CmndLineHandler() {}
             ~CmndLineHandler() {}
 
+            void DumpArgs();
             bool Parse(int argc , char* argv[]);
             bool FlagExists(const std::string& flag) const;
             bool FlagExists(CmndLineFlag flag) const;

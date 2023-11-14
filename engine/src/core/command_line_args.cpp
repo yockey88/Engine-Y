@@ -8,7 +8,7 @@
 namespace YE {
 
     bool CmndLineHandler::FlagValid(const std::string& flag) const {
-        ENTER_FUNCTION_TRACE_MSG(flag);
+        ENTER_FUNCTION_TRACE_MSG("{}" , flag);
 
         for (uint32_t i = 0; i < kNumValidFlags; ++i) {
             if (flag == kValidFlags[i])
@@ -20,7 +20,7 @@ namespace YE {
     }
     
     bool CmndLineHandler::FlagRequiresValue(const std::string& flag) const {
-        ENTER_FUNCTION_TRACE_MSG(flag);
+        ENTER_FUNCTION_TRACE_MSG("{}" , flag);
 
         if      (flag == "--project-name"      || flag == "-n")   return true;
         else if (flag == "--project-file"      || flag == "-f")   return true;
@@ -43,7 +43,7 @@ namespace YE {
     }
 
     std::string CmndLineHandler::ShortenArg(const std::string& arg) const {
-        ENTER_FUNCTION_TRACE_MSG(arg);
+        ENTER_FUNCTION_TRACE_MSG("{}" , arg);
 
         if (arg.length() <= 4) return arg;
 
@@ -61,16 +61,36 @@ namespace YE {
         return "";
     }
 
+    void CmndLineHandler::DumpArgs() {
+        ENTER_FUNCTION_TRACE();
+
+        for (auto& [f , a] : args) {
+            ENGINE_DEBUG("Flag: {} | Value: {}" , f , a.value);
+        }
+
+        EXIT_FUNCTION_TRACE();
+    }
+    
     bool CmndLineHandler::Parse(int argc , char* argv[]) {
         ENTER_FUNCTION_TRACE();
 
         std::vector<std::string> raw_args;
+
+        ENGINE_DEBUG("Parsing {} command line arguments..." , argc);
+        ENGINE_DEBUG("Executable path: {}", argv[0]);
         
         exe_path = std::string{ argv[0] };
         if (argc == 1) return true;
 
+        for (int i = 1; i < argc; ++i) {
+            raw_args.push_back(std::string{ argv[i] });
+        }
+
         for (uint32_t i = 0; i < raw_args.size(); ++i) {
             std::string& arg = raw_args[i];
+
+            ENGINE_DEBUG("Parsing argument: {}", arg);
+
             if (arg.length() < 2) {
                 ENGINE_ERROR("Invalid command line argument: {}", arg);
                 return false;
@@ -85,9 +105,10 @@ namespace YE {
                     return false;
                 }
                 ++i;
-                args[arg] = { ShortenArg(arg) , raw_args[i] };
+                args[ShortenArg(arg)] = { arg , raw_args[i] };
+                ENGINE_DEBUG("Flag: {} | Value: {}" , arg , raw_args[i]);
             } else {
-                args[arg] = { ShortenArg(arg) , "" };
+                args[ShortenArg(arg)] = { arg , "" };
             }
         }
 
@@ -96,24 +117,20 @@ namespace YE {
     }
 
     bool CmndLineHandler::FlagExists(const std::string& flag) const {
-        ENTER_FUNCTION_TRACE_MSG(flag);
-
         for (auto& [f , a] : args) {
             if (flag == f)
                 return true;
         }
 
-        EXIT_FUNCTION_TRACE();
         return false;
     }
     
     bool CmndLineHandler::FlagExists(CmndLineFlag flag) const {
-        ENTER_FUNCTION_TRACE_MSG(magic_enum::enum_name(flag)); 
         return FlagExists(std::string(kShortFlags[flag]));
     }
 
     std::string CmndLineHandler::RetrieveValue(const std::string& flag) {
-        ENTER_FUNCTION_TRACE_MSG(flag);
+        ENTER_FUNCTION_TRACE_MSG("{}" , flag);
 
         if (!FlagExists(flag) || !FlagValid(flag)) {
             ENGINE_ERROR("Attempting to retrieve value for nonexistent flag: {}", flag);
@@ -132,19 +149,16 @@ namespace YE {
     }
 
     std::string CmndLineHandler::RetrieveValue(CmndLineFlag flag) {
-        ENTER_FUNCTION_TRACE_MSG(magic_enum::enum_name(flag));
-
         if (flag >= CmndLineFlag::INVALID) {
             ENGINE_ERROR("Attempting to retrieve value for invalid flag: {}", flag);
             return "";
         }
 
-        EXIT_FUNCTION_TRACE();
         return RetrieveValue(std::string(kShortFlags[flag]));
     }
             
     Argument CmndLineHandler::RetrieveArgument(const std::string& flag) {
-        ENTER_FUNCTION_TRACE_MSG(flag);
+        ENTER_FUNCTION_TRACE_MSG("{}" , flag);
 
         if (!FlagExists(flag) || !FlagValid(flag)) {
             ENGINE_ERROR("Attempting to retrieve argument for nonexistent flag: {}", flag);
@@ -156,7 +170,7 @@ namespace YE {
     }
 
     Argument CmndLineHandler::RetrieveArgument(CmndLineFlag flag) {
-        ENTER_FUNCTION_TRACE_MSG(flag);
+        ENTER_FUNCTION_TRACE_MSG("{}" , flag);
 
         if (flag >= CmndLineFlag::INVALID) {
             ENGINE_ERROR("Attempting to retrieve argument for invalid flag: {}", flag);

@@ -77,6 +77,7 @@ workspace "engine"
             "%{externals.nfd}/src" ,
             "%{externals.msdfgen}" ,
             "%{externals.msdfatlasgen}" ,
+            "%{externals.choc}"
         }
 
 

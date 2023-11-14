@@ -36,9 +36,20 @@ namespace YE {
         static std::vector<ConsoleMessage> message_history;
         static std::vector<ConsoleMessage> messages;
 
+        static constexpr ImVec4 kWhite  = ImVec4(1.f , 1.f , 1.f , 1.f);
+        static constexpr ImVec4 kBlue   = ImVec4(0.f , 0.f , 1.f , 1.f);
+        static constexpr ImVec4 kGreen  = ImVec4(0.f , 1.f , 0.f , 1.f);
+        static constexpr ImVec4 kYellow = ImVec4(1.f , 1.f , 0.f , 1.f);
+        static constexpr ImVec4 kRed    = ImVec4(1.f , 0.f , 0.f , 1.f);
+
+        static constexpr ImVec4 kDefaultConsoleBg = ImVec4(0x0E / 255 , 0x0E / 255 , 0x0E / 255 , 1.f);
+
         bool is_initialized = false;
         std::string fonts_directory;
         uint16_t filter_flags = (uint16_t)ConsoleMessageType::ALL;
+
+        ImVec4 MsgTypeToColor(ConsoleMessageType type);
+        std::string GetMsgHeader(ConsoleMessageType type);
 
         static constexpr size_t kCmndBufferSize = 512; 
         static char cmnd_buffer[kCmndBufferSize];
