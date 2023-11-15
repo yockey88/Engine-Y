@@ -42,7 +42,7 @@ namespace YE {
 #else
         YE_CRITICAL_ASSERTION(false , "UNREACHABLE | NON-EXHAUSTIVE MATCH");
 #endif
-        script_engine_mono_path = config.mono_dll_path;
+        script_engine_mono_path = config.MonoDllPath();
         script_engine_mono_config_path = config.mono_config_path;
 
         engine_root = config.engine_root; 

@@ -72,6 +72,8 @@ namespace YE {
     };
 
     struct EngineConfig {
+        bool config_is_valid = false;
+
         WindowConfig window_config;
 
         std::string project_name;
@@ -84,12 +86,15 @@ namespace YE {
         std::string engine_root;
 
         bool use_project_file = false;
-        
+     
+        const std::string& MonoDllPath() const { return mono_dll_path; }
+
         private: // simply for things the engine needs to set up that should never be overridden
             std::string mono_dll_path;
             
-            friend class Filesystem; // Read only (might make getter)
-            friend class Engine;
+            // this is the only class in the engine that should be able to set this
+            //  so I am not using a setter
+            friend class ProjectManager;
     };
 
 } // namespace YE

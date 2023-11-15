@@ -61,10 +61,10 @@ namespace YE {
         return "";
     }
 
-    void CmndLineHandler::DumpArgs() {
+    const void CmndLineHandler::DumpArgs() const {
         ENTER_FUNCTION_TRACE();
 
-        for (auto& [f , a] : args) {
+        for (const auto& [f , a] : args) {
             ENGINE_DEBUG("Flag: {} | Value: {}" , f , a.value);
         }
 
@@ -116,7 +116,7 @@ namespace YE {
         return ValidateArgs();
     }
 
-    bool CmndLineHandler::FlagExists(const std::string& flag) const {
+    const bool CmndLineHandler::FlagExists(const std::string& flag) const {
         for (auto& [f , a] : args) {
             if (flag == f)
                 return true;
@@ -125,11 +125,11 @@ namespace YE {
         return false;
     }
     
-    bool CmndLineHandler::FlagExists(CmndLineFlag flag) const {
+    const bool CmndLineHandler::FlagExists(CmndLineFlag flag) const {
         return FlagExists(std::string(kShortFlags[flag]));
     }
 
-    std::string CmndLineHandler::RetrieveValue(const std::string& flag) {
+    const std::string CmndLineHandler::RetrieveValue(const std::string& flag) {
         ENTER_FUNCTION_TRACE_MSG("{}" , flag);
 
         if (!FlagExists(flag) || !FlagValid(flag)) {
@@ -148,7 +148,7 @@ namespace YE {
         }
     }
 
-    std::string CmndLineHandler::RetrieveValue(CmndLineFlag flag) {
+    const std::string CmndLineHandler::RetrieveValue(CmndLineFlag flag) {
         if (flag >= CmndLineFlag::INVALID) {
             ENGINE_ERROR("Attempting to retrieve value for invalid flag: {}", flag);
             return "";
@@ -157,7 +157,7 @@ namespace YE {
         return RetrieveValue(std::string(kShortFlags[flag]));
     }
             
-    Argument CmndLineHandler::RetrieveArgument(const std::string& flag) {
+    const Argument CmndLineHandler::RetrieveArgument(const std::string& flag) {
         ENTER_FUNCTION_TRACE_MSG("{}" , flag);
 
         if (!FlagExists(flag) || !FlagValid(flag)) {
@@ -169,7 +169,7 @@ namespace YE {
         return args[flag];
     }
 
-    Argument CmndLineHandler::RetrieveArgument(CmndLineFlag flag) {
+    const Argument CmndLineHandler::RetrieveArgument(CmndLineFlag flag) {
         ENTER_FUNCTION_TRACE_MSG("{}" , flag);
 
         if (flag >= CmndLineFlag::INVALID) {

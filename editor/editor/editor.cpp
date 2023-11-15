@@ -3,6 +3,7 @@
 #include "editor_key_bindings.hpp"
 #include "ui_utils.hpp"
 
+#include "panels/main_menu_bar.hpp"
 #include "panels/scene_panel.hpp"
 
 void CameraKeyboardCallback(YE::Camera* camera , float dt) {
@@ -60,7 +61,12 @@ void CameraMouseCallback(YE::Camera* camera , float dt) {
 class Editor : public YE::App {
     YE::Scene* scene = nullptr;
 
-    std::unique_ptr<editor::ScenePanel> scene_panel = nullptr;
+    std::unique_ptr<editor::EditorPanel> main_menu_bar = nullptr;
+
+    bool scene_panel_open = true;
+    std::unique_ptr<editor::EditorPanel> scene_panel = nullptr;
+
+    // once we move UI into the engine update this
     std::unique_ptr<YE::EngineConsole> console = nullptr;
     
     bool scene_load_successful = false;
@@ -103,8 +109,11 @@ class Editor : public YE::App {
             gui::LoadImGuiStyle();
 
             console = std::make_unique<YE::EngineConsole>();
-           
+          
+            main_menu_bar = std::make_unique<editor::MainMenuBar>();
             scene_panel = std::make_unique<editor::ScenePanel>();
+
+
             scene = EngineY::SceneManager()->CurrentScene();
 
             if (scene == nullptr) {
@@ -132,53 +141,10 @@ class Editor : public YE::App {
         }
 
         void DrawGui() override {
-            ImGuiIO& io = ImGui::GetIO();
-
-            if (ImGui::BeginMainMenuBar()) {
-                if (ImGui::BeginMenu("File")) {
-                    if (ImGui::MenuItem("New Project" , "Ctrl+N")) {}
-                    if (ImGui::MenuItem("Open Project")) {}
-                    if (ImGui::MenuItem("Save Project")) {}
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Edit")) {
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Options")) {
-                    if (ImGui::MenuItem("Reload Shaders" , "Crtl+Shift+S")) { EngineY::ShaderReload(); }
-                    if (ImGui::MenuItem("Reload Scripts" , "Crtl+Shift+R")) { EngineY::ScriptReload(); }
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Tools")) {
-                    ImGui::EndMenu();
-                }
-
-                ImGui::EndMainMenuBar();
-            }
-
-            scene_panel->DrawGui(scene_load_successful);
-            // if (ImGui::Begin("Scenes")) {
-            //     if (ImGui::BeginChild(scene->SceneName().c_str())) { 
-            //         ImGui::Text("Scene Name :: %s" , scene->SceneName().c_str());
-            //         ImGui::Separator();
-            //         ImGui::Separator();
-
-            //         for (auto& [id , ent] : *scene->Entities()) {
-            //             auto& name = ent->GetComponent<YE::components::ID>().name;
-            //             auto& transform = ent->GetComponent<YE::components::Transform>();
-            //             
-            //             ImGui::Text("Name :: [%s] | ID :: [%llu]" , name.c_str() , id.uuid);
-            //             ImGui::Separator();
-            // 
-            //             ImGui::Text("Components");
-            //             ImGui::Separator();
-            //             
-            //             DrawTransformComponent(transform);
-            //         }
-            //     }
-            //     ImGui::EndChild();
-            // }
-            // ImGui::End();
+            bool main_menu_open = true;
+            main_menu_bar->DrawGui(main_menu_open);
+            
+            scene_panel->DrawGui(scene_panel_open);
             
             if (ImGui::Begin("Theme Design")) {
                 ImGui::ColorEdit4("Color" , &color.x);

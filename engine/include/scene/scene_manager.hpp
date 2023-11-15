@@ -15,16 +15,16 @@ namespace YE {
     class SceneManager {
         static SceneManager* singleton;
 
+        /// SceneGraph* context = nullptr;
         Scene* current_scene = nullptr;
         SceneMap scenes;
 
         public:
             static SceneManager* Instance();
 
-            bool LoadProjectFile(const std::string& ys_file);
-
             void Cleanup();
 
+            void AddScene(Scene* scene);
             inline Scene* CurrentScene() const { return current_scene; }
     };
 

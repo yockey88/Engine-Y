@@ -54,14 +54,14 @@ namespace YE {
             CmndLineHandler() {}
             ~CmndLineHandler() {}
 
-            void DumpArgs();
+            const void DumpArgs() const;
             bool Parse(int argc , char* argv[]);
-            bool FlagExists(const std::string& flag) const;
-            bool FlagExists(CmndLineFlag flag) const;
-            std::string RetrieveValue(const std::string& flag);
-            std::string RetrieveValue(CmndLineFlag flag);
-            Argument RetrieveArgument(const std::string& flag);
-            Argument RetrieveArgument(CmndLineFlag flag);
+            const bool FlagExists(const std::string& flag) const;
+            const bool FlagExists(CmndLineFlag flag) const;
+            const std::string RetrieveValue(const std::string& flag);
+            const std::string RetrieveValue(CmndLineFlag flag);
+            const Argument RetrieveArgument(const std::string& flag);
+            const Argument RetrieveArgument(CmndLineFlag flag);
     };
 
 }

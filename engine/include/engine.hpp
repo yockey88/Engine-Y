@@ -15,6 +15,7 @@
 namespace YE {
 
     class Logger;
+    class ProjectManager;
     class ScriptEngine;
     class PhysicsEngine;
     class Renderer;
@@ -36,6 +37,7 @@ namespace YE {
         EngineStats* stats = nullptr;
 
         Logger* logger = nullptr;
+        ProjectManager* project_manager = nullptr;
         ScriptEngine* script_engine = nullptr;
         PhysicsEngine* physics_engine = nullptr;
         Renderer* renderer = nullptr;
@@ -45,7 +47,6 @@ namespace YE {
         SceneManager* scene_manager = nullptr;
 
         CmndLineHandler cmnd_line_handler;
-        std::string program_files;
 
         time::DeltaTime delta_time;
         time::FrameRateEnforcer<kTargetFps> frame_rate;
@@ -59,7 +60,6 @@ namespace YE {
         bool app_loaded = false;
         bool running = false;
 
-        bool FindCoreDirectories();
         bool ValidateConfiguration();
         void InitializeSubSytems();
         void Update(float dt);

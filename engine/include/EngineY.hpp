@@ -172,7 +172,7 @@ namespace EngineY {
     int YE2Entry(int argc , char* argv[]) {                                                                                                  \
         YE::Engine* engine = YE::Engine::Instance();                                                                                         \
         if (!engine->CmndLine(argc , argv)) {                                                                                                \
-            ENGINE_ERROR("Failed to parse command line arguments");                                                                              \
+            ENGINE_ERROR("Failed to parse command line arguments");                                                                          \
             engine->Shutdown();                                                                                                              \
             return 1;                                                                                                                        \
         }                                                                                                                                    \
@@ -184,5 +184,4 @@ namespace EngineY {
         }                                                                                                                                    \
         return 0;                                                                                                                            \
     }
-
 #endif // !YE_HPP 
