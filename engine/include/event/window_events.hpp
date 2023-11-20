@@ -1,5 +1,5 @@
-#ifndef YE_WINDOW_EVENTS_HPP
-#define YE_WINDOW_EVENTS_HPP
+#ifndef ENGINEY_WINDOW_EVENTS_HPP
+#define ENGINEY_WINDOW_EVENTS_HPP
 
 #include <sstream>
 
@@ -8,7 +8,7 @@
 #include "events.hpp"
 #include "core/UUID.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class WindowResized : public Event {
         glm::ivec2 size;

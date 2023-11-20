@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace YE {
+namespace EngineY {
 
     public static class Engine {
 #region Math

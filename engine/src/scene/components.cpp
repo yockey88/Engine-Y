@@ -6,7 +6,7 @@
 #include "rendering/font.hpp"
 #include "rendering/model.hpp"
 
-namespace YE {
+namespace EngineY {
 
 namespace components {
 

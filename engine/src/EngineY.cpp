@@ -1,211 +1,178 @@
 #include "EngineY.hpp"
+#include "rendering/renderer.hpp"
 
 #include <queue>
 #include <thread>
 
-namespace EngineY {
+namespace EY {
     /// Getters ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // YE::Engine* Engine() {
-    //     return YE::Engine::Instance();
-    // }
-
-    YE::CmndLineHandler& CmndLineHandler() {
-        return YE::Engine::Instance()->CmndLineHandler();
+    EngineY::Window* Window() {
+        return  EngineY::Renderer::Instance()->ActiveWindow();
     }
 
-    YE::Window* Window() {
-        return YE::Renderer::Instance()->ActiveWindow();
+    EngineY::Renderer* Renderer() {
+        return  EngineY::Renderer::Instance();
     }
 
-    YE::Renderer* Renderer() {
-        return YE::Renderer::Instance();
+    EngineY::ResourceHandler* ResourceHandler() {
+        return  EngineY::ResourceHandler::Instance();
+    }
+ 
+    EngineY::ScriptEngine* ScriptEngine() {
+        return  EngineY::ScriptEngine::Instance();
+    }
+ 
+    EngineY::EventManager* EventManager() {
+        return  EngineY::EventManager::Instance();
+    }
+ 
+    EngineY::TaskManager* TaskManager() {
+        return  EngineY::TaskManager::Instance();
     }
 
-    YE::ResourceHandler* ResourceHandler() {
-        return YE::ResourceHandler::Instance();
+    EngineY::PhysicsEngine* PhysicsEngine() {
+        return  EngineY::PhysicsEngine::Instance();
     }
-    
-    YE::ScriptEngine* ScriptEngine() {
-        return YE::ScriptEngine::Instance();
-    }
-    
-    YE::EventManager* EventManager() {
-        return YE::EventManager::Instance();
-    }
-    
-    YE::TaskManager* TaskManager() {
-        return YE::TaskManager::Instance();
-    }
-
-    YE::PhysicsEngine* PhysicsEngine() {
-        return YE::PhysicsEngine::Instance();
-    }
-    
-    YE::SceneManager* SceneManager() {
-        return YE::SceneManager::Instance();
+ 
+    EngineY::SceneManager* SceneManager() {
+        return  EngineY::SceneManager::Instance();
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// Engine Functions ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void DispatchEvent(YE::Event* event) {
-        YE::EventManager::Instance()->DispatchEvent(event);
+    void DispatchEvent(EngineY::Event* event) {
+         EngineY::EventManager::Instance()->DispatchEvent(event);
     }
-    
+ 
     void ShaderReload() {
-        YE::ResourceHandler::Instance()->ReloadShaders();
+         EngineY::ResourceHandler::Instance()->ReloadShaders();
     }
-    
+ 
     void ScriptReload() {
-        YE::ScriptEngine::Instance()->ReloadProjectModules();
+         EngineY::ScriptEngine::Instance()->ReloadProjectModules();
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// Event Callback Registration //////////////////////////////////////////////////////////////////////////////////////////// 
-    void RegisterWindowResizeCallback(std::function<bool(YE::WindowResized*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterWindowResizedCallback(callback , name);
+    void RegisterWindowResizeCallback(std::function<bool(EngineY::WindowResized*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterWindowResizedCallback(callback , name);
     }
 
-    void RegisterWindowMinimizeCallback(std::function<bool(YE::WindowMinimized*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterWindowMinimizedCallback(callback , name);
+    void RegisterWindowMinimizeCallback(std::function<bool(EngineY::WindowMinimized*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterWindowMinimizedCallback(callback , name);
     }
 
-    void RegisterWindowCloseCallback(std::function<bool(YE::WindowClosed*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterWindowClosedCallback(callback , name);
+    void RegisterWindowCloseCallback(std::function<bool(EngineY::WindowClosed*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterWindowClosedCallback(callback , name);
     }
 
-    void RegisterKeyPressCallback(std::function<bool(YE::KeyPressed*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterKeyPressedCallback(callback , name);
+    void RegisterKeyPressCallback(std::function<bool(EngineY::KeyPressed*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterKeyPressedCallback(callback , name);
     }
 
-    void RegisterKeyReleaseCallback(std::function<bool(YE::KeyReleased*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterKeyReleasedCallback(callback , name);
+    void RegisterKeyReleaseCallback(std::function<bool(EngineY::KeyReleased*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterKeyReleasedCallback(callback , name);
     }
 
-    void RegisterKeyHeldCallback(std::function<bool(YE::KeyHeld*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterKeyHeldCallback(callback , name);
+    void RegisterKeyHeldCallback(std::function<bool(EngineY::KeyHeld*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterKeyHeldCallback(callback , name);
     }
 
-    void RegisterMouseMoveCallback(std::function<bool(YE::MouseMoved*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterMouseMovedCallback(callback , name);
+    void RegisterMouseMoveCallback(std::function<bool(EngineY::MouseMoved*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterMouseMovedCallback(callback , name);
     }
 
-    void RegisterMouseScrollCallback(std::function<bool(YE::MouseScrolled*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterMouseScrolledCallback(callback , name);
+    void RegisterMouseScrollCallback(std::function<bool(EngineY::MouseScrolled*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterMouseScrolledCallback(callback , name);
     }
 
-    void RegisterMouseButtonPresseCallback(std::function<bool(YE::MouseButtonPressed*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterMouseButtonPressedCallback(callback , name);
+    void RegisterMouseButtonPresseCallback(std::function<bool(EngineY::MouseButtonPressed*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterMouseButtonPressedCallback(callback , name);
     }
 
-    void RegisterMouseButtonReleaseCallback(std::function<bool(YE::MouseButtonReleased*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterMouseButtonReleasedCallback(callback , name);
+    void RegisterMouseButtonReleaseCallback(std::function<bool(EngineY::MouseButtonReleased*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterMouseButtonReleasedCallback(callback , name);
     }
 
-    void RegisterMouseButtonHeldCallback(std::function<bool(YE::MouseButtonHeld*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterMouseButtonHeldCallback(callback , name);
+    void RegisterMouseButtonHeldCallback(std::function<bool(EngineY::MouseButtonHeld*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterMouseButtonHeldCallback(callback , name);
     }
 
-    void RegisterSceneLoadCallback(std::function<bool(YE::SceneLoad*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterSceneLoadCallback(callback , name);
+    void RegisterSceneLoadCallback(std::function<bool(EngineY::SceneLoad*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterSceneLoadCallback(callback , name);
     }
 
-    void RegisterSceneStartCallback(std::function<bool(YE::SceneStart*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterSceneStartCallback(callback , name);
+    void RegisterSceneStartCallback(std::function<bool(EngineY::SceneStart*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterSceneStartCallback(callback , name);
     }
 
-    void RegisterSceneStopCallback(std::function<bool(YE::SceneStop*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterSceneStopCallback(callback , name);
+    void RegisterSceneStopCallback(std::function<bool(EngineY::SceneStop*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterSceneStopCallback(callback , name);
     }
 
-    void RegisterSceneUnloadCallback(std::function<bool(YE::SceneUnload*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterSceneUnloadCallback(callback , name);
+    void RegisterSceneUnloadCallback(std::function<bool(EngineY::SceneUnload*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterSceneUnloadCallback(callback , name);
     }
 
-    void RegisterEditorPlayCallback(std::function<bool(YE::EditorPlay*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterEditorPlayCallback(callback , name);
+    void RegisterEditorPlayCallback(std::function<bool(EngineY::EditorPlay*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterEditorPlayCallback(callback , name);
     }
 
-    void RegisterEditorPauseCallback(std::function<bool(YE::EditorPause*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterEditorPauseCallback(callback , name);
+    void RegisterEditorPauseCallback(std::function<bool(EngineY::EditorPause*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterEditorPauseCallback(callback , name);
     }
 
-    void RegisterEditorStopCallback(std::function<bool(YE::EditorStop*)> callback , const std::string& name) {
-        YE::EventManager::Instance()->RegisterEditorStopCallback(callback , name);
+    void RegisterEditorStopCallback(std::function<bool(EngineY::EditorStop*)> callback , const std::string& name) {
+         EngineY::EventManager::Instance()->RegisterEditorStopCallback(callback , name);
     }  
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
-
-    /// Render Callback Registration //////////////////////////////////////////////////////////////////////////////////////////
-    void RegisterPreRenderCallback(std::function<void()> callback , const std::string& name) {
-        YE::Renderer::Instance()->RegisterPreRenderCallback(callback , name);
-    }
-
-    void RegisterPostRenderCallback(std::function<void()> callback , const std::string& name) {
-        YE::Renderer::Instance()->RegisterPostRenderCallback(callback , name);
-    }
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        
-    /// Framebuffer Functions ////////////////////////////////////////////////////////////////////////////////////////////////
-    void PushFramebuffer(const std::string& name , YE::Framebuffer* framebuffer) {
-        YE::Renderer::Instance()->PushFramebuffer(name , framebuffer);
-    }
-
-    void ActivateFramebuffer(const std::string& name) {
-        YE::Renderer::Instance()->ActivateFramebuffer(name);
-    }
-
-    void ActivateLastFramebuffer() {
-        YE::Renderer::Instance()->ActivateLastFramebuffer();
-    }
-
-    void SetDefaultFramebuffer(const std::string& name) {
-        YE::Renderer::Instance()->SetDefaultFramebuffer(name);
-    }
-
-    void RevertToDefaultFramebuffer() {
-        YE::Renderer::Instance()->RevertToDefaultFramebuffer();
-    }
-
-    void DeactivateFramebuffer() {
-        YE::Renderer::Instance()->DeactivateFramebuffer();
-    }
-
-    void PopFramebuffer(const std::string& name) {
-        YE::Renderer::Instance()->PopFramebuffer(name);
-    }
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+     
     /// Resource Functions ///////////////////////////////////////////////////////////////////////////////////////////////////
-    YE::Shader* GetCoreShader(const std::string& name) {
-        return YE::ResourceHandler::Instance()->GetCoreShader(name);
+     EngineY::Shader* GetCoreShader(const std::string& name) {
+        return  EngineY::ResourceHandler::Instance()->GetCoreShader(name);
     }
 
-    YE::Shader* GetShader(const std::string& name) {
-        return YE::ResourceHandler::Instance()->GetShader(name);
+     EngineY::Shader* GetShader(const std::string& name) {
+        return  EngineY::ResourceHandler::Instance()->GetShader(name);
     }
 
-    YE::Texture* GetCoreTexture(const std::string& name) {
-        return YE::ResourceHandler::Instance()->GetCoreTexture(name);
+     EngineY::Texture* GetCoreTexture(const std::string& name) {
+        return  EngineY::ResourceHandler::Instance()->GetCoreTexture(name);
     }
 
-    YE::Texture* GetTexture(const std::string& name) {
-        return YE::ResourceHandler::Instance()->GetTexture(name);
+     EngineY::Texture* GetTexture(const std::string& name) {
+        return  EngineY::ResourceHandler::Instance()->GetTexture(name);
     }
-    
-    YE::VertexArray* GetPrimitiveVAO(const std::string& name) {
-        return YE::ResourceHandler::Instance()->GetPrimitiveVAO(name);
-    }
-
-    YE::Model* GetCoreModel(const std::string& name) {
-        return YE::ResourceHandler::Instance()->GetCoreModel(name);
+ 
+     EngineY::VertexArray* GetPrimitiveVAO(const std::string& name) {
+        return  EngineY::ResourceHandler::Instance()->GetPrimitiveVAO(name);
     }
 
-    YE::Model* GetModel(const std::string& name) {
-        return YE::ResourceHandler::Instance()->GetModel(name);
+     EngineY::Model* GetCoreModel(const std::string& name) {
+        return  EngineY::ResourceHandler::Instance()->GetCoreModel(name);
+    }
+
+     EngineY::Model* GetModel(const std::string& name) {
+        return  EngineY::ResourceHandler::Instance()->GetModel(name);
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-#ifdef YE_PLATFORM_WIN              
+namespace EngineY {
+
+    int Main(int argc , char* argv[] , CreateAppFunc create_app) {
+        Engine engine;
+        engine.CoreInitialize(create_app);
+        uint32_t exit_code = engine.Main(argc , argv);
+        /*
+            handle exit code
+        */
+        return exit_code;  // result of handling exit code
+    }
+
+} // namespace EngineY
+
+#ifdef ENGINEY_WINDOWS              
 HINSTANCE YE2_hinstance = nullptr;
 int WINAPI WinMain(HINSTANCE hInstance , HINSTANCE hPrevInstance , LPSTR lpCmdLine , int nCmdShow) {     
     YE2_hinstance = hInstance;     
@@ -221,7 +188,7 @@ int WINAPI WinMain(HINSTANCE hInstance , HINSTANCE hPrevInstance , LPSTR lpCmdLi
 }
 #endif                                      
 
-#ifdef YE_PLATFORM_LINUX
+#ifdef ENGINEY_LINUX
 int main(int argc , char* argv[]) {
     /// \todo set up linux stack trace
     return YE2Entry(argc , argv);

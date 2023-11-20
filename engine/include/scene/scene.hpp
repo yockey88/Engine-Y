@@ -1,5 +1,5 @@
-#ifndef YE_SCENE_HPP
-#define YE_SCENE_HPP
+#ifndef ENGINEY_SCENE_HPP
+#define ENGINEY_SCENE_HPP
 
 #include <string>
 #include <vector>
@@ -8,7 +8,7 @@
 #include <glad/glad.h>
 #include <entt/entt.hpp>
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "systems.hpp"
 #include "core/RNG.hpp"
 #include "core/UUID.hpp"
@@ -17,14 +17,14 @@
 
 constexpr uint32_t kMaxPointLights = 128;
 
-namespace YE {
+namespace EngineY {
 
     class Entity;
     class Shader;
     class Camera;
 
     template<typename T>
-    using SceneMapU64 = typename std::unordered_map<UUID , T*>;
+    using SceneMapU64 = std::unordered_map<UUID , T*>;
 
     template<typename T>
     using SceneMapU32 = std::unordered_map<UUID32 , T*>;
@@ -70,7 +70,9 @@ namespace YE {
 
             bool IsEntityValid(UUID id);
 
-            std::unordered_map<UUID , Entity*>* Entities();
+            SceneMapU64<Entity>* Entities();
+            SceneMapU64<Shader>* Shaders();
+            SceneMapU32<Camera>* Cameras();
 
             void InitializeScene();
             void LoadScene(/* not sure what would be passed here */);

@@ -1,10 +1,10 @@
-#ifndef YE_HASH_HPP
-#define YE_HASH_HPP
+#ifndef ENGINEY_HASH_HPP
+#define ENGINEY_HASH_HPP
 
 #include <array>
 #include <string_view>
 
-namespace YE {
+namespace EngineY {
 
 namespace Hash {
 

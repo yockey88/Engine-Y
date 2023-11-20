@@ -2,10 +2,10 @@
 
 #include <imgui/imgui.h>
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "core/filesystem.hpp"
 
-namespace YE {
+namespace EngineY {
         
     Zep::Msg TextEditor::MsgIdFromString(const std::string& message) {
         if (message == "RequestQuit") return Zep::Msg::RequestQuit;

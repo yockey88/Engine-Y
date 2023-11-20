@@ -2,11 +2,11 @@
 
 #include <SDL.h>
 
-#include "log.hpp"
-#include "core/window.hpp"
+#include "core/log.hpp"
+#include "rendering/window.hpp"
 #include "rendering/renderer.hpp"
 
-namespace YE {
+namespace EngineY {
  
     void Camera::CalculateOrthographicProjection(const glm::ivec2& win_size) {
         projection = glm::ortho(
@@ -36,7 +36,7 @@ namespace YE {
             case CameraType::ORTHOGRAPHIC: CalculateOrthographicProjection(win_size); break;
             case CameraType::PERSPECTIVE: CalculatePerspectiveProjection(win_size); break;
             default:
-                YE_CRITICAL_ASSERTION(false , "CameraType is invalid");
+                ENGINE_ASSERT(false , "CameraType is invalid");
         }
     }
 

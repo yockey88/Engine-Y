@@ -1,9 +1,9 @@
-#ifndef YE_TIMER_HPP
-#define YE_TIMER_HPP
+#ifndef ENGINEY_TIMER_HPP
+#define ENGINEY_TIMER_HPP
 
 #include <chrono>
 
-namespace YE {
+namespace EngineY {
 
 namespace time {
 

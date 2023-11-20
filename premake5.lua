@@ -1,152 +1,71 @@
-require("premake_config") 
-externals = require("externals")
+include "externals.lua"
 
-workspace "engine"
-    version = "0.0.2"
-    startproject "EngineY"
+workspace "EngineY"
+    startproject "runtime"
     architecture "x64"
     configurations {
         "Debug" ,
         "Release"
     }
-    
-    engine_root = os.getcwd() 
-    externals_folder = engine_root .. "/external"
 
-    filter { "action:vs*" }
-        linkoptions { "/ignore:4099" }
-        disablewarnings { "4068" }
-    
+    startproject "engine"
+
+    language "C++"
+    cppdialect "C++latest"
+    staticruntime "on"
+
+    flags { "MultiProcessorCompile" }
+
     defines {
         "_CRT_SECURE_NO_WARNINGS" ,
+        "_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING" ,
+        "GLFW_INCLUDE_NONE" ,
     }
 
-    binaries = engine_root .. "/bin"
-    objectdir = engine_root .. "/bin-obj"
-    tdir = binaries .. "/%{cfg.buildcfg}/%{prj.name}"
-    odir = objectdir .. "/%{cfg.buildcfg}/%{prj.name}"
+    filter "action:vs*"
+        linkoptions { "/ignore:4099" }
+        disablewarnings { "68" }
 
-    print("Building engine to " .. binaries)
+    filter "configurations:Debug"
+        optimize "Off"
+        symbols "On"
 
-    include(externals_folder .. "/glad")
-    include(externals_folder .. "/spdlog-1.11.0")
-    include(externals_folder .. "/imgui-docking")
-    include(externals_folder .. "/imguizmo")
-    include(externals_folder .. "/implot")
-    include(externals_folder .. "/ReactPhysics3d")
-    include(externals_folder .. "/zep")
-    include(externals_folder .. "/nativefiledialog")
-    include(externals_folder .. "/msdf-atlas-gen")
+    filter { "system:windows" , "configurations:Debug" }
+        sanitize { "Address" }
+        flags { "NoRuntimeChecks"}
+        defines { "NOMINMAX" }
 
-    include "modules"
+    filter "configurations:Release"
+        optimize "On"
+        symbols "Default"
+    
+    filter "system:windows"
+        buildoptions { "/EHsc" , "/Zc:preprocessor" , "/Zc:__cplusplus" }
 
-    project "engine"
-        location "engine"
-        kind "StaticLib"
-        language "C++"
-        cppdialect "C++20"
-        staticruntime "on"
+tdir = "%{wks.location}/bin/%{cfg.buildcfg}/%{prj.name}"
+odir = "%{wks.location}/bin_obj/%{cfg.buildcfg}/%{prj.name}"
 
-        targetdir(tdir)
-        objdir(odir)
+print("Processing external dependencies...")
+group "External"
+include("external/glad")
+include("external/spdlog")
+include("external/imgui")
+include("external/imguizmo")
+include("external/implot")
+include("external/ReactPhysics3d")
+include("external/zep")
+include("external/nativefiledialog")
+include("external/msdf-atlas-gen")
+group ""
 
-        files {
-            "%{prj.name}/src/**.cpp" ,
-            "%{prj.name}/include/**.hpp"
-        }
+print("Generating Engine Y build pipeline...")
+group "Engine"
+include "./engine"
+include "./modules"
+group ""
 
-        includedirs {
-            "%{prj.name}/include" , 
-        }
-
-        externalincludedirs {
-            "%{externals.sdl2}/include" ,
-            "%{externals.glad}/include" ,
-            "%{externals.glm}" ,
-            "%{externals.spdlog}/include" ,
-            "%{externals.entt}" ,
-            "%{externals.stb}" ,
-            "%{externals.mono}/include" ,
-            "%{externals.imgui}" ,
-            "%{externals.imguizmo}" ,
-            "%{externals.implot}" ,
-            "%{externals.assimp}/include" ,
-            "%{externals.react}/include" ,
-            "%{externals.magic_enum}" ,
-            "%{externals.zep}/include" ,
-            "%{externals.nfd}/src" ,
-            "%{externals.msdfgen}" ,
-            "%{externals.msdfatlasgen}" ,
-            "%{externals.choc}"
-        }
-
-
-        libdirs {
-            "%{externals.sdl2}/lib/x64" ,
-            "%{externals.mono}/lib/%{cfg.buildcfg}" ,
-            "%{externals.assimp}/lib/%{cfg.buildcfg}" 
-        }
-        
-        defines {
-            "GLFW_INCLUDE_NONE" ,
-        }
-
-        links {
-            "SDL2" ,
-            "glad" ,
-            "spdlog" ,
-            "imgui" ,
-            "imguizmo" ,
-            "implot" ,
-            "mono-2.0-sgen" ,
-            "reactphysics3d" ,
-            "zep" ,
-            "nfd" ,
-            "msdf" ,
-        }
-
-        filter { "system:windows" , "configurations:*" }
-            systemversion "latest"
-            links{
-                "psapi" ,
-                "dbghelp"
-            }
-            entrypoint "WinMainCRTStartup"
-            defines {
-                "YE_PLATFORM_WIN"
-            }
-        
-        filter { "system:linux" , "configurations:*" }
-            defines {
-                "YE_PLATFORM_LINUX"
-            }    
-
-        filter "configurations:Debug"
-            runtime "Debug"
-            symbols "on"            
-            defines {
-                "%{defines}" ,
-                "YE_DEBUG_BUILD" 
-            }
-            links {
-                "assimp-vc143-mtd" ,
-            }
-            buildoptions {
-                "/Zi" ,
-                "/EHa"
-            }
-
-        filter "configurations:Release"
-            runtime "Release"
-            symbols "off"
-            optimize "on"
-            defines {
-                "%{defines}" ,
-                "YE_RELEASE_BUILD"
-            }
-            buildoptions {
-                "/verbose:quiet"
-            }
-            links {
-                "assimp-vc143-mt" ,
-            }
+print("Generating game develepment build pipeline...")
+group "GameDevApps"
+include "./launcher"
+include "./editor"
+group ""

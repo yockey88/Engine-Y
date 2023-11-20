@@ -17,7 +17,7 @@ static constexpr uint32_t perlin_array[256] = {
     205 , 93 , 222 , 114 , 67 , 29 , 24 , 72 , 243 , 141 , 128 , 195 , 78 , 66 , 215 , 61 , 156 , 180
 };
 
-namespace YE {
+namespace EngineY {
 
     // will eventually replace this with my own implementation but for now I use glms
     float Noise2D::PerlinNoise(const glm::vec2& pos , GeneratorArgs args) {

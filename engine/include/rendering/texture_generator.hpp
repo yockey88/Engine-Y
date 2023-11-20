@@ -1,9 +1,9 @@
-#ifndef YE_TEXTURE_GENERATOR_HPP
-#define YE_TEXTURE_GENERATOR_HPP
+#ifndef ENGINEY_TEXTURE_GENERATOR_HPP
+#define ENGINEY_TEXTURE_GENERATOR_HPP
 
 #include "texture.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class TextureGenerator {
         public: 

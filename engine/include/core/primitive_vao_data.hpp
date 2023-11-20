@@ -1,5 +1,5 @@
-#ifndef YE_PRIMITIVE_VAO_DATA_HPP
-#define YE_PRIMITIVE_VAO_DATA_HPP
+#ifndef ENGINEY_PRIMITIVE_VAO_DATA_HPP
+#define ENGINEY_PRIMITIVE_VAO_DATA_HPP
 
 #include <vector>
 #include <array>
@@ -8,7 +8,7 @@
 
 #include "rendering/vertex.hpp"
 
-namespace YE {
+namespace EngineY {
 
 namespace primitives {
 
@@ -105,64 +105,64 @@ namespace primitives {
 
         public:
             // quad verts 
-            YE::Vertex qv1 = YE::Vertex(qp1 , c1  , rnorm1 , tan1 , bitan1 , t1  , opacity);
-            YE::Vertex qv2 = YE::Vertex(qp2 , c2  , rnorm2 , tan2 , bitan2 , t2  , opacity);
-            YE::Vertex qv3 = YE::Vertex(qp3 , c3  , rnorm3 , tan3 , bitan3 , t3  , opacity);
-            YE::Vertex qv4 = YE::Vertex(qp4 , c4  , rnorm4 , tan4 , bitan4 , t4  , opacity);
+             EngineY::Vertex qv1 =  EngineY::Vertex(qp1 , c1  , rnorm1 , tan1 , bitan1 , t1  , opacity);
+             EngineY::Vertex qv2 =  EngineY::Vertex(qp2 , c2  , rnorm2 , tan2 , bitan2 , t2  , opacity);
+             EngineY::Vertex qv3 =  EngineY::Vertex(qp3 , c3  , rnorm3 , tan3 , bitan3 , t3  , opacity);
+             EngineY::Vertex qv4 =  EngineY::Vertex(qp4 , c4  , rnorm4 , tan4 , bitan4 , t4  , opacity);
 
             // top
-            YE::Vertex  v1 = YE::Vertex(p1 , c1  , norm1 , tan1 , bitan1 , t1  , opacity);
-            YE::Vertex  v2 = YE::Vertex(p2 , c2  , norm2 , tan2 , bitan2 , t2  , opacity);
-            YE::Vertex  v3 = YE::Vertex(p3 , c3  , norm3 , tan3 , bitan3 , t3  , opacity);
-            YE::Vertex  v4 = YE::Vertex(p4 , c4  , norm1 , tan4 , bitan4 , t1  , opacity);
-            YE::Vertex  v5 = YE::Vertex(p5 , c1  , norm4 , tan1 , bitan1 , t4  , opacity);
-            YE::Vertex  v6 = YE::Vertex(p6 , c2  , norm3 , tan2 , bitan2 , t3  , opacity);
+             EngineY::Vertex  v1 =  EngineY::Vertex(p1 , c1  , norm1 , tan1 , bitan1 , t1  , opacity);
+             EngineY::Vertex  v2 =  EngineY::Vertex(p2 , c2  , norm2 , tan2 , bitan2 , t2  , opacity);
+             EngineY::Vertex  v3 =  EngineY::Vertex(p3 , c3  , norm3 , tan3 , bitan3 , t3  , opacity);
+             EngineY::Vertex  v4 =  EngineY::Vertex(p4 , c4  , norm1 , tan4 , bitan4 , t1  , opacity);
+             EngineY::Vertex  v5 =  EngineY::Vertex(p5 , c1  , norm4 , tan1 , bitan1 , t4  , opacity);
+             EngineY::Vertex  v6 =  EngineY::Vertex(p6 , c2  , norm3 , tan2 , bitan2 , t3  , opacity);
 
             // bottom
-            YE::Vertex  v7 = YE::Vertex(p7  , c3  , norm5 , tan3 , bitan3 , t1  , opacity);
-            YE::Vertex  v8 = YE::Vertex(p8  , c4  , norm6 , tan4 , bitan4 , t2  , opacity);
-            YE::Vertex  v9 = YE::Vertex(p9  , c1  , norm7 , tan1 , bitan1 , t3  , opacity);
-            YE::Vertex v10 = YE::Vertex(p10 , c2  , norm5 , tan2 , bitan2 , t1  , opacity);
-            YE::Vertex v11 = YE::Vertex(p11 , c2  , norm8 , tan3 , bitan3 , t4  , opacity);
-            YE::Vertex v12 = YE::Vertex(p12 , c1  , norm7 , tan4 , bitan4 , t3  , opacity);
+             EngineY::Vertex  v7 =  EngineY::Vertex(p7  , c3  , norm5 , tan3 , bitan3 , t1  , opacity);
+             EngineY::Vertex  v8 =  EngineY::Vertex(p8  , c4  , norm6 , tan4 , bitan4 , t2  , opacity);
+             EngineY::Vertex  v9 =  EngineY::Vertex(p9  , c1  , norm7 , tan1 , bitan1 , t3  , opacity);
+             EngineY::Vertex v10 =  EngineY::Vertex(p10 , c2  , norm5 , tan2 , bitan2 , t1  , opacity);
+             EngineY::Vertex v11 =  EngineY::Vertex(p11 , c2  , norm8 , tan3 , bitan3 , t4  , opacity);
+             EngineY::Vertex v12 =  EngineY::Vertex(p12 , c1  , norm7 , tan4 , bitan4 , t3  , opacity);
 
             // left 
-            YE::Vertex v13 = YE::Vertex(p13 , c4  , norm5 , tan1 , bitan1 , t4  , opacity);
-            YE::Vertex v14 = YE::Vertex(p14 , c3  , norm1 , tan2 , bitan2 , t3  , opacity);
-            YE::Vertex v15 = YE::Vertex(p15 , c3  , norm2 , tan3 , bitan3 , t2  , opacity);
-            YE::Vertex v16 = YE::Vertex(p16 , c4  , norm5 , tan4 , bitan4 , t4  , opacity);
-            YE::Vertex v17 = YE::Vertex(p17 , c1  , norm6 , tan1 , bitan1 , t1  , opacity);
-            YE::Vertex v18 = YE::Vertex(p18 , c1  , norm2 , tan2 , bitan2 , t2  , opacity);
+             EngineY::Vertex v13 =  EngineY::Vertex(p13 , c4  , norm5 , tan1 , bitan1 , t4  , opacity);
+             EngineY::Vertex v14 =  EngineY::Vertex(p14 , c3  , norm1 , tan2 , bitan2 , t3  , opacity);
+             EngineY::Vertex v15 =  EngineY::Vertex(p15 , c3  , norm2 , tan3 , bitan3 , t2  , opacity);
+             EngineY::Vertex v16 =  EngineY::Vertex(p16 , c4  , norm5 , tan4 , bitan4 , t4  , opacity);
+             EngineY::Vertex v17 =  EngineY::Vertex(p17 , c1  , norm6 , tan1 , bitan1 , t1  , opacity);
+             EngineY::Vertex v18 =  EngineY::Vertex(p18 , c1  , norm2 , tan2 , bitan2 , t2  , opacity);
 
             // right
-            YE::Vertex v19 = YE::Vertex(p19 , c4  , norm8 , tan3 , bitan3 , t1  , opacity);
-            YE::Vertex v20 = YE::Vertex(p20 , c4  , norm4 , tan4 , bitan4 , t2  , opacity);
-            YE::Vertex v21 = YE::Vertex(p21 , c2  , norm3 , tan1 , bitan1 , t3  , opacity);
-            YE::Vertex v22 = YE::Vertex(p22 , c2  , norm8 , tan2 , bitan2 , t1  , opacity);
-            YE::Vertex v23 = YE::Vertex(p23 , c3  , norm7 , tan3 , bitan3 , t4  , opacity);
-            YE::Vertex v24 = YE::Vertex(p24 , c3  , norm3 , tan4 , bitan4 , t3  , opacity);
+             EngineY::Vertex v19 =  EngineY::Vertex(p19 , c4  , norm8 , tan3 , bitan3 , t1  , opacity);
+             EngineY::Vertex v20 =  EngineY::Vertex(p20 , c4  , norm4 , tan4 , bitan4 , t2  , opacity);
+             EngineY::Vertex v21 =  EngineY::Vertex(p21 , c2  , norm3 , tan1 , bitan1 , t3  , opacity);
+             EngineY::Vertex v22 =  EngineY::Vertex(p22 , c2  , norm8 , tan2 , bitan2 , t1  , opacity);
+             EngineY::Vertex v23 =  EngineY::Vertex(p23 , c3  , norm7 , tan3 , bitan3 , t4  , opacity);
+             EngineY::Vertex v24 =  EngineY::Vertex(p24 , c3  , norm3 , tan4 , bitan4 , t3  , opacity);
 
             // top
-            YE::Vertex v25 = YE::Vertex(p25 , c1  , norm5 , tan1 , bitan1 , t1  , opacity);
-            YE::Vertex v26 = YE::Vertex(p26 , c2  , norm1 , tan2 , bitan2 , t2  , opacity);
-            YE::Vertex v27 = YE::Vertex(p27 , c3  , norm4 , tan3 , bitan3 , t3  , opacity);
-            YE::Vertex v28 = YE::Vertex(p28 , c4  , norm5 , tan4 , bitan4 , t1  , opacity);
-            YE::Vertex v29 = YE::Vertex(p29 , c1  , norm8 , tan1 , bitan1 , t4  , opacity);
-            YE::Vertex v30 = YE::Vertex(p30 , c2  , norm4 , tan2 , bitan2 , t3  , opacity);
+             EngineY::Vertex v25 =  EngineY::Vertex(p25 , c1  , norm5 , tan1 , bitan1 , t1  , opacity);
+             EngineY::Vertex v26 =  EngineY::Vertex(p26 , c2  , norm1 , tan2 , bitan2 , t2  , opacity);
+             EngineY::Vertex v27 =  EngineY::Vertex(p27 , c3  , norm4 , tan3 , bitan3 , t3  , opacity);
+             EngineY::Vertex v28 =  EngineY::Vertex(p28 , c4  , norm5 , tan4 , bitan4 , t1  , opacity);
+             EngineY::Vertex v29 =  EngineY::Vertex(p29 , c1  , norm8 , tan1 , bitan1 , t4  , opacity);
+             EngineY::Vertex v30 =  EngineY::Vertex(p30 , c2  , norm4 , tan2 , bitan2 , t3  , opacity);
 
             // bottom
-            YE::Vertex v31 = YE::Vertex(p31 , c3  , norm6 , tan3 , bitan3 , t4  , opacity);
-            YE::Vertex v32 = YE::Vertex(p32 , c4  , norm2 , tan4 , bitan4 , t3  , opacity);
-            YE::Vertex v33 = YE::Vertex(p33 , c1  , norm3 , tan1 , bitan1 , t2  , opacity);
-            YE::Vertex v34 = YE::Vertex(p34 , c2  , norm6 , tan2 , bitan2 , t4  , opacity);
-            YE::Vertex v35 = YE::Vertex(p35 , c2  , norm7 , tan3 , bitan3 , t1  , opacity);
-            YE::Vertex v36 = YE::Vertex(p36 , c1  , norm3 , tan4 , bitan4 , t2  , opacity);
+             EngineY::Vertex v31 =  EngineY::Vertex(p31 , c3  , norm6 , tan3 , bitan3 , t4  , opacity);
+             EngineY::Vertex v32 =  EngineY::Vertex(p32 , c4  , norm2 , tan4 , bitan4 , t3  , opacity);
+             EngineY::Vertex v33 =  EngineY::Vertex(p33 , c1  , norm3 , tan1 , bitan1 , t2  , opacity);
+             EngineY::Vertex v34 =  EngineY::Vertex(p34 , c2  , norm6 , tan2 , bitan2 , t4  , opacity);
+             EngineY::Vertex v35 =  EngineY::Vertex(p35 , c2  , norm7 , tan3 , bitan3 , t1  , opacity);
+             EngineY::Vertex v36 =  EngineY::Vertex(p36 , c1  , norm3 , tan4 , bitan4 , t2  , opacity);
 
             // rect indices
             std::vector<uint32_t> elements{ 0 , 1 , 3 , 1 , 2 , 3 };
     } tvd;
 
-    static const std::vector<YE::Vertex> quad_verts {
+    static const std::vector< EngineY::Vertex> quad_verts {
         tvd.qv1 , tvd.qv2 , tvd.qv3 , tvd.qv4
     };
 
@@ -171,7 +171,7 @@ namespace primitives {
         1 , 2 , 3
     };
 
-    static const std::vector<YE::Vertex> cube_verts{
+    static const std::vector< EngineY::Vertex> cube_verts{
         tvd.v1  , tvd.v2  , tvd.v3  , tvd.v4 ,
         tvd.v5  , tvd.v6  , tvd.v7  , tvd.v8 ,
         tvd.v9  , tvd.v10 , tvd.v11 , tvd.v12 ,
@@ -183,7 +183,7 @@ namespace primitives {
         tvd.v33 , tvd.v34 , tvd.v35 , tvd.v36
     };
 
-    // static const std::vector<YE::Vertex> cube_verts2{
+    // static const std::vector< EngineY::Vertex> cube_verts2{
     //     tvd.tv1 , tvd.tv2 , tvd.tv3 , tvd.tv4 ,
     //     tvd.tv5 , tvd.tv6 , tvd.tv7 , tvd.tv8
     // };

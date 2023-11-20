@@ -1,12 +1,12 @@
-#ifndef YE_ENTITY_HPP
-#define YE_ENTITY_HPP
+#ifndef ENGINEY_ENTITY_HPP
+#define ENGINEY_ENTITY_HPP
 
 #include <entt/entt.hpp>
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "scene/scene.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class Entity {
         /// \todo change temporary context to a real context 

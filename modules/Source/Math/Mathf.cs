@@ -1,6 +1,6 @@
 using System;
 
-namespace YE {
+namespace EngineY {
     public static class Mathf {
         public const float epsilon = 0.00001f;
         public const float half_pi = 1.57079632679489661923f;

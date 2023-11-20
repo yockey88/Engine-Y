@@ -5,11 +5,11 @@
 #include <SDL.h>
 #include <glad/glad.h>
 
-#include "log.hpp"
-#include "engine.hpp"
-#include "core/app.hpp"
+#include "core/defines.hpp"
+#include "core/log.hpp"
+#include "application/app.hpp"
 #include "core/hash.hpp"
-#include "core/event_manager.hpp"
+#include "event/event_manager.hpp"
 #include "scene/scene.hpp"
 #include "scene/components.hpp"
 #include "rendering/gui.hpp"
@@ -17,7 +17,7 @@
 #include "rendering/camera.hpp"
 #include "rendering/framebuffer.hpp"
 
-namespace YE {
+namespace EngineY {
 
     Renderer* Renderer::singleton = nullptr;
 
@@ -80,39 +80,197 @@ namespace YE {
         glClearColor(config.clear_color.r , config.clear_color.g , config.clear_color.b , config.clear_color.a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
-    
-    void Renderer::RegisterCallbacks() {
-        EventManager::Instance()->RegisterWindowResizedCallback(
-            [fbs = &framebuffers](WindowResized* event) -> bool {
-                if (fbs->size() == 0) return true; // no framebuffers to resize
 
-                UUID32 id = Renderer::Instance()->ActiveFramebuffer();
-                if (fbs->find(id) != fbs->end()) {
-                    (*fbs)[id]->HandleResize({ event->Width() , event->Height() });
-                } else {
-                    ENGINE_WARN("Failed to resize main framebuffer :: [{0}] | Framebuffer does not exist" , id.uuid);
-                    return false;
-                }
-                return true;
-            } ,
-            "active-framebuffer-resize"
-        );
+    void Renderer::PopCamera() {
+        if (render_camera == nullptr) {
+            return;
+        }
+        render_camera = nullptr;
     }
     
-    void Renderer::BeginRender() {
+    Renderer* Renderer::Instance() {
+        if (singleton == nullptr) {
+            singleton = new Renderer;
+        }
+        return singleton;
+    }
+
+    void Renderer::SubmitRenderCmnd(std::unique_ptr<RenderCommand>& cmnd) {
+        commands.push(std::move(cmnd));
+    }
+
+    void Renderer::SubmitDebugRenderCmnd(std::unique_ptr<RenderCommand>& cmnd) {
+        debug_commands.push(std::move(cmnd));
+    }
+    
+    void Renderer::RegisterSceneContext(Scene* scene) {
+        if (scene == nullptr) {
+            ENGINE_WARN("Failed to register scene context | Scene is nullptr");
+            return;
+        }
+        SetSceneRenderMode(scene->current_render_mode);
+    }
+
+    void Renderer::PushFramebuffer(const std::string& name , Framebuffer* framebuffer) {
+        if (framebuffer == nullptr) {
+            ENGINE_WARN("Failed to push framebuffer | Framebuffer is nullptr");
+            return;
+        }
+        UUID32 id = Hash::FNV32(name);
+        if (framebuffers.find(id) != framebuffers.end()) {
+            ENGINE_WARN("Failed to push framebuffer | Name [{0}] already exists" , name);
+            return;
+        }
+        framebuffers[id] = framebuffer;
+    }
+    
+    void Renderer::ActivateFramebuffer(const std::string& name) {
+        UUID32 id = Hash::FNV32(name);
+        ActivateFramebuffer(id);
+    }
+    
+    void Renderer::ActivateFramebuffer(UUID32 id) {
+        if (framebuffers.find(id) == framebuffers.end()) {
+            ENGINE_WARN("Failed to activate framebuffer | ID [{0}] does not exist" , id.uuid);
+            return;
+        }
+        active_framebuffer = id;
+        framebuffer_active = true;
+    }
+    
+    void Renderer::SetDefaultFramebuffer(const std::string& name) {
+        UUID32 id = Hash::FNV32(name);
+        SetDefaultFramebuffer(id);
+    }
+    
+    void Renderer::SetDefaultFramebuffer(UUID32 id) {
+        if (framebuffers.find(id) == framebuffers.end()) {
+            ENGINE_WARN("Failed to set default framebuffer | ID [{0}] does not exist" , id.uuid);
+            return;
+        }
+        default_framebuffer = id;
+    }
+   
+    void Renderer::RevertToDefaultFramebuffer() {
+        active_framebuffer = default_framebuffer;
+    }
+    
+    void Renderer::ActivateLastFramebuffer() {
+        active_framebuffer = last_active_framebuffer;
+    }
+    
+    void Renderer::DeactivateFramebuffer() {
+        last_active_framebuffer = active_framebuffer;
+        active_framebuffer = default_framebuffer;
+        if (default_framebuffer.uuid == 0) {
+            framebuffer_active = false;
+        }
+    }
+    
+    void Renderer::PopFramebuffer(const std::string& name ) {
+        UUID32 id = Hash::FNV32(name);
+        PopFramebuffer(id);
+    }
+    
+    void Renderer::PopFramebuffer(UUID32 id) {
+        if (framebuffers.find(id) == framebuffers.end()) {
+            ENGINE_WARN("Failed to pop framebuffer | ID [{0}] does not exist" , id.uuid);
+            return;
+        }
+        framebuffers.erase(id);
+    }
+    
+    Framebuffer* Renderer::GetWindowFramebuffer() {
+        return window->GetFramebuffer();
+    }
+    
+    Framebuffer* Renderer::GetActiveFramebuffer() {
+        if (framebuffers.find(active_framebuffer) == framebuffers.end()) {
+            ENGINE_WARN("Failed to get active framebuffer | ID [{0}] does not exist" , active_framebuffer.uuid);
+            return nullptr;
+        }
+        return framebuffers[active_framebuffer];
+    }
+
+    Framebuffer* Renderer::GetFramebuffer(const std::string& name) {
+        UUID32 id = Hash::FNV32(name);
+        return GetFramebuffer(id);
+    }
+    
+    Framebuffer* Renderer::GetFramebuffer(UUID32 id) {
+        if (framebuffers.find(id) == framebuffers.end()) {
+            ENGINE_WARN("Failed to get framebuffer | ID [{0}] does not exist" , id.uuid);
+            return nullptr;
+        }
+        return framebuffers[id];
+    }
+
+    void Renderer::PushCamera(Camera* camera) {
+        if (camera == nullptr) {
+            ENGINE_WARN("Failed to push camera | Camera is nullptr");
+            return;
+        }
+        render_camera = camera;
+    }    
+
+    void Renderer::SetSceneRenderMode(RenderMode mode) {
+        scene_render_mode = mode;
+    }
+
+    void Renderer::Initialize(App* app , WindowConfig& config) {
+        app_handle = app;
+        
+        config.flags |= SDL_WINDOW_OPENGL;
+        if (config.fullscreen) config.flags |= SDL_WINDOW_FULLSCREEN;
+
+        window = ynew(Window);
+        
+        int sdl_init = SDL_InitSubSystem(SDL_INIT_VIDEO);
+        ENGINE_ASSERT(
+            sdl_init == 0 , 
+            "Failed to initialize SDL2 {0}" ,
+            SDL_GetError()
+        );
+        
+        SetSDLWindowAttributes(config);
+
+        window->Open(config);
+        
+        int glad_init = gladLoadGLLoader(SDL_GL_GetProcAddress);
+        ENGINE_ASSERT(glad_init != 0 , "GLAD failed to initialize");
+
+        EnableGLSettings(config);
+
+        // we should be able to get rid of this call if we handle the framebuffer correctly
+        window->InitializeFramebuffer();
+        window->RegisterCallbacks();
+        
+        gui = ynew(Gui);
+        gui->Initialize(window);
+        
+        window->Clear();
+        window->SwapBuffers();
+    }
+
+    void Renderer::Render() {
         window->Clear();
 
         glPolygonMode(GL_FRONT_AND_BACK , scene_render_mode);
 
-        if (framebuffer_active)
-            framebuffers[active_framebuffer]->BindFrame();
-        
+        ///> we need to fix this so that we clear each framebuffer, 
+        ///     then render to each framebuffer, then draw each framebuffer
+        ///     but the problem is that only one can be bound at a time
+        ///     so either we just let there be one framebuffer or get
+        ///     super creative with how we handle this
+        for (auto& [id , fb] : framebuffers) {
+            fb->BindFrame();
+        }
+
         app_handle->Draw();
-    }
-    
-    void Renderer::Execute() {
-        for (auto& [id , renderable] : persistent_renderables)
+        
+        for (auto& [id , renderable] : persistent_renderables) {
             renderable->Execute(render_camera , ShaderUniforms{});
+        }
 
         while (!commands.empty()) {
             commands.front()->Execute(render_camera , ShaderUniforms{});
@@ -129,194 +287,25 @@ namespace YE {
             debug_commands.pop();
         }
 
-        render_camera = nullptr;
+        PopCamera();
 
         glPolygonMode(GL_FRONT_AND_BACK , RenderMode::FILL);
 
-        if (framebuffer_active)
-            framebuffers[active_framebuffer]->UnbindFrame();
-    }
-    
-    void Renderer::EndRender() {
-        if (framebuffer_active)
+        for (auto& [id , fb] : framebuffers) {
+            fb->UnbindFrame();
+        }
+
+        window->Draw();
+
+        if (framebuffer_active && active_framebuffer.uuid != 0) {
             framebuffers[active_framebuffer]->Draw();
+        }
 
         gui->BeginRender(window->GetSDLWindow());
         app_handle->DrawGui();
         gui->EndRender(window->GetSDLWindow() , window->GetGLContext());
 
         window->SwapBuffers();
-    }
-
-    Renderer* Renderer::Instance() {
-        if (singleton == nullptr) {
-            singleton = ynew Renderer;
-        }
-        return singleton;
-    }
-
-    void Renderer::RegisterPreRenderCallback(std::function<void()> callback , const std::string& name) {
-        UUID32 id = Hash::FNV32(name);
-        if (!CheckID(id , name , PreRenderCallbacks)) return;
-        PreRenderCallbacks[id] = callback;
-    }
-
-    void Renderer::RegisterPostRenderCallback(std::function<void()> callback , const std::string& name) {
-        UUID32 id = Hash::FNV32(name);
-        if (!CheckID(id , name , PostRenderCallbacks)) return;
-        PostRenderCallbacks[id] = callback;
-    }
-
-    void Renderer::Initialize(App* app , WindowConfig& config) {
-        app_handle = app;
-        
-        config.flags |= SDL_WINDOW_OPENGL;
-        if (config.fullscreen) config.flags |= SDL_WINDOW_FULLSCREEN;
-
-        window = ynew Window;
-        gui = ynew Gui;
-
-        int sdl_init = SDL_InitSubSystem(SDL_INIT_EVENTS);
-        YE_CRITICAL_ASSERTION(
-            sdl_init == 0 , 
-            "Failed to initialize SDL2 {0}" ,
-            SDL_GetError()
-        );
-        
-        SetSDLWindowAttributes(config);
-        window->Open(config); 
-
-        int glad_init = gladLoadGLLoader(SDL_GL_GetProcAddress);
-        YE_CRITICAL_ASSERTION(glad_init != 0 , "GLAD failed to initialize");
-
-        EnableGLSettings(config);
-
-        window->RegisterCallbacks();
-        RegisterCallbacks();
-        
-        gui->Initialize(window);
-        
-        window->Clear();
-        window->SwapBuffers();
-    }
-
-    void Renderer::PushFramebuffer(const std::string& name , Framebuffer* framebuffer) {
-        if (framebuffer == nullptr) {
-            ENGINE_WARN("Failed to push framebuffer :: [{0}] | Framebuffer is nullptr" , name);
-            return;
-        }
-
-        UUID32 id = Hash::FNV32(name);
-        if (framebuffers.find(id) != framebuffers.end()) {
-            ENGINE_WARN("Failed to push framebuffer :: [{0}] | Name already exists" , name);
-            return;
-        }
-
-        framebuffers[id] = framebuffer;
-    }
-
-    void Renderer::SubmitRenderCmnd(std::unique_ptr<RenderCommand>& cmnd) {
-        commands.push(std::move(cmnd));
-    }
-
-    void Renderer::SubmitDebugRenderCmnd(std::unique_ptr<RenderCommand>& cmnd) {
-        debug_commands.push(std::move(cmnd));
-    }
-
-    void Renderer::PopFramebuffer(const std::string& name) {
-        UUID32 id = Hash::FNV32(name);
-        if (framebuffers.find(id) == framebuffers.end()) {
-            ENGINE_WARN("Failed to pop framebuffer :: [{0}] | Did you push it to the renderer?" , name);
-            return;
-        }
-
-        Framebuffer* framebuffer = framebuffers[id];
-        framebuffers.erase(id);
-        ydelete framebuffer;
-
-        id = 0;
-    }
-
-    void Renderer::SetDefaultFramebuffer(const std::string& name) {
-        UUID32 id = Hash::FNV32(name);
-        if (framebuffers.find(id) == framebuffers.end()) {
-            ENGINE_WARN("Failed to set default framebuffer :: [{0}] | Did you push it to the renderer?" , name);
-            return;
-        }
-        default_framebuffer = id;
-    }
-
-    void Renderer::RevertToDefaultFramebuffer() {
-        if (framebuffers.find(default_framebuffer) == framebuffers.end()) {
-            ENGINE_WARN("Failed to revert to default framebuffer | Did you set a default?");
-            return;
-        }
-        active_framebuffer = default_framebuffer;
-        framebuffer_active = true;
-    }
-
-    void Renderer::ActivateFramebuffer(const std::string& name) {
-        UUID32 id = Hash::FNV32(name);
-        if (framebuffers.find(id) == framebuffers.end()) {
-            ENGINE_WARN("Failed to activate framebuffer :: [{0}] | Did you push it to the renderer?" , name);
-            return;
-        }
-        
-        active_framebuffer = id;
-        last_active_framebuffer = id;
-        framebuffer_active = true;
-    }
-        
-    void Renderer::ActivateLastFramebuffer() {
-        if (framebuffers.find(last_active_framebuffer) == framebuffers.end()) {
-            ENGINE_WARN("Failed to activate last framebuffer | Attempting to revert to default");
-            RevertToDefaultFramebuffer();
-        }
-        active_framebuffer = last_active_framebuffer;
-        framebuffer_active = true;
-    }
-    
-    void Renderer::DeactivateFramebuffer() {
-        framebuffer_active = false;
-        active_framebuffer = 0;
-    }
-    
-    void Renderer::RegisterSceneContext(Scene* scene) {
-        if (scene == nullptr) {
-            ENGINE_WARN("Failed to register scene context | Scene is nullptr");
-            return;
-        }
-        SetSceneRenderMode(scene->current_render_mode);
-    }
-
-    void Renderer::PushCamera(Camera* camera) {
-        if (camera == nullptr) {
-            ENGINE_WARN("Failed to push camera | Camera is nullptr");
-            return;
-        }
-        render_camera = camera;
-    }
-    
-    void Renderer::PopCamera() {
-        if (render_camera == nullptr) {
-            ENGINE_WARN("Attmpting to pop camera from renderer when there is none");
-            return;
-        }
-        render_camera = nullptr;
-    }
-
-    void Renderer::SetSceneRenderMode(RenderMode mode) {
-        scene_render_mode = mode;
-    }
-
-    void Renderer::Render() {
-        for (auto& [id , cb] : PreRenderCallbacks)
-            cb();
-        BeginRender();
-        Execute();
-        EndRender();
-        for (auto& [id , cb] : PostRenderCallbacks)
-            cb();
     }
     
     void Renderer::CloseWindow() {
@@ -325,24 +314,26 @@ namespace YE {
     }
     
     void Renderer::Cleanup() {
-        for (auto& [id , renderable] : persistent_renderables)
-            ydelete renderable;
+        for (auto& [id , renderable] : persistent_renderables) {
+            ydelete(renderable);
+        }
         persistent_renderables.clear();
 
-        for (auto& [id , renderable] : debug_renderables)
-            ydelete renderable;
+        for (auto& [id , renderable] : debug_renderables) {
+            ydelete(renderable);
+        }
         debug_renderables.clear();
 
-        for (auto& [id , fb] : framebuffers)
-            ydelete fb;
-        framebuffers.clear();
+        for (auto& [id , framebuffer] : framebuffers) {
+            framebuffer->Destroy();
+            ydelete(framebuffer);
+        }
 
-        if (gui != nullptr) ydelete gui;
+        ENGINE_ASSERT(gui != nullptr , "Attempting to cleanup renderer without initializing it");
+        ydelete(gui);
 
-        YE_CRITICAL_ASSERTION(window != nullptr , "Attempted to cleanup renderer without initializing it");
-        ydelete window;
-
-        if (singleton != nullptr) ydelete singleton;
+        ENGINE_ASSERT(window != nullptr , "Attempted to cleanup renderer without initializing it");
+        ydelete(window);
     }
 
 }

@@ -1,5 +1,5 @@
-#ifndef YE_HPP
-#define YE_HPP
+#ifndef ENGINEY_HPP
+#define ENGINEY_HPP
 
 /// Forwarding standard headers to application
 #include <iostream>
@@ -35,24 +35,17 @@
 #include <magic_enum/magic_enum.hpp>
 #include <nfd/nfd.h>
 
-#ifdef YE_PLATFORM_WIN
-    #include <ShlObj.h>
-    #include <minwindef.h>
-#ifdef YE_DEBUG_BUILD
-    #include "platform/win_crash_handler.hpp"
-#endif
-#endif
-
-#include "log.hpp"
 #include "engine.hpp"
+#include "core/defines.hpp"
+#include "core/log.hpp"
 #include "core/logger.hpp"
-#include "core/app.hpp"
+#include "application/app.hpp"
 #include "core/defines.hpp"
 #include "core/timer.hpp"
 #include "core/filesystem.hpp"
-#include "core/window.hpp"
+#include "rendering/window.hpp"
 #include "core/tasks.hpp"
-#include "core/event_manager.hpp"
+#include "event/event_manager.hpp"
 #include "core/task_manager.hpp"
 #include "core/resource_handler.hpp"
 #include "core/text_editor.hpp"
@@ -77,6 +70,7 @@
 #include "rendering/camera.hpp"
 #include "rendering/model.hpp"
 #include "rendering/render_commands.hpp"
+#include "rendering/window.hpp"
 #include "rendering/renderer.hpp"
 #include "scene/scene.hpp"
 #include "scene/entity.hpp"
@@ -89,55 +83,52 @@
                                                                   
 int YE2Entry(int argc , char* argv[]);
 
-namespace EngineY {
+namespace EY {
 
     /// Forwarding headers and functions to application for nicer syntax
 
     /// Convenience macros /////////////////////////////////////////////////////////////////////////////////////////////////
 #define MAKE_RENDER_COMMAND(type , ...) std::make_unique<type>(__VA_ARGS__)
-#define DRAW(type , ...) std::unique_ptr<YE::RenderCommand> command = MAKE_RENDER_COMMAND(type , __VA_ARGS__); \
-                         YE::Renderer::Instance()->SubmitRenderCmnd(command);
+#define DRAW(type , ...) std::unique_ptr< EngineY::RenderCommand> command = MAKE_RENDER_COMMAND(type , __VA_ARGS__); \
+                          EngineY::Renderer::Instance()->SubmitRenderCmnd(command);
 #define ADD_SCRIPT_FUNCTION(class_name , call) mono_add_internal_call(#class_name"::"#call , (void*)call)
-#define EVENT(event) YE::EventManager::Instance()->DispatchEvent(ynew event)
 
-    // Getters ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // YE::Engine* Engine();
-    YE::CmndLineHandler& CmndLineHandler();
-    YE::Window* Window();
-    YE::Renderer* Renderer();
-    YE::ResourceHandler* ResourceHandler();
-    YE::ScriptEngine* ScriptEngine();
-    YE::EventManager* EventManager();
-    YE::TaskManager* TaskManager();
-    YE::PhysicsEngine* PhysicsEngine();
-    YE::SceneManager* SceneManager();
+     // Getters ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     EngineY::Window* Window();
+     EngineY::Renderer* Renderer();
+     EngineY::ResourceHandler* ResourceHandler();
+     EngineY::ScriptEngine* ScriptEngine();
+     EngineY::EventManager* EventManager();
+     EngineY::TaskManager* TaskManager();
+     EngineY::PhysicsEngine* PhysicsEngine();
+     EngineY::SceneManager* SceneManager();
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// Engine Functions ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void DispatchEvent(YE::Event* event);
+    void DispatchEvent(EngineY::Event* event);
     void ShaderReload();
     void ScriptReload();
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// Event Callback Registration //////////////////////////////////////////////////////////////////////////////////////////// 
-    void RegisterWindowResizeCallback(std::function<bool(YE::WindowResized*)> callback , const std::string& name);
-    void RegisterWindowMinimizeCallback(std::function<bool(YE::WindowMinimized*)> callback , const std::string& name);
-    void RegisterWindowCloseCallback(std::function<bool(YE::WindowClosed*)> callback , const std::string& name);
-    void RegisterKeyPressCallback(std::function<bool(YE::KeyPressed*)> callback , const std::string& name);
-    void RegisterKeyReleaseCallback(std::function<bool(YE::KeyReleased*)> callback , const std::string& name);
-    void RegisterKeyHeldCallback(std::function<bool(YE::KeyHeld*)> callback , const std::string& name);
-    void RegisterMouseMoveCallback(std::function<bool(YE::MouseMoved*)> callback , const std::string& name);
-    void RegisterMouseScrollCallback(std::function<bool(YE::MouseScrolled*)> callback , const std::string& name);
-    void RegisterMouseButtonPresseCallback(std::function<bool(YE::MouseButtonPressed*)> callback , const std::string& name);
-    void RegisterMouseButtonReleaseCallback(std::function<bool(YE::MouseButtonReleased*)> callback , const std::string& name);
-    void RegisterMouseButtonHeldCallback(std::function<bool(YE::MouseButtonHeld*)> callback , const std::string& name);
-    void RegisterSceneLoadCallback(std::function<bool(YE::SceneLoad*)> callback , const std::string& name);
-    void RegisterSceneStartCallback(std::function<bool(YE::SceneStart*)> callback , const std::string& name);
-    void RegisterSceneStopCallback(std::function<bool(YE::SceneStop*)> callback , const std::string& name);
-    void RegisterSceneUnloadCallback(std::function<bool(YE::SceneUnload*)> callback , const std::string& name);
-    void RegisterEditorPlayCallback(std::function<bool(YE::EditorPlay*)> callback , const std::string& name);
-    void RegisterEditorPauseCallback(std::function<bool(YE::EditorPause*)> callback , const std::string& name);
-    void RegisterEditorStopCallback(std::function<bool(YE::EditorStop*)> callback , const std::string& name);
+    void RegisterWindowResizeCallback(std::function<bool(EngineY::WindowResized*)> callback , const std::string& name);
+    void RegisterWindowMinimizeCallback(std::function<bool(EngineY::WindowMinimized*)> callback , const std::string& name);
+    void RegisterWindowCloseCallback(std::function<bool(EngineY::WindowClosed*)> callback , const std::string& name);
+    void RegisterKeyPressCallback(std::function<bool(EngineY::KeyPressed*)> callback , const std::string& name);
+    void RegisterKeyReleaseCallback(std::function<bool(EngineY::KeyReleased*)> callback , const std::string& name);
+    void RegisterKeyHeldCallback(std::function<bool(EngineY::KeyHeld*)> callback , const std::string& name);
+    void RegisterMouseMoveCallback(std::function<bool(EngineY::MouseMoved*)> callback , const std::string& name);
+    void RegisterMouseScrollCallback(std::function<bool(EngineY::MouseScrolled*)> callback , const std::string& name);
+    void RegisterMouseButtonPresseCallback(std::function<bool(EngineY::MouseButtonPressed*)> callback , const std::string& name);
+    void RegisterMouseButtonReleaseCallback(std::function<bool(EngineY::MouseButtonReleased*)> callback , const std::string& name);
+    void RegisterMouseButtonHeldCallback(std::function<bool(EngineY::MouseButtonHeld*)> callback , const std::string& name);
+    void RegisterSceneLoadCallback(std::function<bool(EngineY::SceneLoad*)> callback , const std::string& name);
+    void RegisterSceneStartCallback(std::function<bool(EngineY::SceneStart*)> callback , const std::string& name);
+    void RegisterSceneStopCallback(std::function<bool(EngineY::SceneStop*)> callback , const std::string& name);
+    void RegisterSceneUnloadCallback(std::function<bool(EngineY::SceneUnload*)> callback , const std::string& name);
+    void RegisterEditorPlayCallback(std::function<bool(EngineY::EditorPlay*)> callback , const std::string& name);
+    void RegisterEditorPauseCallback(std::function<bool(EngineY::EditorPause*)> callback , const std::string& name);
+    void RegisterEditorStopCallback(std::function<bool(EngineY::EditorStop*)> callback , const std::string& name);
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// Render Callback Registration //////////////////////////////////////////////////////////////////////////////////////////
@@ -146,7 +137,7 @@ namespace EngineY {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// Framebuffer Functions ////////////////////////////////////////////////////////////////////////////////////////////////
-    void PushFrameBuffer(const std::string& name , YE::Framebuffer* framebuffer);
+    void PushFrameBuffer(const std::string& name ,  EngineY::Framebuffer* framebuffer);
     void ActivateFrameBuffer(const std::string& name);
     void ActivateLastFrameBuffer();
     void SetDefaultFrameBuffer(const std::string& name);
@@ -155,33 +146,26 @@ namespace EngineY {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// Resource Functions ///////////////////////////////////////////////////////////////////////////////////////////////////
-    YE::Shader* GetCoreShader(const std::string& name);
-    YE::Shader* GetShader(const std::string& name);
-    YE::Texture* GetCoreTexture(const std::string& name);
-    YE::Texture* GetTexture(const std::string& name);
-    YE::VertexArray* GetPrimitiveVAO(const std::string& name);
-    YE::Model* GetCoreModel(const std::string& name);
-    YE::Model* GetModel(const std::string& name);
+     EngineY::Shader* GetCoreShader(const std::string& name);
+     EngineY::Shader* GetShader(const std::string& name);
+     EngineY::Texture* GetCoreTexture(const std::string& name);
+     EngineY::Texture* GetTexture(const std::string& name);
+     EngineY::VertexArray* GetPrimitiveVAO(const std::string& name);
+     EngineY::Model* GetCoreModel(const std::string& name);
+     EngineY::Model* GetModel(const std::string& name);
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
+namespace EngineY {
+
+    int Main(int argc , char* argv[] , CreateAppFunc create_app);
+
+} // namespace EngineY
 
 #define DECLARE_APP(X)                                                                                                                       \
-    YE::App* CreateApp() {                                                                                                                   \
-        return ynew X;                                                                                                                       \
+    EngineY::App* CreateApp() {                                                                                                              \
+        return new X;                                                                                                                       \
     }                                                                                                                                        \
     int YE2Entry(int argc , char* argv[]) {                                                                                                  \
-        YE::Engine* engine = YE::Engine::Instance();                                                                                         \
-        if (!engine->CmndLine(argc , argv)) {                                                                                                \
-            ENGINE_ERROR("Failed to parse command line arguments");                                                                          \
-            engine->Shutdown();                                                                                                              \
-            return 1;                                                                                                                        \
-        }                                                                                                                                    \
-        engine->RegisterApplication(CreateApp());                                                                                            \
-        if (engine->AppLoaded()) {                                                                                                           \
-            engine->Initialize();                                                                                                            \
-            engine->Run();                                                                                                                   \
-            engine->Shutdown();                                                                                                              \
-        }                                                                                                                                    \
-        return 0;                                                                                                                            \
+        return EngineY::Main(argc , argv , CreateApp);                                                                                       \
     }
-#endif // !YE_HPP 
+#endif // !ENGINEY_HPP 

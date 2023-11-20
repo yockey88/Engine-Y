@@ -3,7 +3,7 @@
 #include "core/UUID.hpp"
 #include "scene/components.hpp"
 
-namespace YE {
+namespace EngineY {
 
     void Entity::SetParent(Entity* parent) {
         auto& id = this->GetComponent<components::ID>();

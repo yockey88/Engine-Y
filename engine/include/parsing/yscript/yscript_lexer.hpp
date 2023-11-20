@@ -1,5 +1,5 @@
-#ifndef YE_YSCRIPT_LEXER_HPP
-#define YE_YSCRIPT_LEXER_HPP
+#ifndef ENGINEY_YSCRIPT_LEXER_HPP
+#define ENGINEY_YSCRIPT_LEXER_HPP
 
 #include <iostream>
 #include <string>
@@ -12,7 +12,7 @@
 #include "core/hash.hpp"
 #include "core/UUID.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class yscript_lexer_error : public std::exception {
         std::string msg;
@@ -29,10 +29,15 @@ namespace YE {
         START_OF_FILE ,
 
         // keywords 
-        PROJECT , NAME , AUTHOR , VERSION , DESCRIPTION , RESOURCES , PATH ,
-        WINDOW , TITLE , MIN_SCALE , CLEAR_COLOR , FLAGS , COLOR_BITS , STENCIL_SIZE ,
+        PROJECT , 
+            NAME , AUTHOR , VERSION , DESCRIPTION , PATH ,
+        WINDOW , 
+            TITLE , MIN_SCALE , CLEAR_COLOR , FLAGS , COLOR_BITS , STENCIL_SIZE ,
             MULTISAMPLE_BUFFERS , MULTISAMPLE_SAMPLES , FULLSCREEN , VSYNC , RENDERING_TO_SCREEN ,
             ACCELERATED_VISUAL ,
+        RESOURCES ,
+            SHADERS , TEXTURES , MODELS ,
+        SCENES ,
         NODE , 
         SCENE ,
         ENTITY ,
@@ -70,7 +75,7 @@ namespace YE {
         UNDERSCORE ,
 
         STRING , CHARACTER ,
-        FLOAT ,
+        INTEGER , FLOAT ,
         
         COMMENT ,
 
@@ -134,6 +139,8 @@ namespace YE {
         }
     };
 
+    using YScriptLexerResult = std::pair<std::string , std::vector<YScriptToken>>;
+
     class YScriptLexer {
         const std::vector<char> operators = {
             '<'  , '>'  ,
@@ -155,10 +162,12 @@ namespace YE {
 
         const std::vector<std::string> keywords = {
             /* node type | properties for node type (not exclusive) */
-            "project" , "name" , "author" , "version" , "description" , "resources" , "path" ,
+            "project" , "name" , "author" , "version" , "description" , "path" ,
             "window" , "title" , "min_scale" , "clear_color" , "flags" , "color_bits" , "stencil_size" ,
                 "multisample_buffers" , "multisample_samples" , "fullscreen" , "vsync" , "rendering_to_screen" ,
                 "accelerated_visual" ,
+            "resources" , "shaders" , "textures" ,
+            "scenes" ,
             "node" ,
             "scene" ,
             "entity" ,
@@ -176,7 +185,7 @@ namespace YE {
         };
 
         std::vector<YScriptToken> tokens{};
-        std::vector<YScriptToken> comments{};
+        std::map<uint32_t , YScriptToken> comments{}; // line number -> comment token
         std::map<UUID32 , YScriptTokenType> keyword_map;
 
         uint32_t src_length = 0;
@@ -293,7 +302,7 @@ namespace YE {
             }
             ~YScriptLexer() {}
 
-            std::pair<std::string , std::vector<YScriptToken>> Lex();
+            YScriptLexerResult Lex();
     };
 
 }

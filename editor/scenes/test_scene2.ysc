@@ -1,0 +1,19 @@
+node<scene> test_scene {
+    node<camera> main_cam {
+        position: { 0 , 0 , 3 };
+        front: { 0 , 0 , -1 };
+    }
+    node<entity> ent1 {
+        node<transform> _ {
+            position: { 0 , 5 , 0 };
+        }
+        node<textured_renderable> _ {
+            mesh: "cube";
+            texture: { 
+                "container" ,
+                "container_specular"
+            };
+            shader: "container_shader";
+        }
+    }
+}

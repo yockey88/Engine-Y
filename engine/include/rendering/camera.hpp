@@ -1,12 +1,13 @@
-#ifndef YE_CAMERA_HPP
-#define YE_CAMERA_HPP
+#ifndef ENGINEY_CAMERA_HPP
+#define ENGINEY_CAMERA_HPP
 
+#include <string>
 #include <functional>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace YE {
+namespace EngineY {
 
     enum class CameraType {
         INVALID = 0 ,
@@ -43,8 +44,9 @@ namespace YE {
         float zoom = 45.0f;
 
         bool constrain_pitch = true;
-
         bool is_primary = false;
+
+        std::string name;
 
         std::function<void(Camera* camera , float dt)> mouse_callback = nullptr;
         std::function<void(Camera* camera , float dt)> keyboard_callback = nullptr;
@@ -61,8 +63,8 @@ namespace YE {
         Camera& operator=(const Camera&) = delete;
 
         public:
-            Camera(CameraType type = CameraType::PERSPECTIVE)
-                : type(type) {}
+            Camera(const std::string& name , CameraType type = CameraType::PERSPECTIVE)
+                : type(type) , name(name) {}
             ~Camera() {}
 
             void Recalculate();
@@ -104,8 +106,9 @@ namespace YE {
             inline void SetZoom(float zoom) { this->zoom = zoom; }
 
             inline void SetConstrainPitch(bool constrain_pitch) { this->constrain_pitch = constrain_pitch; }
-
             inline void SetPrimary(bool primary) { this->is_primary = primary; }
+
+            inline const std::string& Name() const { return name; }
 
             inline void RegisterMouseCallback(std::function<void(Camera* camera , float dt)> callback) { mouse_callback = callback; }
             inline void RegisterKeyboardCallback(std::function<void(Camera* camera , float dt)> callback) { keyboard_callback = callback; }

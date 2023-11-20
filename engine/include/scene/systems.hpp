@@ -1,9 +1,9 @@
-#ifndef YE_SYSTEMS_HPP
-#define YE_SYSTEMS_HPP
+#ifndef ENGINEY_SYSTEMS_HPP
+#define ENGINEY_SYSTEMS_HPP
 
 #include <entt/entt.hpp>
 
-namespace YE {
+namespace EngineY {
 
 namespace components {
 

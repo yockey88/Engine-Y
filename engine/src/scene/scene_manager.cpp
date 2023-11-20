@@ -2,16 +2,17 @@
 
 #include <filesystem>
 
-#include "log.hpp"
+#include "core/defines.hpp"
+#include "core/log.hpp"
 #include "scene/scene.hpp"
 
-namespace YE {
+namespace EngineY {
 
     SceneManager* SceneManager::singleton = nullptr;
 
     SceneManager* SceneManager::Instance() {
         if (singleton == nullptr) {
-            singleton = ynew SceneManager;
+            singleton = new SceneManager;
         }
         return singleton;
     }
@@ -23,7 +24,7 @@ namespace YE {
     void SceneManager::Cleanup() {
         if (current_scene != nullptr) {
             current_scene->Shutdown();
-            ydelete current_scene;
+            ydelete(current_scene);
         }
 
         if (singleton != nullptr) {

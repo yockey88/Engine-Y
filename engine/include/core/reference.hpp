@@ -1,11 +1,9 @@
-#ifndef YE_REFERENCES_HPP
-#define YE_REFERENCES_HPP
+#ifndef ENGINEY_REFERENCE_HPP
+#define ENGINEY_REFERENCE_HPP
 
 #include <atomic>
 
-#include "defines.hpp"
-
-namespace YE {
+namespace EngineY {
 
     class RefCounted {
         mutable std::atomic<uint32_t> ref_count = 0;
@@ -13,33 +11,33 @@ namespace YE {
         public:
             virtual ~RefCounted() {}
 
-            void IncRefCount() { ++ref_count; }
-            void DecRefCount() { --ref_count; }
+            void IncRefCount() { ref_count++; }
+            void DecRefCount() { ref_count--; }
 
-            inline uint32_t RefCount() const { return ref_count.load(); }
+            uint32_t GetRefCount() const { return ref_count; }
     };
 
-    /// \todo Finish this class later
-    template<typename T>
-    class Ref {
-        template<typename T2>
-        friend class Ref;
+    template <typename T>
+    class Ref : public RefCounted {
+        mutable T* instance = nullptr;
 
-        mutable T* instance;
+        template <typename U>
+        friend class Ref;
 
         void IncRef() const {
             if (instance != nullptr) {
                 instance->IncRefCount();
-                // add to memory manager
+                // add to living refs
             }
         }
 
         void DecRef() const {
             if (instance != nullptr) {
                 instance->DecRefCount();
-                if (instance->RefCount() == 0) {
-                    ydelete instance;
-                    // remove from memory manager
+
+                if (instance->GetRefCount() == 0) {
+                    delete instance;
+                    // remove from living refs
                     instance = nullptr;
                 }
             }
@@ -47,7 +45,8 @@ namespace YE {
 
         public:
             Ref() : instance(nullptr) {}
-            Ref(std::nullptr_t null) : instance(nullptr) {}
+            Ref(std::nullptr_t) : instance(nullptr) {}
+
             Ref(T* instance) : instance(instance) {
                 static_assert(
                     std::is_base_of<RefCounted , T>::value ,
@@ -55,8 +54,108 @@ namespace YE {
                 );
 
                 IncRef();
+            }
+
+            template<typename U>
+            Ref(Ref<U>&& other) {
+                instance = (T*)other.instance;
+                other.instance = nullptr;
+            }
+
+            template <typename U>
+            Ref(const Ref<U>& other) {
+                instance = (T*)other.instance;
+                IncRef();
+            }
+
+            // writes other reference here without incrementing
+            static Ref<T> WriteTo(const Ref<T>& other) {
+                Ref<T> ref;
+                ref.instance = other.instance;
+                return ref;
+            }
+
+            ~Ref() {
+                DecRef();
+            }
+
+            Ref(const Ref<T>& other) {
+                instance = other.instance;
+                IncRef();
+            }
+
+            Ref& operator=(std::nullptr_t) {
+                DecRef();
+                instance = nullptr;
+                return *this;
+            }
+
+            Ref& operator=(const Ref<T>& other) {
+                if (this == &other)
+                    return *this;
+
+                other.IncRef();
+                DecRef();
+            }
+
+            template<typename U>
+            Ref& operator=(Ref<U>&& other) {
+                DecRef();
+
+                instance = (T*)other.instance;
+                other.instance = nullptr;
+                return *this;
+            }
+
+            template <typename U>
+            Ref& operator=(const Ref<U>& other) {
+                other.IncRef();
+                DecRef();
+
+                instance = (T*)other.instance;
+                return *this;
+            }
+
+            operator bool() { return instance != nullptr; }
+            operator bool() const { return instance != nullptr; }
+            
+            T* operator->() { return instance; }
+            const T* operator->() const { return instance; }
+
+            T* Raw() { return instance; }
+            const T* Raw() const { return instance; }
+
+            void Reset(T* instance = nullptr) {
+                DecRef();
+                this->instance = instance;
+            }
+
+            template <typename U>
+            Ref<U> As() const {
+                return Ref<U>(*this);
+            }
+
+            template <typename... Args>
+            static Ref<T> Create(Args&&... args) {
+                return Ref<T>(new T(std::forward<Args>(args)...));
+            }
+
+            bool operator==(const Ref<T>& other) const {
+                return instance == other.instance;
+            }
+
+            bool operator !=(const Ref<T>& other) const {
+                return instance != other.instance;
+            }
+
+            bool EqualsObj(const Ref<T>& other) const {
+                return instance == other.instance;
+            }
     };
 
-} // namespace YE
+    // template <typename T>
+    // class WeakRef {};
 
-#endif // !YE_REFERENCES_HPP
+} // namespace EngineY
+
+#endif // !ENGINEY_REFERENCE_HPP

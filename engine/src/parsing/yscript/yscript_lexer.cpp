@@ -1,9 +1,9 @@
 #include "parsing/yscript/yscript_lexer.hpp"
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "core/filesystem.hpp"
 
-namespace YE {
+namespace EngineY {
 
     void YScriptLexer::InitKeywordMaps() {
         keyword_map[Hash::FNV32("project")] = YScriptTokenType::PROJECT;
@@ -11,7 +11,6 @@ namespace YE {
         keyword_map[Hash::FNV32("author")] = YScriptTokenType::AUTHOR;
         keyword_map[Hash::FNV32("version")] = YScriptTokenType::VERSION;
         keyword_map[Hash::FNV32("description")] = YScriptTokenType::DESCRIPTION;
-        keyword_map[Hash::FNV32("resources")] = YScriptTokenType::RESOURCES;
         keyword_map[Hash::FNV32("path")] = YScriptTokenType::PATH;
         keyword_map[Hash::FNV32("window")] = YScriptTokenType::WINDOW; 
         keyword_map[Hash::FNV32("title")] = YScriptTokenType::TITLE;
@@ -26,6 +25,11 @@ namespace YE {
         keyword_map[Hash::FNV32("vsync")] = YScriptTokenType::VSYNC;
         keyword_map[Hash::FNV32("rendering_to_screen")] = YScriptTokenType::RENDERING_TO_SCREEN;
         keyword_map[Hash::FNV32("accelerated_visual")] = YScriptTokenType::ACCELERATED_VISUAL;
+        keyword_map[Hash::FNV32("resources")] = YScriptTokenType::RESOURCES;
+        keyword_map[Hash::FNV32("shaders")] = YScriptTokenType::SHADERS;
+        keyword_map[Hash::FNV32("textures")] = YScriptTokenType::TEXTURES;
+        keyword_map[Hash::FNV32("models")] = YScriptTokenType::MODELS;
+        keyword_map[Hash::FNV32("scenes")] = YScriptTokenType::SCENES;
         keyword_map[Hash::FNV32("node")] = YScriptTokenType::NODE;
         keyword_map[Hash::FNV32("scene")] = YScriptTokenType::SCENE;
         keyword_map[Hash::FNV32("entity")] = YScriptTokenType::ENTITY;
@@ -229,6 +233,8 @@ namespace YE {
     }
 
     void YScriptLexer::HandleComment() {
+        uint32_t line_number = line;
+
         if (Peek() == '/') {
             while (Peek() != '\n' && !IsEOF())
                 Advance();
@@ -253,7 +259,7 @@ namespace YE {
 
         YScriptToken comment_tkn(YScriptTokenType::COMMENT , line , column , curr_token);
         DiscardToken();
-        comments.push_back(comment_tkn);
+        comments[line_number] = comment_tkn;
     }
 
     void YScriptLexer::HandleNumeric() {
@@ -262,12 +268,20 @@ namespace YE {
             if (IsEOF()) break;
         }
 
-        if (Peek() == '.' && IsNumeric(PeekNext())) {
-            Advance();
-            while (IsNumeric(Peek())) {
+        if (Peek() == '.') {
+            if (IsNumeric(PeekNext())) {
                 Advance();
-                if (IsEOF()) break;
+                while (IsNumeric(Peek())) {
+                    Advance();
+                    if (IsEOF()) break;
+                }
+            } else {
+                AddToken(YScriptTokenType::INTEGER);
+                return;
             }
+        } else {
+            AddToken(YScriptTokenType::INTEGER);
+            return;
         }
         
         AddToken(YScriptTokenType::FLOAT);
@@ -309,7 +323,7 @@ namespace YE {
         AddToken(YScriptTokenType::STRING);
     }
 
-    std::pair<std::string , std::vector<YScriptToken>> YScriptLexer::Lex() {
+    YScriptLexerResult YScriptLexer::Lex() {
         if (file_path == "<n>")
             return { "<n>" , {} };
         
@@ -356,6 +370,11 @@ namespace YE {
             0 , 0 , 
             "[< EOF >]"
         ));
+
+        /// \todo: parse comments to make todos and notes 
+        ///     and other stuff like that available to the user in 
+        ///     a nice format
+        // ParseComments();
 
         return { src , tokens };
     }

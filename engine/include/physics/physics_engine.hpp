@@ -1,11 +1,11 @@
-#ifndef YE_PHYSICS_ENGINE_HPP
-#define YE_PHYSICS_ENGINE_HPP
+#ifndef ENGINEY_PHYSICS_ENGINE_HPP
+#define ENGINEY_PHYSICS_ENGINE_HPP
 
 #include <reactphysics3d/reactphysics3d.h>
 
 #include "rendering/vertex_array.hpp"
 
-namespace YE {
+namespace EngineY {
 
     using ContactListener = rp3d::EventListener;
 

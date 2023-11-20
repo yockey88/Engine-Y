@@ -3,9 +3,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include "log.hpp"
+#include "core/log.hpp"
 
-namespace YE {
+namespace EngineY {
     
     Texture::Texture(
         const glm::ivec2& size , void* pixels , 
@@ -83,7 +83,7 @@ namespace YE {
             } else if (num_channels == 4) {
                 channels = RGBA;
             } else {
-                YE_CRITICAL_ASSERTION(false , "Invalid number of channels");
+                ENGINE_ASSERT(false , "Invalid number of channels");
             }
 
             glTexImage2D(target , 0 , channels , size.x , size.y , 0 , channels , GL_UNSIGNED_BYTE , pixels);
@@ -120,7 +120,7 @@ namespace YE {
         //         SetFilterType(nearest);
         //         break;
         //     default:
-        //         YE_CRITICAL_ASSERTION(false , "Invalid texture type");
+        //         ENGINE_ASSERT(false , "Invalid texture type");
         //         break;
         // }
     }
@@ -142,7 +142,7 @@ namespace YE {
             case TextureType::normal: return "normal";
             case TextureType::height: return "height";
             default:
-                YE_CRITICAL_ASSERTION(false , "Invalid texture type");
+                ENGINE_ASSERT(false , "Invalid texture type");
                 return "";
         }
     }

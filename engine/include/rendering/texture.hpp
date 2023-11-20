@@ -1,5 +1,5 @@
-#ifndef YE_TEXTURE_HPP
-#define YE_TEXTURE_HPP
+#ifndef ENGINEY_TEXTURE_HPP
+#define ENGINEY_TEXTURE_HPP
 
 #include <string>
 #include <utility>
@@ -10,7 +10,7 @@
 
 #define PIXEL_INDEX(i , j , width) (i*width + j)
 
-namespace YE {
+namespace EngineY {
 
     class Texture;
     

@@ -1,8 +1,8 @@
 #include "rendering/height_map.hpp"
 
-#include "log.hpp"
+#include "core/log.hpp"
 
-namespace YE {
+namespace EngineY {
 
 
 

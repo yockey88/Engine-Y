@@ -1,6 +1,6 @@
 #include "rendering/render_commands.hpp"
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "core/resource_handler.hpp"
 #include "rendering/vertex_array.hpp"
 #include "rendering/shader.hpp"
@@ -10,7 +10,7 @@
 #include "rendering/camera.hpp"
 #include "scene/components.hpp"
 
-namespace YE {
+namespace EngineY {
     
     void RenderCommand::SetCameraUniforms(Shader* shader , Camera* camera) {
         if (camera != nullptr) {
@@ -84,7 +84,7 @@ namespace YE {
     DrawTextComponent::DrawTextComponent(components::TextComponent& text , const glm::mat4& model)
             : text_component(text) , model(model) {
         if (text_component.vao == nullptr)
-            text_component.vao = ynew VertexArray(5 * 4 * sizeof(float));
+            text_component.vao = ynew(VertexArray , 5 * 4 * sizeof(float));
     }
 
     void DrawTextComponent::Execute(Camera* camera , const ShaderUniforms& uniforms) {
@@ -239,7 +239,7 @@ namespace YE {
             }
         }
 
-        YE_CRITICAL_ASSERTION(renderable.shader != nullptr , "Shader is null | UNDEFINED BEHAVIOUR");
+        ENGINE_ASSERT(renderable.shader != nullptr , "Shader is null | UNDEFINED BEHAVIOUR");
 
         if (renderable.vao->Valid()) {
             renderable.shader->Bind();

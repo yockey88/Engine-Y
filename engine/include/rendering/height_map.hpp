@@ -1,9 +1,9 @@
-#ifndef YE_HEIGHT_MAP_HPP
-#define YE_HEIGHT_MAP_HPP
+#ifndef ENGINEY_HEIGHT_MAP_HPP
+#define ENGINEY_HEIGHT_MAP_HPP
 
 #include <glm/glm.hpp>
 
-namespace YE {
+namespace EngineY {
 
     // struct GeneratorArgs {
     //     float amplitude = 1.f;

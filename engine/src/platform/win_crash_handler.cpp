@@ -6,7 +6,7 @@
  *              inspired by https://stackoverflow.com/questions/6205981/windows-c-stack-trace-from-a-running-app
 */
 
-#include "platform/win_crash_handler.hpp"
+#include "platform/windows/win_crash_handler.hpp"
 
 /**
  * Code below is from Godot Engine

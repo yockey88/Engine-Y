@@ -1,6 +1,6 @@
 #include "core/console_sink.hpp"
 
-namespace YE {
+namespace EngineY {
 
     void LogMsgToConsoleMsgSink(const spdlog::details::log_msg& msg) {
         ConsoleMessage console_msg;
@@ -12,7 +12,7 @@ namespace YE {
             case spdlog::level::err:      console_msg.type = ConsoleMessageType::ERR;   break;
             case spdlog::level::critical: console_msg.type = ConsoleMessageType::ERR;   break;
             default:
-                YE_CRITICAL_ASSERTION(false , "Invalid spdlog::level::level_enum value | UNDEFINED BEHAVIOR OR NON-EXHAUSTIVE SWITCH");
+                ENGINE_ASSERT(false , "Invalid spdlog::level::level_enum value | UNDEFINED BEHAVIOR OR NON-EXHAUSTIVE SWITCH");
                 break;
         }
 

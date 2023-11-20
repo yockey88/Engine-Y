@@ -1,5 +1,5 @@
-#ifndef YE_YSCRIPT_FILE_AST_HPP
-#define YE_YSCRIPT_FILE_AST_HPP
+#ifndef ENGINEY_YSCRIPT_FILE_AST_HPP
+#define ENGINEY_YSCRIPT_FILE_AST_HPP
 
 #include "yscript_lexer.hpp"
 #include "core/defines.hpp"
@@ -9,7 +9,7 @@
 #include <memory>
 #include <stack>
 
-namespace YE {
+namespace EngineY {
 
 namespace YSC {} // namespace YSC
 
@@ -28,6 +28,8 @@ namespace YSC {} // namespace YSC
     class ExprStmnt;
     class ProjectMetadataStmnt;
     class WindowStmnt;
+    class ResourceStmnt;
+    class SceneListStmnt;
     class NodeDeclStmnt;
     class FunctionStmnt;
     class VarDeclStmnt;
@@ -54,6 +56,8 @@ namespace YSC {} // namespace YSC
             virtual void WalkExpr(ExprStmnt& expr) = 0;
             virtual void WalkProject(ProjectMetadataStmnt& project) = 0;
             virtual void WalkWindow(WindowStmnt& window) = 0;
+            virtual void WalkResource(ResourceStmnt& resource) = 0;
+            virtual void WalkSceneList(SceneListStmnt& resource) = 0;
             virtual void WalkNodeDecl(NodeDeclStmnt& node_decl) = 0;
             virtual void WalkFunction(FunctionStmnt& function) = 0;
             virtual void WalkVarDecl(VarDeclStmnt& var_decl) = 0;
@@ -79,6 +83,8 @@ namespace YSC {} // namespace YSC
             virtual void WalkExpr(ExprStmnt& expr) override;
             virtual void WalkProject(ProjectMetadataStmnt& project) override;
             virtual void WalkWindow(WindowStmnt& window) override;
+            virtual void WalkResource(ResourceStmnt& resource) override;
+            virtual void WalkSceneList(SceneListStmnt& resource) override;
             virtual void WalkNodeDecl(NodeDeclStmnt& node_decl) override;
             virtual void WalkFunction(FunctionStmnt& function) override;
             virtual void WalkVarDecl(VarDeclStmnt& var_decl) override;
@@ -286,6 +292,30 @@ namespace YSC {} // namespace YSC
             virtual void Print(PrinterData& data) override;
     };
 
+    // Represents a resource declaration
+    class ResourceStmnt : public ASTStmnt {
+        public:
+            std::vector<std::unique_ptr<ASTExpr>> description;
+
+            ResourceStmnt(std::vector<std::unique_ptr<ASTExpr>>& description)
+                : description(std::move(description)) {}
+            virtual ~ResourceStmnt() override {}
+            virtual void Walk(YScriptTreeWalker* walker) override { walker->WalkResource(*this); }
+            virtual void Print(PrinterData& data) override;
+    };
+
+    // Represents a scene list declaration
+    class SceneListStmnt : public ASTStmnt {
+        public:
+            std::vector<std::unique_ptr<ASTExpr>> description;
+
+            SceneListStmnt(std::vector<std::unique_ptr<ASTExpr>>& description)
+                : description(std::move(description)) {}
+            virtual ~SceneListStmnt() override {}
+            virtual void Walk(YScriptTreeWalker* walker) override { walker->WalkSceneList(*this); }
+            virtual void Print(PrinterData& data) override;
+    };
+    
     // Represents a node declaration
     class NodeDeclStmnt : public ASTStmnt {
         public:

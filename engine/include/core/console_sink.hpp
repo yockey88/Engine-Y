@@ -1,5 +1,5 @@
-#ifndef YE_CONSOLE_SINK_HPP
-#define YE_CONSOLE_SINK_HPP
+#ifndef ENGINEY_CONSOLE_SINK_HPP
+#define ENGINEY_CONSOLE_SINK_HPP
 
 #include <string>
 
@@ -11,11 +11,11 @@
 #include <mutex>
 #include <string>
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "log_sinks_base.hpp"
 #include "console.hpp"
 
-namespace YE {
+namespace EngineY {
 
     void LogMsgToConsoleMsgSink(const spdlog::details::log_msg& msg);
 

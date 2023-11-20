@@ -1,5 +1,5 @@
-#ifndef YE_TEXT_RENDERING_HPP
-#define YE_TEXT_RENDERING_HPP
+#ifndef ENGINEY_TEXT_RENDERING_HPP
+#define ENGINEY_TEXT_RENDERING_HPP
 
 #include <string>
 #include <filesystem>
@@ -9,7 +9,7 @@
 #include <msdf-atlas-gen/GlyphGeometry.h>
 #include <msdf-atlas-gen/FontGeometry.h>
 
-namespace YE {
+namespace EngineY {
 
     class Texture;
 

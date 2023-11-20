@@ -1,8 +1,8 @@
 #include "core/timer.hpp"
 
-#include "log.hpp"
+#include "core/log.hpp"
             
-namespace YE {
+namespace EngineY {
 
 namespace time {
 

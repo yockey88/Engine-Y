@@ -1,10 +1,10 @@
-#ifndef YE_KEYBOARD_HPP
-#define YE_KEYBOARD_HPP
+#ifndef ENGINEY_KEYBOARD_HPP
+#define ENGINEY_KEYBOARD_HPP
 
 #include <map>
 #include <sstream>
 
-namespace YE {
+namespace EngineY {
 
     class Keyboard {
 

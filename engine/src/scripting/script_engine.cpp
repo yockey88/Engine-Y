@@ -14,14 +14,14 @@
 #include <mono/metadata/threads.h>
 #include <spdlog/fmt/fmt.h>
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "core/filesystem.hpp"
 #include "scene/components.hpp"
 #include "scripting/garbage_collector.hpp"
 
 #define DEBUG_SCRIPTS 0
 
-namespace YE {
+namespace EngineY {
 
     enum AsmVersionIndex {
         MAJOR = 0 ,
@@ -31,7 +31,7 @@ namespace YE {
     };
     
     void ScriptEngine::GetAssemblyProperties(MonoImage* img , AssemblyProperties& asm_properties) {
-        ENTER_FUNCTION_TRACE_MSG("Assembly: {0}" , mono_image_get_name(img));
+         ("Assembly: {0}" , mono_image_get_name(img));
 
         const MonoTableInfo* table = mono_image_get_table_info(img , MONO_TABLE_ASSEMBLY);
         uint32_t cols[MONO_TABLE_ASSEMBLY];
@@ -44,11 +44,11 @@ namespace YE {
         asm_properties.version[AsmVersionIndex::PATCH] = cols[MONO_ASSEMBLY_BUILD_NUMBER];
         asm_properties.version[AsmVersionIndex::REVISION] = cols[MONO_ASSEMBLY_REV_NUMBER];
 
-        EXIT_FUNCTION_TRACE();
+         ;
     }
 
     void ScriptEngine::GetReferencedAssemblies(MonoImage* img , AssemblyProperties& asm_properties) {
-        ENTER_FUNCTION_TRACE_MSG("Assembly: {0}" , mono_image_get_name(img));
+         ("Assembly: {0}" , mono_image_get_name(img));
 
         const MonoTableInfo* table = mono_image_get_table_info(img , MONO_TABLE_ASSEMBLYREF);
         uint32_t rows = mono_table_info_get_rows(table);
@@ -67,21 +67,21 @@ namespace YE {
             asm_properties.referenced_assemblies.push_back(asm_ref);
         }
 
-        EXIT_FUNCTION_TRACE();
+         ;
     }
 
     MonoAssembly* ScriptEngine::LoadCSharpAsm(MonoImage *& img , const std::string& filepath , bool internal) {
-        ENTER_FUNCTION_TRACE_MSG("Assembly: {0}" , filepath);
+         ("Assembly: {0}" , filepath);
 
         uint32_t fsize = 0;
         std::vector<char> bytes = Filesystem::ReadFileAsSBytes(filepath);
 
-        YE_CRITICAL_ASSERTION(bytes.size() != 0 , "Failed to read C# assembly : {0}" , filepath);
+        ENGINE_ASSERT(bytes.size() != 0 , "Failed to read C# assembly : {0}" , filepath);
 
         MonoImageOpenStatus status;
         img = mono_image_open_from_data_full(bytes.data() , static_cast<uint32_t>(bytes.size()) , 1 , &status , 0);
 
-        YE_CRITICAL_ASSERTION(status == MONO_IMAGE_OK , "Failed to load image from C# assembly : {0}" , filepath);
+        ENGINE_ASSERT(status == MONO_IMAGE_OK , "Failed to load image from C# assembly : {0}" , filepath);
 
 #if DEBUG_SCRIPTS
         LoadDebugImage(img , filepath);
@@ -94,12 +94,12 @@ namespace YE {
             printf("Loaded internal assembly : %s\n" , name);
         }
 
-        EXIT_FUNCTION_TRACE();
+         ;
         return assembly;
     }
     
     void ScriptEngine::InitializeScriptDebugging(uint16_t port) {
-        ENTER_FUNCTION_TRACE_MSG("Port: {0}" , port);
+         ("Port: {0}" , port);
 
         if (!std::filesystem::directory_entry("logs").exists())
             std::filesystem::create_directory("logs");
@@ -116,19 +116,19 @@ namespace YE {
         mono_jit_parse_options(2 , const_cast<char**>(argv));
         mono_debug_init(MONO_DEBUG_FORMAT_MONO);
 
-        EXIT_FUNCTION_TRACE();
+         ;
     }
 
     void ScriptEngine::CreateDebugDomains() {
-        ENTER_FUNCTION_TRACE();
+         ;
 
         mono_debug_domain_create(root_domain);
 
-        EXIT_FUNCTION_TRACE();
+         ;
     }
 
     void ScriptEngine::LoadDebugImage(MonoImage* img , const std::string& filepath) {
-        ENTER_FUNCTION_TRACE_MSG("Assembly: {0}" , filepath);
+         ("Assembly: {0}" , filepath);
 
         std::string pdb_path = filepath.substr(0 , filepath.find_last_of('.')) + ".pdb";
         
@@ -140,31 +140,31 @@ namespace YE {
             static_cast<uint32_t>(bytes.size())
         );
 
-        EXIT_FUNCTION_TRACE();
+         ;
     }
     
     void ScriptEngine::LoadInternalScripts() {
-        ENTER_FUNCTION_TRACE();
+         ;
 
         internal_script_data.assembly = LoadCSharpAsm(internal_script_data.image , internal_modules_path);
         GetAssemblyProperties(internal_script_data.image , core_asm_properties);
         GetReferencedAssemblies(internal_script_data.image , core_asm_properties);                                                                                                       
     
-        EXIT_FUNCTION_TRACE();
+         ;
     }    
     
     void ScriptEngine::LoadProjectScripts() {
-        ENTER_FUNCTION_TRACE();
+         ;
 
         project_script_data.assembly = LoadCSharpAsm(project_script_data.image , project_modules_path);
         GetAssemblyProperties(project_script_data.image , project_asm_properties);
         GetReferencedAssemblies(project_script_data.image , project_asm_properties);
 
-        EXIT_FUNCTION_TRACE();
+         ;
     }
 
     void ScriptEngine::UnloadProjectScripts() {
-        ENTER_FUNCTION_TRACE();
+         ;
 
         mono_image_close(project_script_data.image);
         project_script_data.image = nullptr;
@@ -172,17 +172,17 @@ namespace YE {
         mono_assembly_close(project_script_data.assembly);
         project_script_data.assembly = nullptr;
 
-        EXIT_FUNCTION_TRACE();
+         ;
     }
     
     void ScriptEngine::GetField(ScriptObject* obj , ScriptField* field , MonoObject* instance , Field* value) {
-        ENTER_FUNCTION_TRACE_MSG("Object: {0} | Field: {1}" , obj->name , field->name);
+         ("Object: {0} | Field: {1}" , obj->name , field->name);
 
         MonoClassField* mfield = mono_class_get_field_from_name(obj->klass , field->name.c_str());
-        YE_CRITICAL_ASSERTION(mfield != nullptr , "Failed to retrieve field: {0} from class: {1}" , field->name , obj->name);
+        ENGINE_ASSERT(mfield != nullptr , "Failed to retrieve field: {0} from class: {1}" , field->name , obj->name);
         
         MonoObject* mobj = mono_field_get_value_object(app_domain , mfield , instance);
-        YE_CRITICAL_ASSERTION(mobj != nullptr , "Failed to retrieve field: {0} from class: {1}" , field->name , obj->name);
+        ENGINE_ASSERT(mobj != nullptr , "Failed to retrieve field: {0} from class: {1}" , field->name , obj->name);
 
         if (field->type == FieldType::STRING) {
             MonoString* mstr = (MonoString*)mobj;
@@ -198,14 +198,14 @@ namespace YE {
 
         value->handle = mono_object_unbox(mobj);
 
-        EXIT_FUNCTION_TRACE();
+         ;
     }
 
     void ScriptEngine::GetProperty(ScriptObject* obj , ScriptField* field , MonoObject* instance , Field* value) {
-        ENTER_FUNCTION_TRACE_MSG("Object: {0} | Property: {1}" , obj->name , field->name);
+         ("Object: {0} | Property: {1}" , obj->name , field->name);
 
         MonoProperty* mprop = mono_class_get_property_from_name(obj->klass , field->name.c_str());
-        YE_CRITICAL_ASSERTION(mprop != nullptr , "Failed to retrieve property: {0} from class: {1}" , field->name , obj->name);
+        ENGINE_ASSERT(mprop != nullptr , "Failed to retrieve property: {0} from class: {1}" , field->name , obj->name);
 
         MonoObject* exc = nullptr;
         MonoObject* result = mono_property_get_value(mprop , instance , nullptr , &exc);
@@ -221,7 +221,7 @@ namespace YE {
 
         if (field->type == FieldType::ENTITY) {
             ScriptObject* ent = ScriptMap::GetClassByName("YE.Entity");
-            YE_CRITICAL_ASSERTION(ent != nullptr , "Failed to retrieve entity class");
+            ENGINE_ASSERT(ent != nullptr , "Failed to retrieve entity class");
 
             Field f;
             GetObjField(ent , result , "Id" , &f);
@@ -236,14 +236,14 @@ namespace YE {
 
         value->handle = mono_object_unbox(result);
         
-        EXIT_FUNCTION_TRACE();
+         ;
     }
 
     void ScriptEngine::SetField(ScriptObject* obj , ScriptField* sf , MonoObject* instance , GCHandle handle , Field* value) {
-        ENTER_FUNCTION_TRACE_MSG("Object: {0} | Field: {1}" , obj->name , sf->name);
+         ("Object: {0} | Field: {1}" , obj->name , sf->name);
 
         MonoClassField* mfield = mono_class_get_field_from_name(obj->klass , sf->name.c_str());
-        YE_CRITICAL_ASSERTION(mfield != nullptr , "Failed to retrieve field: {0} from class: {1}" , sf->name , obj->name);
+        ENGINE_ASSERT(mfield != nullptr , "Failed to retrieve field: {0} from class: {1}" , sf->name , obj->name);
 
         if (sf->type == FieldType::STRING) {
             std::cout << "size of string: " << value->size << "\n";
@@ -259,28 +259,28 @@ namespace YE {
 
         mono_field_set_value(instance , mfield , value->handle);
         
-        EXIT_FUNCTION_TRACE();
+         ;
     }
 
     void ScriptEngine::SetProperty(ScriptObject* obj , ScriptField* sf , MonoObject* instance , GCHandle handle , Field* value) {
-        ENTER_FUNCTION_TRACE_MSG("Object: {0} | Property: {1}" , obj->name , sf->name);
+         ("Object: {0} | Property: {1}" , obj->name , sf->name);
 
         MonoProperty* mprop = mono_class_get_property_from_name(obj->klass , sf->name.c_str());
-        YE_CRITICAL_ASSERTION(mprop != nullptr , "Failed to retrieve property: {0} from class: {1}" , sf->name , obj->name);
+        ENGINE_ASSERT(mprop != nullptr , "Failed to retrieve property: {0} from class: {1}" , sf->name , obj->name);
 
         if (sf->type == FieldType::STRING) {
             std::string str(static_cast<char*>(value->handle) , value->size);
             MonoString* mstr = mono_string_new(app_domain , str.c_str());
 
             MonoObject* handled_obj = ScriptGC::GetHandleObject(handle);
-            YE_CRITICAL_ASSERTION(handled_obj != nullptr , "Failed to retrieve handle object for entity");
+            ENGINE_ASSERT(handled_obj != nullptr , "Failed to retrieve handle object for entity");
 
             FieldHandle param = mstr;
             MonoObject* exc = nullptr;
             mono_property_set_value(mprop , handled_obj , &param , &exc);
 
             CHECK_MONO_EXCEPTION(exc);
-            EXIT_FUNCTION_TRACE();
+             ;
             return;
         }
 
@@ -290,7 +290,7 @@ namespace YE {
             Entity* ent = internal_state->scene_context->GetEntity(*id);
             if (ent == nullptr) {
                 ENGINE_WARN("Failed to find entity with id: {0} | Could not set entity parent" , id->uuid);
-                EXIT_FUNCTION_TRACE();
+                 ;
                 return;
             }
 
@@ -300,7 +300,7 @@ namespace YE {
                 ScriptObject* ent = CreateObject(execute_instance , "YE.Entity");
 
                 ScriptMethod* ctor = ScriptMap::GetMethod(ent , ".ctor" , 1);
-                YE_CRITICAL_ASSERTION(ctor != nullptr , "Failed to find constructor for script object");
+                ENGINE_ASSERT(ctor != nullptr , "Failed to find constructor for script object");
 
                 ParamHandle params[] = { &id->uuid };
                 InvokeMethod(execute_instance , ctor , params);
@@ -310,14 +310,13 @@ namespace YE {
             }
 
             MonoObject* object = ScriptGC::GetHandleObject(handle);
-            YE_CRITICAL_ASSERTION(object != nullptr , "Failed to retrieve handle object for entity");
+            ENGINE_ASSERT(object != nullptr , "Failed to retrieve handle object for entity");
 
             FieldHandle param = execute_instance;
             MonoObject* exc = nullptr;
             mono_property_set_value(mprop , object , &param , &exc);
             CHECK_MONO_EXCEPTION(exc);
 
-            EXIT_FUNCTION_TRACE();
             return;
         }
 
@@ -325,18 +324,16 @@ namespace YE {
 
         /// \todo Add size checking for types that require it
         MonoObject* handled_obj = ScriptGC::GetHandleObject(handle);
-        YE_CRITICAL_ASSERTION(handled_obj != nullptr , "Failed to retrieve handle object for entity");
+        ENGINE_ASSERT(handled_obj != nullptr , "Failed to retrieve handle object for entity");
 
         MonoObject* exc = nullptr;
         FieldHandle param = value->handle;
         mono_property_set_value(mprop , handled_obj , &param , &exc);
 
         CHECK_MONO_EXCEPTION(exc);
-        EXIT_FUNCTION_TRACE();
     }
     
     void ScriptEngine::ShutdownMono() {
-        ENTER_FUNCTION_TRACE();
         mono_domain_set(mono_get_root_domain() , false);
         
         // mono_domain_unload(app_domain);
@@ -348,13 +345,9 @@ namespace YE {
 
         mono_jit_cleanup(root_domain);
         root_domain = nullptr;
-
-        EXIT_FUNCTION_TRACE();
     }
     
     void ScriptEngine::PrintCoreAsmInfo() {
-        ENTER_FUNCTION_TRACE();
-
         MonoImage* image = mono_assembly_get_image(internal_script_data.assembly);
         const MonoTableInfo* table = mono_image_get_table_info(image , MONO_TABLE_TYPEDEF);
         int32_t rows = mono_table_info_get_rows(table);
@@ -368,8 +361,6 @@ namespace YE {
 
             printf("%s::%s\n" , name_space , name);
         }
-        
-        EXIT_FUNCTION_TRACE();
     }
 
     ScriptEngine* ScriptEngine::instance = nullptr;
@@ -382,7 +373,7 @@ namespace YE {
     }
 
     ScriptObject* ScriptEngine::CreateObject(MonoObject *& instance , const std::string& name) {
-        ENTER_FUNCTION_TRACE_MSG("Object: {0}" , name);
+         ("Object: {0}" , name);
 
         ScriptObject* obj = ScriptMap::GetClassByName(name);
         if (obj == nullptr) {
@@ -391,49 +382,40 @@ namespace YE {
         }
 
         instance = mono_object_new(app_domain , obj->klass);
-        YE_CRITICAL_ASSERTION(instance != nullptr , "Failed to create script object instance");
+        ENGINE_ASSERT(instance != nullptr , "Failed to create script object instance");
 
         InstantiateObject(obj , instance);
 
-        EXIT_FUNCTION_TRACE();
+         ;
         return obj;
     }
 
     void ScriptEngine::DestroyObject(ScriptObject* obj , MonoObject* instance , GCHandle handle) {
-        ENTER_FUNCTION_TRACE_MSG("Object: {0}" , obj->name);
-
-        YE_CRITICAL_ASSERTION(obj != nullptr , "Attempting to destroy null object");
-        YE_CRITICAL_ASSERTION(instance != nullptr , "Attempting to destroy null instance");
+        ENGINE_ASSERT(obj != nullptr , "Attempting to destroy null object");
+        ENGINE_ASSERT(instance != nullptr , "Attempting to destroy null instance");
 
         InvokeDestroy(obj , instance , handle);
 
         ScriptGC::FreeHandle(handle);
         handle = nullptr;
         instance = nullptr;
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void ScriptEngine::InstantiateObject(ScriptObject* obj , MonoObject* instance) {
-        ENTER_FUNCTION_TRACE_MSG("Object: {0}" , obj->name);
-
-        YE_CRITICAL_ASSERTION(obj != nullptr , "Attempting to instantiate null object");
+        ENGINE_ASSERT(obj != nullptr , "Attempting to instantiate null object");
         mono_runtime_object_init(instance);
-
-        EXIT_FUNCTION_TRACE();
     }
     
     void ScriptEngine::GetObjField(ScriptObject* obj , MonoObject* instance , const std::string& field , Field* value) {
-        ENTER_FUNCTION_TRACE_MSG("Object: {0} | Field: {1}" , obj->name , field);
+         ("Object: {0} | Field: {1}" , obj->name , field);
 
-        YE_CRITICAL_ASSERTION(obj != nullptr , "Attempting to get field on null object");
-        YE_CRITICAL_ASSERTION(instance != nullptr , "Attempting to get field object with null instance");
-        YE_CRITICAL_ASSERTION(value != nullptr , "Attempting to get null field");
+        ENGINE_ASSERT(obj != nullptr , "Attempting to get field on null object");
+        ENGINE_ASSERT(instance != nullptr , "Attempting to get field object with null instance");
+        ENGINE_ASSERT(value != nullptr , "Attempting to get null field");
 
         ScriptField* sf = ScriptMap::GetFieldByName(obj , field);
         if (sf == nullptr) {
             ENGINE_ERROR("Failed to find field: {0} on object: {1}" , field , obj->name);
-            EXIT_FUNCTION_TRACE();
             return;
         }
 
@@ -442,21 +424,16 @@ namespace YE {
         } else {
             GetField(obj , sf , instance , value);
         }
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void ScriptEngine::SetObjField(ScriptObject* obj , MonoObject* instance , GCHandle handle , const std::string& field , Field* value) {
-        ENTER_FUNCTION_TRACE_MSG("Object: {0} | Field: {1}" , obj->name , field);
-
-        YE_CRITICAL_ASSERTION(obj != nullptr , "Attempting to set field on null object");
-        YE_CRITICAL_ASSERTION(instance != nullptr , "Attempting to set field object with null instance");
-        YE_CRITICAL_ASSERTION(value != nullptr , "Attempting to set field with null param");
+        ENGINE_ASSERT(obj != nullptr , "Attempting to set field on null object");
+        ENGINE_ASSERT(instance != nullptr , "Attempting to set field object with null instance");
+        ENGINE_ASSERT(value != nullptr , "Attempting to set field with null param");
 
         ScriptField* sf = ScriptMap::GetFieldByName(obj , field);
         if (sf == nullptr) {
             ENGINE_ERROR("Failed to find field: {0} on object: {1}" , field , obj->name);
-            EXIT_FUNCTION_TRACE();
             return;
         }
 
@@ -465,15 +442,10 @@ namespace YE {
         } else {
             SetField(obj , sf , instance , handle , value);
         }
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void ScriptEngine::InitializeEntity(Entity* entity , uint32_t num_ctor_params , ParamHandle* params) {
-        ENTER_FUNCTION_TRACE_MSG("Entity: {0}" , entity->GetComponent<components::ID>().name);
-
         if (!entity->HasComponent<components::Script>()) {
-            EXIT_FUNCTION_TRACE();
             return;
         }
 
@@ -484,8 +456,8 @@ namespace YE {
             ENGINE_WARN("Attempting to initialize unbound script on entity :: [{0} , {1}]" , script.object->name , eid.name);
         }
 
-        for (auto& field : script.object->fields) {
-            ScriptField* field = ScriptMap::GetFieldByID(script.object , field->IDU32);
+        for (auto& f : script.object->fields) {
+            ScriptField* field = ScriptMap::GetFieldByID(script.object , f);
             if (field == nullptr) {
                 ENGINE_ERROR("Failed to find script field: {0} when trying to initialize: {1}" , field->name , script.object->name);
                 continue;
@@ -495,34 +467,30 @@ namespace YE {
                 continue;
 
             if (field->IsArray()) {
-                YE_CRITICAL_ASSERTION(false , "TODO: Implement array fields for scripts");
+                ENGINE_ASSERT(false , "TODO: Implement array fields for scripts");
                 // internal_state->entity_field_map[eid.id][field->IDU32] = std::make_unique<ArrayField>(field);
             } else {
-                internal_state->entity_field_map[eid.id][field->IDU32] = std::make_unique<Field>();
+                internal_state->entity_field_map[eid.id][f] = std::make_unique<Field>();
             }
         }
         
         script.handle = ScriptGC::NewHandle(script.instance , false);
         script.active = true;
 
-        YE_CRITICAL_ASSERTION(script.handle != nullptr , "Failed to create handle for script: {0}" , script.object->name);
+        ENGINE_ASSERT(script.handle != nullptr , "Failed to create handle for script: {0}" , script.object->name);
 
         MonoObject* object = ScriptGC::GetHandleObject(script.handle);
 
         ScriptMethod* ctor = ScriptMap::GetMethod(script.object , ".ctor" , num_ctor_params);
-        YE_CRITICAL_ASSERTION(ctor != nullptr , "Failed to find constructor for script object");
+        ENGINE_ASSERT(ctor != nullptr , "Failed to find constructor for script object");
 
         InvokeMethod(object , ctor , params);
 
         InvokeCreate(script.object , script.instance , script.handle);
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void ScriptEngine::ActivateEntity(Entity* entity) {
-        ENTER_FUNCTION_TRACE_MSG("Entity: {0}" , entity->GetComponent<components::ID>().name);
-
-        YE_CRITICAL_ASSERTION(false , "TODO: Implement ScriptEngine::EntityRuntimeInit()");
+        ENGINE_ASSERT(false , "TODO: Implement ScriptEngine::EntityRuntimeInit()");
         // auto script = entity.GetComponent<components::Script>();
 
         // if (!script.bound)
@@ -546,13 +514,9 @@ namespace YE {
         // InvokeCreate(script.object);
 
         // entity.GetComponent<components::Script>().active = true;
-
-        EXIT_FUNCTION_TRACE();
     }
     
     void ScriptEngine::DeactivateEntity(Entity* entity, bool erase) {
-        ENTER_FUNCTION_TRACE_MSG("Entity: {0}" , entity->GetComponent<components::ID>().name);
-
         // if (!entity.HasComponent<components::Script>())
         //     return;
 
@@ -564,22 +528,16 @@ namespace YE {
 
         // if (erase && internal_state->context_entities->find(eid) != internal_state->context_entities.end())
         //     internal_state->context_entities->erase(eid);
-
-        EXIT_FUNCTION_TRACE();
     }
     
     void ScriptEngine::DestroyEntity(Entity* entity) {
-        ENTER_FUNCTION_TRACE_MSG("Entity: {0}" , entity->GetComponent<components::ID>().name);
-
         if (!entity->HasComponent<components::Script>()) {
-            EXIT_FUNCTION_TRACE();
             return;
         }
 
         auto& script = entity->GetComponent<components::Script>();
 
         if (!script.bound || !script.active) {
-            EXIT_FUNCTION_TRACE();
             return;
         }
 
@@ -590,104 +548,84 @@ namespace YE {
         script.handle = nullptr;
         script.bound = false;
         script.active = false;
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void ScriptEngine::InvokeCreate(ScriptObject* obj , MonoObject* instance , GCHandle handle) {
-        ENTER_FUNCTION_TRACE_MSG("Object: {0}" , obj->name);
-
-        YE_CRITICAL_ASSERTION(obj->klass != nullptr , "Attempting to call Create on null class");
-        YE_CRITICAL_ASSERTION(instance != nullptr , "Attempting to call Create on null object");
+        ENGINE_ASSERT(obj->klass != nullptr , "Attempting to call Create on null class");
+        ENGINE_ASSERT(instance != nullptr , "Attempting to call Create on null object");
 
         MonoObject* exc = nullptr;
         MonoMethod* method = mono_class_get_method_from_name(obj->klass , "Create" , 0);
-        YE_CRITICAL_ASSERTION(method != nullptr , "Failed to retrieve Create method from class: {0}" , mono_class_get_name(obj->klass));
+        ENGINE_ASSERT(method != nullptr , "Failed to retrieve Create method from class: {0}" , mono_class_get_name(obj->klass));
 
         MonoMethod* vmethod = mono_object_get_virtual_method(instance , method);
-        YE_CRITICAL_ASSERTION(vmethod != nullptr , "Failed to retrieve Create method from class: {0}" , mono_class_get_name(obj->klass));
+        ENGINE_ASSERT(vmethod != nullptr , "Failed to retrieve Create method from class: {0}" , mono_class_get_name(obj->klass));
 
         MonoObject* object = ScriptGC::GetHandleObject(handle);
         mono_runtime_invoke(vmethod , object , nullptr , &exc);
         CHECK_MONO_EXCEPTION(exc);
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void ScriptEngine::InvokeUpdate(ScriptObject* obj , MonoObject* instance , GCHandle handle , float delta_time) {
-        ENTER_FUNCTION_TRACE_MSG("Object: {0}" , obj->name);
-
-        YE_CRITICAL_ASSERTION(obj->klass != nullptr , "Attempting to call Update on null class");
-        YE_CRITICAL_ASSERTION(instance != nullptr , "Attempting to call Update on null object");
+        ENGINE_ASSERT(obj->klass != nullptr , "Attempting to call Update on null class");
+        ENGINE_ASSERT(instance != nullptr , "Attempting to call Update on null object");
 
         MonoObject* exc = nullptr;
         MonoMethod* method = mono_class_get_method_from_name(obj->klass , "Update" , 1);
-        YE_CRITICAL_ASSERTION(method != nullptr , "Failed to retrieve Update method from class: {0}" , mono_class_get_name(obj->klass));
+        ENGINE_ASSERT(method != nullptr , "Failed to retrieve Update method from class: {0}" , mono_class_get_name(obj->klass));
 
         MonoMethod* vmethod = mono_object_get_virtual_method(instance , method);
-        YE_CRITICAL_ASSERTION(vmethod != nullptr , "Failed to retrieve Update method from class: {0}" , mono_class_get_name(obj->klass));
+        ENGINE_ASSERT(vmethod != nullptr , "Failed to retrieve Update method from class: {0}" , mono_class_get_name(obj->klass));
 
         ParamHandle params[] = { &delta_time };
         MonoObject* object = ScriptGC::GetHandleObject(handle);
 
         mono_runtime_invoke(vmethod , object , params , &exc);
         CHECK_MONO_EXCEPTION(exc);
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void ScriptEngine::InvokeDestroy(ScriptObject* obj , MonoObject* instance , GCHandle handle) {
-        ENTER_FUNCTION_TRACE_MSG("Object: {0}" , obj->name);
-
-        YE_CRITICAL_ASSERTION(obj->klass != nullptr , "Attempting to call Destroy on null class");
-        YE_CRITICAL_ASSERTION(instance != nullptr , "Attempting to call Destroy on null object");
+        ENGINE_ASSERT(obj->klass != nullptr , "Attempting to call Destroy on null class");
+        ENGINE_ASSERT(instance != nullptr , "Attempting to call Destroy on null object");
 
         MonoObject* exc = nullptr;
         MonoMethod* method = mono_class_get_method_from_name(obj->klass , "Destroy" , 0);
-        YE_CRITICAL_ASSERTION(method != nullptr , "Failed to retrieve Destroy method from class: {0}" , mono_class_get_name(obj->klass));
+        ENGINE_ASSERT(method != nullptr , "Failed to retrieve Destroy method from class: {0}" , mono_class_get_name(obj->klass));
 
         MonoMethod* vmethod = mono_object_get_virtual_method(instance , method);
-        YE_CRITICAL_ASSERTION(vmethod != nullptr , "Failed to retrieve Destroy method from class: {0}" , mono_class_get_name(obj->klass));
+        ENGINE_ASSERT(vmethod != nullptr , "Failed to retrieve Destroy method from class: {0}" , mono_class_get_name(obj->klass));
 
         MonoObject* object = ScriptGC::GetHandleObject(handle);
         mono_runtime_invoke(vmethod , object , nullptr , &exc);
         CHECK_MONO_EXCEPTION(exc);
-
-        EXIT_FUNCTION_TRACE();
     }
     
     void ScriptEngine::InvokeMethod(MonoObject* obj , ScriptMethod* method , ParamHandle* params) {
-        ENTER_FUNCTION_TRACE_MSG("Method: {}" , method->name);
+        ENGINE_ASSERT(obj != nullptr , "Attempting to call method on null object");
+        ENGINE_ASSERT(method != nullptr , "Attempting to call null method");
+        ENGINE_ASSERT(method->method != nullptr , "Attempting to call null method");
 
-        YE_CRITICAL_ASSERTION(obj != nullptr , "Attempting to call method on null object");
-        YE_CRITICAL_ASSERTION(method != nullptr , "Attempting to call null method");
-        YE_CRITICAL_ASSERTION(method->method != nullptr , "Attempting to call null method");
-
-        if (method->param_count > 0)
-            YE_CRITICAL_ASSERTION(params != nullptr , "Attempting to call method with null params"
-        );
+        if (method->param_count > 0) {
+            ENGINE_ASSERT(params != nullptr , "Attempting to call method with null params");
+        }
 
         MonoObject* exception = nullptr;
         mono_runtime_invoke(method->method , obj , params , &exception);
         CHECK_MONO_EXCEPTION(exception);
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void ScriptEngine::Initialize() {
-        ENTER_FUNCTION_TRACE();
-
-        YE_CRITICAL_ASSERTION(!initialized , "Attempting to initialize script engine twice");
+        ENGINE_ASSERT(!initialized , "Attempting to initialize script engine twice");
 
         mono_path = Filesystem::GetMonoPath();
         mono_config_path = Filesystem::GetMonoConfigPath();
         internal_modules_path = Filesystem::GetInternalModulesPath();
         project_modules_path = Filesystem::GetProjectModulesPath();
 
-        YE_CRITICAL_ASSERTION(std::filesystem::exists(mono_path) , "Failed to find mono path: {0}" , mono_path);
-        YE_CRITICAL_ASSERTION(std::filesystem::exists(mono_config_path) , "Failed to find mono config path: {0}" , mono_config_path);
-        YE_CRITICAL_ASSERTION(std::filesystem::exists(internal_modules_path) , "Failed to find internal modules path: {0}" , internal_modules_path);
-        YE_CRITICAL_ASSERTION(std::filesystem::exists(project_modules_path) , "Failed to find project modules path: {0}" , project_modules_path);
+        ENGINE_ASSERT(std::filesystem::exists(mono_path) , "Failed to find mono path: {0}" , mono_path);
+        ENGINE_ASSERT(std::filesystem::exists(mono_config_path) , "Failed to find mono config path: {0}" , mono_config_path);
+        ENGINE_ASSERT(std::filesystem::exists(internal_modules_path) , "Failed to find internal modules path: {0}" , internal_modules_path);
+        ENGINE_ASSERT(std::filesystem::exists(project_modules_path) , "Failed to find project modules path: {0}" , project_modules_path);
 
         root_domain_name = "YERootScriptDomain";
         app_domain_name = "YEAppScriptDomain";
@@ -705,11 +643,11 @@ namespace YE {
 #endif     
 
         root_domain = mono_jit_init(root_domain_name.c_str());
-        YE_CRITICAL_ASSERTION(root_domain != nullptr , "Failed to initialize Mono domain");
+        ENGINE_ASSERT(root_domain != nullptr , "Failed to initialize Mono domain");
 
 
         app_domain = mono_domain_create_appdomain(app_domain_name.data() , nullptr);
-        YE_CRITICAL_ASSERTION(app_domain != nullptr , "Failed to create Mono app domain");
+        ENGINE_ASSERT(app_domain != nullptr , "Failed to create Mono app domain");
 
 #if DEBUG_SCRIPTS
         CreateDebugDomains();
@@ -725,12 +663,10 @@ namespace YE {
 
         initialized = true;
         internal_state = std::make_unique<EngineState>();
-
-        EXIT_FUNCTION_TRACE();
     }
     
     uint32_t ScriptEngine::BuildProjectModules(std::filesystem::path module_proj_path , std::string module_path) {
-        ENTER_FUNCTION_TRACE_MSG("Project Modules Path: {0}" , module_proj_path.string());
+         ("Project Modules Path: {0}" , module_proj_path.string());
 
 #if YE_PLATFORM_WIN
         TCHAR program_files_path_buffer[MAX_PATH];
@@ -749,38 +685,26 @@ namespace YE {
             ms_build.string(), build_path.string()
         );
 
-        EXIT_FUNCTION_TRACE();
         return system(command.c_str());
 #else
-        YE_CRITICAL_ASSERTION(false , "TODO: Implement BuildProjectModules() for non-windows platforms");
-        EXIT_FUNCTION_TRACE();
+        ENGINE_ASSERT(false , "TODO: Implement BuildProjectModules() for non-windows platforms");
         return 1;
 #endif
     }
     
     void ScriptEngine::LoadProjectModules() {
-        ENTER_FUNCTION_TRACE();
-
-        YE_CRITICAL_ASSERTION(initialized , "Attempting to load project modules before initializing script engine");
+        ENGINE_ASSERT(initialized , "Attempting to load project modules before initializing script engine");
         LoadProjectScripts();
         ScriptMap::LoadProjectTypes();
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void ScriptEngine::UnloadProjectModules() {
-        ENTER_FUNCTION_TRACE();
-
-        YE_CRITICAL_ASSERTION(initialized , "Attempting to unload project modules before initializing script engine");
+        ENGINE_ASSERT(initialized , "Attempting to unload project modules before initializing script engine");
         ScriptMap::UnloadProjectTypes();
         UnloadProjectScripts();
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void ScriptEngine::ReloadProjectModules() {
-        ENTER_FUNCTION_TRACE();
-
         std::filesystem::path internal_proj_path = Filesystem::GetInternalModulesPath();
         ENGINE_INFO("Internal modules path: {0}" , internal_proj_path.string());
         
@@ -788,13 +712,13 @@ namespace YE {
         std::string module_path = Filesystem::GetModulePath();
         
         if (std::filesystem::is_empty(module_path)) {
-            EXIT_FUNCTION_TRACE();
             return;
         }
 
         bool scene_check = scene_started;
-        if (scene_check && scene_context_exists)
+        if (scene_check && scene_context_exists) {
             StopScene();
+        }
 
         ScriptGC::Collect(true);
         UnloadProjectModules();
@@ -811,7 +735,6 @@ namespace YE {
             LoadProjectModules();
 
             if (!scene_context_exists) {
-                EXIT_FUNCTION_TRACE();
                 return;
             }
 
@@ -822,12 +745,11 @@ namespace YE {
                 script.Bind(script.class_name);
             }
 
-            if (scene_check)
+            if (scene_check) {
                 StartScene();
+            }
 
             scripts_reloaded = true;
-
-            EXIT_FUNCTION_TRACE();
             return;
         } else {
             try {
@@ -847,7 +769,6 @@ namespace YE {
                         LoadProjectModules();
 
                         if (!scene_context_exists) {
-                            EXIT_FUNCTION_TRACE();
                             return;
                         }
 
@@ -862,35 +783,26 @@ namespace YE {
                             StartScene();
 
                         scripts_reloaded = true;
-
-                        EXIT_FUNCTION_TRACE();
                         return;
                     } else {
                         ENGINE_ERROR("Attempted rebuild failed");
                     }
                 } else {
                     scripts_reloaded = true;
-
-                    EXIT_FUNCTION_TRACE();
                     return;
                 }
             } catch (std::filesystem::filesystem_error& e) {
                 ENGINE_ERROR("Failed to read project modules directory: {0}" , e.what());
                 scripts_reloaded = true;
-
-                EXIT_FUNCTION_TRACE();
                 return;
             }
         }
-
-        EXIT_FUNCTION_TRACE();
-        YE_CRITICAL_ASSERTION(false , "UNREACHABLE");
+        ENGINE_ASSERT(false , "UNREACHABLE");
         return;
     }
     
     void ScriptEngine::SetSceneContext(Scene* scene) {
-        ENTER_FUNCTION_TRACE();
-        YE_CRITICAL_ASSERTION(scene != nullptr , "Attempting to set null scene context");
+        ENGINE_ASSERT(scene != nullptr , "Attempting to set null scene context");
 
         internal_state->scene_context = scene;
         internal_state->context_entities = scene->Entities();
@@ -913,9 +825,8 @@ namespace YE {
     }
     
     void ScriptEngine::StartScene() {
-        ENTER_FUNCTION_TRACE();
-        YE_CRITICAL_ASSERTION(initialized , "Attempting to start scene before initializing script engine");
-        YE_CRITICAL_ASSERTION(internal_state->scene_context != nullptr , "Attempting to start scene with null scene context");
+        ENGINE_ASSERT(initialized , "Attempting to start scene before initializing script engine");
+        ENGINE_ASSERT(internal_state->scene_context != nullptr , "Attempting to start scene with null scene context");
 
         for (auto& [id , entity] : *internal_state->context_entities) {
             if (!entity->HasComponent<components::Script>())
@@ -932,13 +843,11 @@ namespace YE {
         }
 
         scene_started = true;
-        EXIT_FUNCTION_TRACE();
     }
 
     void ScriptEngine::StopScene() {
-        ENTER_FUNCTION_TRACE();
-        YE_CRITICAL_ASSERTION(initialized , "Attempting to stop scene before initializing script engine");
-        YE_CRITICAL_ASSERTION(internal_state->scene_context != nullptr , "Attempting to stop scene with null scene context");
+        ENGINE_ASSERT(initialized , "Attempting to stop scene before initializing script engine");
+        ENGINE_ASSERT(internal_state->scene_context != nullptr , "Attempting to stop scene with null scene context");
 
         for (auto& [id , entity] : *internal_state->context_entities) {
             if (!entity->HasComponent<components::Script>())
@@ -960,29 +869,20 @@ namespace YE {
         }
 
         scene_started = false;
-        EXIT_FUNCTION_TRACE();
     }
     
     void ScriptEngine::Shutdown() {
-        ENTER_FUNCTION_TRACE();
-        
         ScriptGC::Shutdown();
         ScriptMap::Destroy();
         ScriptGlue::UnbindAssembly();
         ShutdownMono();
         initialized = false;
-        
-        EXIT_FUNCTION_TRACE();
     }
     
     void ScriptEngine::Cleanup() {
-        ENTER_FUNCTION_TRACE();
-
         if (instance != nullptr) {
             delete instance;
             instance = nullptr;
         }
-
-        EXIT_FUNCTION_TRACE();
     }
 }

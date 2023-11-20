@@ -1,5 +1,5 @@
-#ifndef YE_YSCRIPT_PARSER_HPP
-#define YE_YSCRIPT_PARSER_HPP
+#ifndef ENGINEY_YSCRIPT_PARSER_HPP
+#define ENGINEY_YSCRIPT_PARSER_HPP
 
 #include <vector>
 #include <stack>
@@ -8,13 +8,13 @@
 #include "yscript_ast.hpp"
 
 template<>
-struct std::hash<YE::YScriptToken> {
-    std::size_t operator()(const YE::YScriptToken& token) const noexcept {
+struct std::hash< EngineY::YScriptToken> {
+    std::size_t operator()(const  EngineY::YScriptToken& token) const noexcept {
         return std::hash<std::string>{}(token.value);
     }
 };
 
-namespace YE {
+namespace EngineY {
     
     using ProjectAst = std::vector<std::unique_ptr<ASTNode>>;
 
@@ -76,7 +76,9 @@ namespace YE {
         std::unique_ptr<ASTStmnt> ParseDeclaration();
         std::unique_ptr<ASTStmnt> ParseProjectMetadata();
         std::unique_ptr<ASTStmnt> ParseWindowDeclaration();
+        std::unique_ptr<ASTStmnt> ParseResourcesDeclaration();
         std::unique_ptr<ASTStmnt> ParseNodeDeclaration();
+        std::unique_ptr<ASTStmnt> ParseSceneList();
         std::unique_ptr<ASTStmnt> ParseEntryPointDeclaration();
         std::unique_ptr<ASTStmnt> ParseFunctionDeclaration(const std::string& kind);
         std::unique_ptr<ASTStmnt> FinishFunction(const std::string& kind , YScriptToken id , YScriptToken node);

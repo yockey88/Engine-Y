@@ -1,11 +1,11 @@
-#ifndef YE_TASKS_HPP
-#define YE_TASKS_HPP
+#ifndef ENGINEY_TASKS_HPP
+#define ENGINEY_TASKS_HPP
 
 #include <functional>
 #include <thread>
 #include <memory>
 
-namespace YE {
+namespace EngineY {
 
     class BaseTask {
         public:

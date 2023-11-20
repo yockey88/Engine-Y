@@ -1,24 +1,25 @@
-#ifndef YE_RESOURCE_HANDLER_HPP
-#define YE_RESOURCE_HANDLER_HPP
+#ifndef ENGINEY_RESOURCE_HANDLER_HPP
+#define ENGINEY_RESOURCE_HANDLER_HPP
 
+#include <optional>
 #include <string>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
-#include <msdfgen/msdfgen.h>
-#include <msdfgen/msdfgen-ext.h>
 #include <msdf-atlas-gen/msdf-atlas-gen.h>
+#include <msdfgen/msdfgen-ext.h>
+#include <msdfgen/msdfgen.h>
 
-#include "log.hpp"
-#include "UUID.hpp"
-#include "rendering/vertex_array.hpp"
+#include "core/UUID.hpp"
+#include "core/log.hpp"
+#include "rendering/model.hpp"
 #include "rendering/shader.hpp"
 #include "rendering/texture.hpp"
-#include "rendering/model.hpp"
+#include "rendering/vertex_array.hpp"
 
 struct ImFont;
 
-namespace YE {
+namespace EngineY {
 
     /// temporary until find better palce to put this 
     struct FontResource {
@@ -138,5 +139,6 @@ namespace YE {
     };
 
 }
+
 
 #endif // !YE_RESOURCE_HANDLER_HPP

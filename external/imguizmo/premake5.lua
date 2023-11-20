@@ -15,11 +15,11 @@ project "imguizmo"
     }
 
     externalincludedirs {
-        "../imgui-docking/imgui"
+        "../imgui/imgui"
     }
 
     libdirs {
-        "../imgui-docking/bin/%{cfg.buildcfg}/imgui"
+        "../imgui/bin/%{cfg.buildcfg}/imgui"
     }
 
     links {

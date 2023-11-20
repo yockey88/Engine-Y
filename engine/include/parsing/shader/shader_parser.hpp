@@ -1,5 +1,5 @@
-#ifndef YE_GLSL_PARSER_HPP
-#define YE_GLSL_PARSER_HPP
+#ifndef ENGINEY_GLSL_PARSER_HPP
+#define ENGINEY_GLSL_PARSER_HPP
 
 #include <string>
 #include <vector>
@@ -10,7 +10,7 @@
 #include "shader_preprocessor.hpp"
 #include "shader_ast.hpp"
 
-namespace YE {
+namespace EngineY {
 
     enum ShaderPathIndex {
         VERTEX   = 0 ,

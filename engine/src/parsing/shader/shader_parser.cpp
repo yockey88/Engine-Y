@@ -3,10 +3,10 @@
 #include <filesystem>
 #include <fstream>
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "core/filesystem.hpp"
 
-namespace YE {
+namespace EngineY {
 
     bool GlslParser::Match(const std::vector<GlslTokenType>& types) {
         for (auto& type : types) {
@@ -103,7 +103,7 @@ namespace YE {
     }
     
     std::pair<std::string , std::vector<std::shared_ptr<GlslStmnt>>> GlslParser::Parse() {
-        YE_CRITICAL_ASSERTION(false , "This function is not implemented yet");
+        ENGINE_ASSERT(false , "This function is not implemented yet");
 
         // parse tokens
         index = 0;

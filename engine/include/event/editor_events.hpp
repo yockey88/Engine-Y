@@ -1,9 +1,9 @@
-#ifndef YE_EDITOR_EVENTS_HPP
-#define YE_EDITOR_EVENTS_HPP
+#ifndef ENGINEY_EDITOR_EVENTS_HPP
+#define ENGINEY_EDITOR_EVENTS_HPP
 
 #include "events.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class EditorEvent : public Event {
         public:

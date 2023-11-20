@@ -1,8 +1,9 @@
-#ifndef YE_RENDERER_HPP
-#define YE_RENDERER_HPP
+#ifndef ENGINEY_RENDERER_HPP
+#define ENGINEY_RENDERER_HPP
 
 #include <string>
 #include <queue>
+#include <stack>
 #include <memory>
 #include <unordered_map>
 #include <functional>
@@ -12,7 +13,7 @@
 #include "core/defines.hpp"
 #include "core/UUID.hpp"
 #include "core/timer.hpp"
-#include "core/window.hpp"
+#include "rendering/window.hpp"
 #include "rendering/render_commands.hpp"
 
 constexpr uint32_t kOpenGLMajorVersion = 4;
@@ -20,7 +21,7 @@ constexpr uint32_t kOpenGLMinorVersion = 6;
 constexpr uint32_t kOpenGLDoubleBuffer = 1;
 constexpr uint32_t kOpenGLSwapInterval = 1;
 
-namespace YE {
+namespace EngineY {
 
 namespace components {
 
@@ -34,12 +35,16 @@ namespace components {
     class Framebuffer;
     class Scene;
     class Camera;
+    class Framebuffer;
 
     using RenderQueue = std::queue<std::unique_ptr<RenderCommand>>;
     using VertexMap = std::unordered_map<UUID32 , VertexArray*>;
     using RenderMap = std::unordered_map<UUID32 , RenderCommand*>;
     using FramebufferMap = std::unordered_map<UUID32 , Framebuffer*>;
-    using RenderCallbackMap = std::unordered_map<UUID32 , std::function<void()>>;
+
+    using PostRenderCallback = std::function<void(Framebuffer*)>;
+
+    using RenderCallbackMap = std::unordered_map<UUID32 , PostRenderCallback>;
 
     enum RenderMode {
         POINT = GL_POINT ,
@@ -53,7 +58,6 @@ namespace components {
     };
 
     class Renderer {
- 
         static Renderer* singleton;
 
         Window* window = nullptr;
@@ -70,8 +74,6 @@ namespace components {
         RenderMap debug_renderables;
 
         FramebufferMap framebuffers;
-        RenderCallbackMap PreRenderCallbacks;
-        RenderCallbackMap PostRenderCallbacks;
 
         UUID32 default_framebuffer{ 0 };
         UUID32 active_framebuffer{ 0 };
@@ -86,62 +88,54 @@ namespace components {
         
         void SetSDLWindowAttributes(WindowConfig& config);
         void EnableGLSettings(WindowConfig& config);
-        void RegisterCallbacks();
-        void BeginRender();
-        void Execute();
-        void EndRender();
 
+        void PopCamera();
+        
         Renderer() {}
         ~Renderer() {}
-
+        
         Renderer(Renderer&&) = delete;
         Renderer(const Renderer&) = delete;
         Renderer& operator=(Renderer&&) = delete;
         Renderer& operator=(const Renderer&) = delete;
 
         public:
-
             static Renderer* Instance();
 
-            void RegisterPreRenderCallback(std::function<void()> callback , const std::string& name);
-            void RegisterPostRenderCallback(std::function<void()> callback , const std::string& name);
-
-            void Initialize(App* app , WindowConfig& config);
-            
             void PushFramebuffer(const std::string& name , Framebuffer* framebuffer);
+            void ActivateFramebuffer(const std::string& name);
+            void ActivateFramebuffer(UUID32 id);
+            void SetDefaultFramebuffer(const std::string& name);
+            void SetDefaultFramebuffer(UUID32 id);
+            void RevertToDefaultFramebuffer();
+            void ActivateLastFramebuffer();
+            void DeactivateFramebuffer();
+            void PopFramebuffer(const std::string& name );            
+            void PopFramebuffer(UUID32 id);            
+
+            Framebuffer* GetWindowFramebuffer();
+            Framebuffer* GetActiveFramebuffer();
+            Framebuffer* GetFramebuffer(const std::string& name);
+            Framebuffer* GetFramebuffer(UUID32 id);
+            
+            void PushCamera(Camera* camera);
+            
             void SubmitRenderCmnd(std::unique_ptr<RenderCommand>& cmnd);
             void SubmitDebugRenderCmnd(std::unique_ptr<RenderCommand>& cmnd);
 
-            /// \todo implement these functions so we can stop submitting render commands every frame that can persist between frames
-            // void PushRenderable(RenderCommand* cmnd , const std::string& name , DrawGroup group = DrawGroup::DEFAULT);
-            // void UpdateRenderCmnd(RenderCommand* new_cmnd , const std::string& name , DrawGroup group = DrawGroup::DEFAULT);
-            // void RemoveRenderCmnd(const std::string& name , DrawGroup group = DrawGroup::DEFAULT);
-
-            void PopFramebuffer(const std::string& name);
-            
-            void SetDefaultFramebuffer(const std::string& name);
-            void RevertToDefaultFramebuffer();
-
-            void ActivateFramebuffer(const std::string& name);
-            void ActivateLastFramebuffer();
-            void DeactivateFramebuffer();
-
             void RegisterSceneContext(Scene* scene);
-            void PushCamera(Camera* camera);
-            void PopCamera();
             
             void SetSceneRenderMode(RenderMode mode);
+
+            void Initialize(App* app , WindowConfig& config);
 
             void Render();
 
             void CloseWindow();
             void Cleanup();
             
-            inline FramebufferMap* Framebuffers() { return &framebuffers; }
             inline Window* ActiveWindow() { return window; }
-            inline UUID32 ActiveFramebuffer() const { return active_framebuffer; }
             inline bool DebugRendering() const { return debug_rendering; }
-            inline bool FramebufferActive() const { return framebuffer_active; }
     };
 
 }

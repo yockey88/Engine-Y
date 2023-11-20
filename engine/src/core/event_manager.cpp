@@ -1,19 +1,20 @@
-#include "core/event_manager.hpp"
+#include "event/event_manager.hpp"
 
 #include <SDL.h>
 #include <imgui/backends/imgui_impl_sdl2.h>
 
+#include "core/defines.hpp"
 #include "core/RNG.hpp"
-#include "core/window.hpp"
+#include "rendering/window.hpp"
 #include "rendering/renderer.hpp"
 
-namespace YE {
+namespace EngineY {
 
     EventManager* EventManager::singleton = nullptr;
 
     EventManager* EventManager::Instance() {
         if (singleton == nullptr) {
-            singleton = ynew EventManager;
+            singleton = new EventManager;
         }
         return singleton;
     }
@@ -282,22 +283,21 @@ namespace YE {
     
     void EventManager::PollEvents() {
         SDL_Event e;
-        std::unique_ptr<Event> event = nullptr;
         while (SDL_PollEvent(&e)) {
             switch (e.type) {
                 case SDL_WINDOWEVENT:
                     if (e.window.event == SDL_WINDOWEVENT_RESIZED)
-                        DispatchEvent(ynew WindowResized( 
-                            { e.window.data1 , e.window.data2 } ,
+                        DispatchEvent(ynew(WindowResized , 
+                            glm::ivec2{ e.window.data1 , e.window.data2 } ,
                             Renderer::Instance()->ActiveWindow()->GetSize()
                         ));
                     if (e.window.event == SDL_WINDOWEVENT_MINIMIZED)
-                        DispatchEvent(ynew WindowMinimized);
+                        DispatchEvent(ynew(WindowMinimized));
                     if (e.window.event == SDL_WINDOWEVENT_CLOSE)
-                        DispatchEvent(ynew WindowClosed);
+                        DispatchEvent(ynew(WindowClosed));
                 break;
                 case SDL_QUIT:
-                    DispatchEvent(ynew ShutdownEvent);
+                    DispatchEvent(ynew(ShutdownEvent , 0));
                 break;
                 default: break;
             }
@@ -392,7 +392,7 @@ namespace YE {
         while (!dispatched_events.empty()) {
             Event* event = dispatched_events.front();
             dispatched_events.pop();
-            ydelete event;
+            ydelete(event);
         }
     }
     
@@ -415,7 +415,7 @@ namespace YE {
         editor_scene_play_callbacks.clear();
         editor_scene_pause_callbacks.clear();
         editor_scene_stop_callbacks.clear();
-        if (singleton != nullptr) ydelete singleton;
+        if (singleton != nullptr) delete singleton;
     }
 
 }

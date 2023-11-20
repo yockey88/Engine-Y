@@ -1,5 +1,5 @@
-#ifndef YE_FRAMEBUFFER_HPP
-#define YE_FRAMEBUFFER_HPP
+#ifndef ENGINEY_FRAMEBUFFER_HPP
+#define ENGINEY_FRAMEBUFFER_HPP
 
 #include <vector>
 
@@ -10,7 +10,7 @@
 #include "rendering/vertex_array.hpp"
 #include "rendering/shader.hpp"
 
-namespace YE {
+namespace EngineY {
     
     enum BufferBit : int32_t {
         COLOR_BUFFER = GL_COLOR_BUFFER_BIT ,
@@ -44,20 +44,15 @@ namespace YE {
 
         bool complete = false;
 
-        Framebuffer(Framebuffer&&) = delete;
-        Framebuffer(const Framebuffer&) = delete;
-        Framebuffer& operator=(Framebuffer&&) = delete;
-        Framebuffer& operator=(const Framebuffer&) = delete;
-
-        friend class Window;
-
+        void Create();
+        
         public:
-            Framebuffer(const std::vector<float>& vertices , const std::vector<uint32_t> indices ,
-                        const std::vector<uint32_t>& layout , const glm::ivec2& size)
-                : vertices(vertices) , indices(indices) , layout(layout) , size(size) {}
-            ~Framebuffer();
+            Framebuffer(
+                const std::vector<float>& vertices , const std::vector<uint32_t> indices ,
+                const std::vector<uint32_t>& layout , const glm::ivec2& size
+            );
+            ~Framebuffer() {}
 
-            void Create();
             void Draw(DrawMode mode = DrawMode::TRIANGLES);
 
             void SetBufferType(const std::vector<BufferBit>& bits);
@@ -67,7 +62,10 @@ namespace YE {
             void BindFrame() const;
             void UnbindFrame() const;
 
+            void Destroy();
+
             inline const glm::ivec2& Size() const { return size; }
+            inline const uint32_t GetColorAttachment() const { return color_attachment; }
             inline bool Valid() const { return complete; }
             inline void AttachShader(Shader* shader) { this->shader = shader; }
             inline void SetClearColor(const glm::vec4& color) { clear_color = color; }

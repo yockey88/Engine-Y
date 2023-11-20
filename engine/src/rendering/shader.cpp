@@ -4,12 +4,12 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "core/hash.hpp"
 #include "core/filesystem.hpp"
 #include "rendering/gl_error_helper.hpp"
 
-namespace YE {
+namespace EngineY {
 
     /// \todo save locations of shaders to avoid glGetUniformLocations call
     ///     every time a uniform is set
@@ -25,8 +25,6 @@ namespace YE {
     }
     
     void Shader::ShaderError(ShaderType type , uint32_t shader) {
-        ENTER_FUNCTION_TRACE();
-
         char info_log[512];
         glGetShaderInfoLog(shader , 512 , nullptr , info_log);
         std::string path = "";
@@ -39,13 +37,9 @@ namespace YE {
         ENGINE_WARN("Failed to compile shader :: [{0}]" , path);
         std::cout << "\t" << info_log << "\n";
         valid = false;
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Shader::CompileShader(ShaderType type , uint32_t& shader , const char* buffer) {
-        ENTER_FUNCTION_TRACE();
-
         if (ShaderType::GEOMETRY == type && (!has_geometry || geometry_path == "")) {
             ENGINE_WARN("Failed to compile geometry shader :: [{0}]" , geometry_path);
             valid = false;
@@ -59,13 +53,9 @@ namespace YE {
             if (compile_check != GL_TRUE)
                 ShaderError(type , shader);
         }
-
-        EXIT_FUNCTION_TRACE();
     }
     
     void Shader::Link() {
-        ENTER_FUNCTION_TRACE();
-
         int32_t compile_check = 0;
 
         program = glCreateProgram();
@@ -89,8 +79,6 @@ namespace YE {
         glDeleteShader(fragment_shader);
         if (has_geometry)
             glDeleteShader(geometry_shader);
-
-        EXIT_FUNCTION_TRACE();
     }
 
     Shader::~Shader() {
@@ -99,13 +87,11 @@ namespace YE {
     }
     
     bool Shader::Compile() {
-        ENTER_FUNCTION_TRACE();
-
         valid = true;
 
-        std::string vert_str = YE::Filesystem::ReadFileAsStr(vertex_path);
-        std::string frag_str = YE::Filesystem::ReadFileAsStr(fragment_path);
-        std::string geom_str = has_geometry ? YE::Filesystem::ReadFileAsStr(geometry_path) : "";
+        std::string vert_str =  EngineY::Filesystem::ReadFileAsStr(vertex_path);
+        std::string frag_str =  EngineY::Filesystem::ReadFileAsStr(fragment_path);
+        std::string geom_str = has_geometry ?  EngineY::Filesystem::ReadFileAsStr(geometry_path) : "";
 
         const char* vert_src = vert_str.c_str();
         const char* frag_src = frag_str.c_str();
@@ -120,12 +106,11 @@ namespace YE {
 
         Link();
 
-        EXIT_FUNCTION_TRACE();
         return valid;
     }
     
     void Shader::SetUniform(const Uniform& uniform) {
-        YE_CRITICAL_ASSERTION(uniform.data.data_handle != nullptr , "Attempting to set uniform with no data");
+        ENGINE_ASSERT(uniform.data.data_handle != nullptr , "Attempting to set uniform with no data");
 
         uint32_t ival;
         float fval;
@@ -164,7 +149,7 @@ namespace YE {
                 SetUniformMat4(uniform.name , mat4);
             break;
             default:
-                YE_CRITICAL_ASSERTION(false , "Invalid uniform type");
+                ENGINE_ASSERT(false , "Invalid uniform type");
         }
     }
 

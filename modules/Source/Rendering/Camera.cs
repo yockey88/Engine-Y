@@ -1,5 +1,5 @@
 ﻿
-namespace YE {
+namespace EngineY {
     
     public enum CameraType {
         INVALID ,

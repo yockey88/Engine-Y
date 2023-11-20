@@ -1,5 +1,5 @@
-#ifndef YE_LOG_SINKS_BASE_HPP
-#define YE_LOG_SINKS_BASE_HPP
+#ifndef ENGINEY_LOG_SINKS_BASE_HPP
+#define ENGINEY_LOG_SINKS_BASE_HPP
 
 //// Ideas for these custom sinks were taken from https://github.com/gabime/spdlog/pull/2610 
 ////        which is already merged into v1.12.0 but I am using 1.11.0 and it was simple enough to recreate

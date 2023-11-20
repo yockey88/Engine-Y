@@ -1,26 +1,27 @@
-#ifndef YE_YSCRIPT_NODE_BUILDER_HPP
-#define YE_YSCRIPT_NODE_BUILDER_HPP
+#ifndef ENGINEY_YSCRIPT_NODE_BUILDER_HPP
+#define ENGINEY_YSCRIPT_NODE_BUILDER_HPP
 
 #include <string>
 #include <stack>
 #include <vector>
 #include <unordered_map>
 
+#include <spdlog/fmt/fmt.h>
 #include <glm/glm.hpp>
 
 #include "yscript_ast.hpp"
 #include "yscript_parser.hpp"
 
-#include "scene/scene_graph.hpp"
+// #include "scene/scene_graph.hpp"
 
-namespace YE { 
+namespace EngineY { 
 
     class node_builder_exception : public std::exception {
         std::string msg;
 
         public:
             node_builder_exception(const std::string& msg , uint32_t line , uint32_t col) 
-                : msg(fmt::format("[Node Builder Error] :: {} [{} , {}]" , msg , line , col)) {}
+                : msg(fmt::format(fmt::runtime("[Node Builder Error] :: {} [{} , {}]") , msg , line , col)) {}
             ~node_builder_exception() {}
 
             const char* what() const noexcept override { return msg.c_str(); }
@@ -37,10 +38,11 @@ namespace YS {
 
     enum class PropertyType {
         AUTHOR , VERSION , DESCRIPTION , RESOURCES , PATH , // project properties
-            MIN_SCALE , CLEAR_COLOR , FLAGS , COLOR_BITS , STENCIL_SIZE ,
+        TITLE , MIN_SCALE , CLEAR_COLOR , FLAGS , COLOR_BITS , STENCIL_SIZE ,
             MULTISAMPLE_BUFFERS , MULTISAMPLE_SAMPLES , FULLSCREEN , VSYNC , RENDERING_TO_SCREEN , 
-            ACCELERATED_VISUAL , 
-        POSITION , SCALE , ROTATION , // transform properties
+            ACCELERATED_VISUAL , // window properties
+        SHADERS , TEXTURES , MODELS , // resourceproperties
+            POSITION , SCALE , ROTATION , // transform properties
         MESH , TEXTURE , SHADER , MODEL , // renderable properties
         COLOR , AMBIENT , DIFFUSE , SPECULAR , CONSTANT , LINEAR , QUADRATIC , // light properties
         FRONT , UP , RIGHT , WORLD_UP , EULER_ANGLES , 
@@ -56,6 +58,8 @@ namespace YS {
     enum class NodeType {
         PROJECT , 
         WINDOW ,
+        RESOURCES ,
+        SCENES ,
         SCENE ,
         ENTITY ,
         TRANSFORM ,
@@ -73,6 +77,7 @@ namespace YS {
         LiteralType type;
         union {
             bool boolean;
+            int integer;
             float floating_point;
             std::string* string;
         } value;
@@ -85,31 +90,28 @@ namespace YS {
 
     struct RawProjectMetadata {
         std::string project_name = "";
+        std::string window_title = "";
         std::vector<Property> properties = {};
+        std::vector<Property> window_properties = {};
+        std::vector<Property> resource_properties = {};
+        std::vector<Literal> scene_list = {};
     };
 
+    struct Node;
+    
+    using NodePtr = std::unique_ptr<Node>;
+
     struct Node {
-        Node* parent = nullptr;
+        NodePtr* parent = nullptr;
         NodeType type = NodeType::INVALID;
 
         std::string id = "";
-        std::vector<Node*> children = {};
+
+        // the node will own its children
+        std::vector<NodePtr> children = {};
         std::vector<Property> properties = {};
-        // std::vector<std::unique_ptr<Function>> functions;
     };
 
-    class Environment {
-        Environment(Environment&&) = delete;
-        Environment(const Environment&) = delete;
-        Environment& operator=(Environment&&) = delete;
-        Environment& operator=(const Environment&) = delete;
- 
-        std::vector<Node*> nodes = {};
-
-        public:
-            Environment() {}
-            ~Environment() {}
-    };
 
 namespace util {
 
@@ -120,23 +122,32 @@ namespace util {
 
 } // namespace YS
 
-constexpr uint32_t kNumProjectProperties = 16;
+    constexpr uint32_t kNumProjectProperties = 16;
 
+namespace YS {
+
+    // forward declare the interpreter cause that file includes this one
+    class Interpreter;
+
+} // namespace YS
+
+    /// \todo refactor property parsing to reduce code repetition
     class NodeBuilder : public YScriptTreeWalker {
+        YS::Interpreter* interpreter = nullptr;
+        
         std::stack<YS::Literal> literal_stack;
         std::stack<YS::Property> property_stack;
         
-        std::stack<YS::Node*> node_stack;
-        std::vector<YS::Node*> nodes = {};
-
-        YS::Node* current_node = nullptr;
+        std::stack<YS::NodePtr*> node_stack;
+        std::vector<YS::NodePtr> nodes = {};
 
         YS::RawProjectMetadata project_metadata;
 
-        void PrintNode(YS::Node* node , uint32_t depth = 0) const;
-        void DeleteNode(YS::Node* node);
+        void PrintNode(const YS::NodePtr& node , uint32_t depth = 0) const;
 
         public:
+            NodeBuilder(YS::Interpreter* interpreter)
+                : interpreter(interpreter) {}
             virtual ~NodeBuilder();
             virtual void WalkLiteral(LiteralExpr& literal) override;
             virtual void WalkProperty(PropertyExpr& property) override;
@@ -151,6 +162,8 @@ constexpr uint32_t kNumProjectProperties = 16;
             virtual void WalkExpr(ExprStmnt& expr) override;
             virtual void WalkProject(ProjectMetadataStmnt& project) override;
             virtual void WalkWindow(WindowStmnt& window) override;
+            virtual void WalkResource(ResourceStmnt& resource) override;
+            virtual void WalkSceneList(SceneListStmnt& resource) override;
             virtual void WalkNodeDecl(NodeDeclStmnt& node_decl) override;
             virtual void WalkFunction(FunctionStmnt& function_decl) override;
             virtual void WalkVarDecl(VarDeclStmnt& var_decl) override;
@@ -159,9 +172,10 @@ constexpr uint32_t kNumProjectProperties = 16;
 
             void DumpNodes() const;
             inline const YS::RawProjectMetadata ProjectMetadata() const { return project_metadata; }
-            inline std::vector<YS::Node*> Nodes() const { return nodes; }
     };
 
-} // namespace YE
+    
+
+} // namespace EngineY
 
 #endif // !YE_YSCRIPT_NODE_BUILDER_HPP

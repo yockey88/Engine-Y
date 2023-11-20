@@ -1,5 +1,5 @@
-#ifndef YE_ENTITY_COMPONENTS_HPP
-#define YE_ENTITY_COMPONENTS_HPP
+#ifndef ENGINEY_ENTITY_COMPONENTS_HPP
+#define ENGINEY_ENTITY_COMPONENTS_HPP
 
 #include <string>
 #include <vector>
@@ -17,7 +17,7 @@
 #include "scripting/script_engine.hpp"
 #include "scripting/native_script_entity.hpp"
 
-namespace YE {
+namespace EngineY {
     
     static constexpr uint32_t kSizeOfTransformMat = 16;
 
@@ -332,7 +332,7 @@ namespace components {
 
             unbind_script = [](NativeScript* instance) {
                 if (instance->instance != nullptr) {
-                    ydelete instance->instance;
+                    delete instance->instance;
                     instance->instance = nullptr;
                 } else {
                     ENGINE_WARN("Attempted to destroy an unbound native entity script");
@@ -473,4 +473,4 @@ namespace components {
 
 }
 
-#endif // !YE_ENTITY_COMPONENTS_HPP
+#endif // !ENGINEY_ENTITY_COMPONENTS_HPP

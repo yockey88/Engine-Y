@@ -2,9 +2,10 @@
 
 #include <spdlog/fmt/fmt.h>
 
-#include "log.hpp"
+#include "core/log.hpp"
+#include "parsing/yscript/yscript_lexer.hpp"
 
-namespace YE {
+namespace EngineY {
 
     bool YScriptParser::Match(const std::vector<YScriptTokenType>& types , bool advance) {
         for (auto& type : types) {
@@ -23,8 +24,8 @@ namespace YE {
     
     bool YScriptParser::NodeType() {
         return Match({ 
-            YScriptTokenType::PROJECT , YScriptTokenType::WINDOW , YScriptTokenType::SCENE ,
-            YScriptTokenType::ENTITY ,
+            YScriptTokenType::PROJECT , YScriptTokenType::WINDOW , YScriptTokenType::RESOURCES , YScriptTokenType::SCENES ,
+            YScriptTokenType::SCENE , YScriptTokenType::ENTITY ,
             YScriptTokenType::TRANSFORM  ,
             YScriptTokenType::RENDERABLE , YScriptTokenType::TEXTURED_RENDERABLE , YScriptTokenType::RENDERABLE_MODEL ,
             YScriptTokenType::POINT_LIGHT ,
@@ -42,8 +43,9 @@ namespace YE {
                 YScriptTokenType::MULTISAMPLE_BUFFERS , YScriptTokenType::MULTISAMPLE_SAMPLES , 
                 YScriptTokenType::FULLSCREEN , YScriptTokenType::VSYNC , YScriptTokenType::RENDERING_TO_SCREEN ,
                 YScriptTokenType::ACCELERATED_VISUAL ,
+            YScriptTokenType::SHADERS , YScriptTokenType::TEXTURES , YScriptTokenType::MODELS ,
             YScriptTokenType::NAME , YScriptTokenType::AUTHOR , 
-            YScriptTokenType::VERSION , YScriptTokenType::DESCRIPTION , YScriptTokenType::RESOURCES ,
+            YScriptTokenType::VERSION , YScriptTokenType::DESCRIPTION , 
             YScriptTokenType::PATH ,
             YScriptTokenType::POSITION , YScriptTokenType::ROTATION , YScriptTokenType::SCALE ,
             YScriptTokenType::MESH , YScriptTokenType::SHADER , YScriptTokenType::TEXTURE , YScriptTokenType::MODEL ,
@@ -59,8 +61,7 @@ namespace YE {
     }
     
     bool YScriptParser::VerifyNamelessNode(YScriptTokenType type) {
-        return (type == YScriptTokenType::WINDOW              || 
-                type == YScriptTokenType::TRANSFORM           || type == YScriptTokenType::RENDERABLE   || 
+        return (type == YScriptTokenType::TRANSFORM           || type == YScriptTokenType::RENDERABLE   || 
                 type == YScriptTokenType::TEXTURED_RENDERABLE || type == YScriptTokenType::POINT_LIGHT  ||
                 type == YScriptTokenType::RENDERABLE_MODEL    || type == YScriptTokenType::SCRIPT       || 
                 type == YScriptTokenType::PHYSICS_BODY        || type == YScriptTokenType::BOX_COLLIDER ||
@@ -82,6 +83,8 @@ namespace YE {
         try {
             if (Match({ YScriptTokenType::PROJECT })) return ParseProjectMetadata();
             if (Match({ YScriptTokenType::WINDOW })) return ParseWindowDeclaration();
+            if (Match({ YScriptTokenType::RESOURCES })) return ParseResourcesDeclaration();
+            if (Match({ YScriptTokenType::SCENES })) return ParseSceneList();
             if (Match({ YScriptTokenType::NODE })) return ParseNodeDeclaration();
             if (Match({ YScriptTokenType::EXCLAMATION })) return ParseFunctionDeclaration("node-method");
             if (Match({ YScriptTokenType::FN })) return ParseFunctionDeclaration("function");
@@ -100,15 +103,13 @@ namespace YE {
         YScriptToken identifier;
         if (Match({ YScriptTokenType::IDENTIFIER }))
             identifier = Previous();
-        else if (Match({ YScriptTokenType::UNDERSCORE }))
-            identifier = YScriptToken(YScriptTokenType::EMPTY_VALUE , Previous().line , Previous().col , "");
+        else if (Match({ YScriptTokenType::STRING }))
+            identifier = Previous();
         else
             throw GetError("Expected project identifier or '$<>' to leave project anonymous");
         
         std::vector<std::unique_ptr<ASTExpr>> metadata{};
         if (Match({ YScriptTokenType::OPEN_BRACE })) {
-            
-
             while (!Check(YScriptTokenType::CLOSE_BRACE) && !IsAtEnd()) {
                 std::unique_ptr<ASTExpr> md = ParseExpression();
                 if (md != nullptr) metadata.push_back(std::move(md));
@@ -118,7 +119,7 @@ namespace YE {
             Consume(YScriptTokenType::CLOSE_BRACE , "Expected '}' to close project metadata block");
 
         } else if (!Match({ YScriptTokenType::SEMICOLON })) {
-            throw GetError("Expected project metadata block or ';' to close project metadata declaration");
+            throw GetError("Expected project metadata or ';' after project declaration");
         }
 
         return std::make_unique<ProjectMetadataStmnt>(identifier , metadata);
@@ -126,14 +127,14 @@ namespace YE {
 
     std::unique_ptr<ASTStmnt> YScriptParser::ParseWindowDeclaration() {
         YScriptToken identifier;
-        if (Match({ YScriptTokenType::IDENTIFIER })) {
+        if (Match({ YScriptTokenType::STRING })) {
+            identifier = Previous();
+        } else if (Match({ YScriptTokenType::IDENTIFIER })) {
             identifier = Previous();
         }
         
         std::vector<std::unique_ptr<ASTExpr>> description{};
         if (Match({ YScriptTokenType::OPEN_BRACE })) {
-            
-
             while (!Check(YScriptTokenType::CLOSE_BRACE) && !IsAtEnd()) {
                 std::unique_ptr<ASTExpr> md = ParseExpression();
                 if (md != nullptr) description.push_back(std::move(md));
@@ -143,10 +144,46 @@ namespace YE {
             Consume(YScriptTokenType::CLOSE_BRACE , "Expected '}' to close project metadata block");
 
         } else if (!Match({ YScriptTokenType::SEMICOLON })) {
-            throw GetError("Expected project metadata block or ';' to close project metadata declaration");
+            throw GetError("Expected window description or ';' after window declaration");
         }
 
         return std::make_unique<WindowStmnt>(identifier , description);
+    }
+
+    std::unique_ptr<ASTStmnt> YScriptParser::ParseResourcesDeclaration() {
+        std::vector<std::unique_ptr<ASTExpr>> resources{};
+        if (Match({ YScriptTokenType::OPEN_BRACE })) {
+            while (!Check(YScriptTokenType::CLOSE_BRACE) && !IsAtEnd()) {
+                std::unique_ptr<ASTExpr> md = ParseExpression();
+                if (md != nullptr) resources.push_back(std::move(md));
+                if (aborted) break;
+            }
+
+            Consume(YScriptTokenType::CLOSE_BRACE , "Expected '}' to close project metadata block");
+        } else if (!Match({ YScriptTokenType::SEMICOLON })) {
+            throw GetError("Expected resources description or ';' after resources declaration");
+        }
+
+        return std::make_unique<ResourceStmnt>(resources);
+    }
+
+    std::unique_ptr<ASTStmnt> YScriptParser::ParseSceneList() {
+        std::vector<std::unique_ptr<ASTExpr>> scenes{};
+        if (Match({ YScriptTokenType::OPEN_BRACE })) {
+            while (!Check(YScriptTokenType::CLOSE_BRACE) && !IsAtEnd()) {
+                std::unique_ptr<ASTExpr> expr = ParseUnary();
+                if (expr != nullptr) scenes.push_back(std::move(expr));
+                if (aborted) break;
+                if (Check(YScriptTokenType::COMMA))
+                    Advance();
+            }
+
+            Consume(YScriptTokenType::CLOSE_BRACE , "Expected '}' to close property value list");
+        } else if (!Match({ YScriptTokenType::SEMICOLON })) {
+            throw GetError("Expected resources description or ';' after resources declaration");
+        }
+
+        return std::make_unique<SceneListStmnt>(scenes); 
     }
     
     std::unique_ptr<ASTStmnt> YScriptParser::ParseNodeDeclaration() {
@@ -162,7 +199,7 @@ namespace YE {
         YScriptToken identifier;
         if (!Match({ YScriptTokenType::IDENTIFIER })) {
             if (!VerifyNamelessNode(type.type))
-                throw GetError(fmt::format("Node type {} requires identifier" , type.value));
+                throw GetError(fmt::format(fmt::runtime("Node type {} requires identifier") , type.value));
             Consume(YScriptTokenType::UNDERSCORE , "To leave nodes anonymouse use _ in place of identifier if node type allows it");
             identifier = YScriptToken(YScriptTokenType::EMPTY_VALUE , Previous().line , Previous().col , "");
         } else {
@@ -222,7 +259,7 @@ namespace YE {
         std::unique_ptr<ASTStmnt> body = ParseBlock();
 
         if (body == nullptr)
-            throw GetError(fmt::format("Expected {} body" , kind));
+            throw GetError(fmt::format(fmt::runtime("Expected {} body") , kind));
 
         return std::make_unique<FunctionStmnt>(node , id , arguments , body);   
     }
@@ -480,17 +517,16 @@ namespace YE {
     }
 
     std::unique_ptr<ASTExpr> YScriptParser::ParsePrimary() {
-        uint32_t line = Peek().line;
-        uint32_t col = Peek().col;
-
         if (PropertyType())
             return ParseProperty();
 
         if (Match({ 
             YScriptTokenType::TRUE_TKN , YScriptTokenType::FALSE_TKN , 
-            YScriptTokenType::FLOAT ,
+            YScriptTokenType::INTEGER , YScriptTokenType::FLOAT ,
             YScriptTokenType::STRING , YScriptTokenType::CHARACTER 
-        })) return std::make_unique<LiteralExpr>(Previous());
+        })) {
+            return std::make_unique<LiteralExpr>(Previous());
+        }
 
         if (Match({ YScriptTokenType::IDENTIFIER }))
             return std::make_unique<VarExpr>(Previous());
@@ -513,7 +549,8 @@ namespace YE {
 
         if (Match({ 
             YScriptTokenType::STRING , YScriptTokenType::CHARACTER , 
-            YScriptTokenType::FLOAT
+            YScriptTokenType::INTEGER , YScriptTokenType::FLOAT ,
+            YScriptTokenType::TRUE_TKN , YScriptTokenType::FALSE_TKN
         })) {
             values.emplace_back(std::make_unique<LiteralExpr>(Previous()));
         } else if (Match({ YScriptTokenType::IDENTIFIER })) {

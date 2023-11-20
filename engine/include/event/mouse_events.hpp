@@ -1,5 +1,5 @@
-#ifndef YE_MOUSE_EVENTS_HPP
-#define YE_MOUSE_EVENTS_HPP
+#ifndef ENGINEY_MOUSE_EVENTS_HPP
+#define ENGINEY_MOUSE_EVENTS_HPP
 
 #include <sstream>
 
@@ -8,7 +8,7 @@
 #include "events.hpp"
 #include "input/mouse.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class MouseMoved : public Event {
         glm::vec2 position;

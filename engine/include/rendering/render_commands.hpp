@@ -1,5 +1,5 @@
-#ifndef YE_RENDER_COMMANDS_HPP
-#define YE_RENDER_COMMANDS_HPP
+#ifndef ENGINEY_RENDER_COMMANDS_HPP
+#define ENGINEY_RENDER_COMMANDS_HPP
 
 #include <memory>
 #include <vector>
@@ -9,7 +9,7 @@
 
 #include "core/resource_handler.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class Font;
     class VertexArray;
@@ -17,6 +17,9 @@ namespace YE {
     class Texture;
     class Model;
     class Camera;
+    ///> Dont want to have pushing framebuffers as a render command
+    ///     I think there is a more sophisticated way to handle them
+    // class Framebuffer;
 
 namespace components {
     
@@ -129,4 +132,4 @@ namespace components {
 
 }
 
-#endif // !YE_RENDER_COMMAND_HPP
+#endif // !ENGINEY_RENDER_COMMAND_HPP

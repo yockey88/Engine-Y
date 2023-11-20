@@ -19,22 +19,13 @@ if globals.IsWindows():
     VS_BUILD_PATH = os.environ["VS_BUILD_PATH"][8:-1]
     VS_BUILD_PATH = "C:\\\\" + VS_BUILD_PATH
     ret = subprocess.call(
-        ["cmd.exe" , "/c" , VS_BUILD_PATH , "engine.sln" , "/property:Configuration={}".format(CONFIG)]
+        [
+            "cmd.exe" , "/c" , VS_BUILD_PATH , 
+            "EngineY.sln" , "/property:Configuration={}".format(CONFIG)
+        ]
     )
     if (ret != 0):
         sys.exit(ret)
-    
-    ret = subprocess.call(
-        ["cmd.exe" , "/c" , VS_BUILD_PATH , "launcher\\launcher.sln" , "/property:Configuration={}".format(CONFIG)]
-    )
-    if (ret != 0):
-        sys.exit(ret)
-   
-    ret = subprocess.call(
-        ["cmd.exe" , "/c" , VS_BUILD_PATH , "editor\\editor.sln" , "/property:Configuration={}".format(CONFIG)]
-    )
-    if (ret != 0):
-        sys.exit(ret)  
 
 if globals.IsLinux():
     ret = subprocess.call(["make" , "config={}".format(CONFIG)])

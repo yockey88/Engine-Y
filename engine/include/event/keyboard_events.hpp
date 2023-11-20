@@ -1,10 +1,10 @@
-#ifndef YE_KEYBOARD_EVENTS_HPP
-#define YE_KEYBOARD_EVENTS_HPP
+#ifndef ENGINEY_KEYBOARD_EVENTS_HPP
+#define ENGINEY_KEYBOARD_EVENTS_HPP
 
 #include "events.hpp"
 #include "input/keyboard.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class KeyEvent : public Event {
         protected:

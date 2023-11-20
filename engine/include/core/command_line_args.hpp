@@ -7,19 +7,18 @@
 #include <map>
 #include <array>
 
-namespace YE {
+namespace EngineY {
 
-    static constexpr uint32_t kNumShortFlags = 9;
+    static constexpr uint32_t kNumShortFlags = 5;
     static constexpr std::array<std::string_view , kNumShortFlags> kShortFlags = {
-        "-n" , "-f" , "-p" , "-wd" , "-md" , "-pb" , "-mcp" , "-er" , "-fl"
+        "-n" , "-f" , "-p" , "-mp" , "-e"
     };
 
 
-    static constexpr uint32_t kNumValidFlags = 18;
+    static constexpr uint32_t kNumValidFlags = kNumShortFlags * 2;
     static constexpr std::array<std::string_view , kNumValidFlags> kValidFlags = {
-        "-n"   , "--project-name"      , "-f"   , "--project-file"      , "-p"   , "--project-path" , 
-        "-wd"  , "--working-directory" , "-md"  , "--modules-directory" , "-pb"  , "--project-bin"  , 
-        "-mcp" , "--mono-config-path"  , "-er"  , "--engine-root"       , "-fl"  , "--from-launcher"
+        "-n"   , "--project-name" , "-f"   , "--project-file" , "-p"   , "--project-path"  , 
+        "-mp"  , "--modules-path" , "-e"   , "--in-editor"
     };
 
     
@@ -27,13 +26,9 @@ namespace YE {
         PROJECT_NAME ,
         PROJECT_FILE , 
         PROJECT_PATH ,
-        WORKING_DIR  ,
-        MODULES_DIR  ,
-        PROJECT_BIN  ,
-        MONO_CONFIG_PATH ,
-        ENGINE_ROOT ,
-        FROM_LAUNCHER ,
-        INVALID 
+        MODULES_PATH  ,
+        IN_EDITOR , 
+        INVALID // Number of flags
     };
 
     struct Argument {
@@ -45,17 +40,19 @@ namespace YE {
         std::string exe_path;
         std::map<std::string , Argument> args;
 
+        bool args_valid = false;
+
         bool FlagValid(const std::string& flag) const;
         bool FlagRequiresValue(const std::string& flag) const;
         bool ValidateArgs() const;
         std::string ShortenArg(const std::string& arg) const;
 
         public:
-            CmndLineHandler() {}
+            CmndLineHandler(int argc , char* argv[]);
             ~CmndLineHandler() {}
 
             const void DumpArgs() const;
-            bool Parse(int argc , char* argv[]);
+            bool ArgsValid() const;
             const bool FlagExists(const std::string& flag) const;
             const bool FlagExists(CmndLineFlag flag) const;
             const std::string RetrieveValue(const std::string& flag);
@@ -64,6 +61,6 @@ namespace YE {
             const Argument RetrieveArgument(CmndLineFlag flag);
     };
 
-}
+} // EngineY
 
-#endif // !YE_COMMAND_LINE_ARGS_HPP
+#endif // !ENGINEY_COMMAND_LINE_ARGS_HPP

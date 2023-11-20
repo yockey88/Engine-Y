@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace YE {
+namespace EngineY {
     
     [StructLayout(LayoutKind.Explicit)]
     public struct Mat4 {

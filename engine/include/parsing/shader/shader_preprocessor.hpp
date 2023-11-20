@@ -1,5 +1,5 @@
-#ifndef YE_SHADER_PREPROCESSOR_HPP
-#define YE_SHADER_PREPROCESSOR_HPP
+#ifndef ENGINEY_SHADER_PREPROCESSOR_HPP
+#define ENGINEY_SHADER_PREPROCESSOR_HPP
 
 #include <string>
 #include <vector>
@@ -8,7 +8,7 @@
 
 #include "shader_lexer.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class glsl_preprocessor_error : public std::exception {
         std::string msg;

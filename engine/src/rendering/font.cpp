@@ -4,12 +4,13 @@
 #include <msdf-atlas-gen/ImmediateAtlasGenerator.h>
 #include <msdf-atlas-gen/BitmapAtlasStorage.h>
 
-#include "log.hpp"
 #include "core/defines.hpp"
+#include "core/log.hpp"
 #include "core/resource_handler.hpp"
+#include "core/memory/memory_manager.hpp"
 #include "rendering/texture.hpp"
 
-namespace YE {
+namespace EngineY {
     
     template <typename T , typename S , int N , msdf_atlas::GeneratorFunction<S , N> G>  
     Texture* CreateAtlasTexture(
@@ -30,10 +31,13 @@ namespace YE {
 
         msdfgen::BitmapConstRef<T , N> atlas = (msdfgen::BitmapConstRef<T , N>)generator.atlasStorage();        
 
-        return ynew Texture(
-            { atlas.width , atlas.height } , 
+        Texture* texture = ynew(
+            Texture , 
+            glm::ivec2{ atlas.width , atlas.height } , 
             (void*)atlas.pixels
         );
+
+        return texture;
     }
     
     bool Font::Load(bool expensive_coloring) {

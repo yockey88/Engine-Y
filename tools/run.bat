@@ -1,2 +1,3 @@
 @echo off
-.\bin\%1\%2\%2.exe
+for /f "tokens=1,* delims= " %%a in ("%*") do set ALL_BUT_FIRST=%%b
+.\bin\%1\%2\%ALL_BUT_FIRST%

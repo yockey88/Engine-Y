@@ -1,21 +1,22 @@
-#ifndef YE_ENGINE_HPP
-#define YE_ENGINE_HPP
+#ifndef ENGINEY_ENGINE_HPP
+#define ENGINEY_ENGINE_HPP
 
 #include <iostream>
 #include <memory>
 #include <queue>
 #include <filesystem>
 
-#include "log.hpp"
-#include "core/app.hpp"
+#include "core/log.hpp"
+#include "application/app.hpp"
+#include "application/application_config.hpp"
 #include "core/timer.hpp"
 #include "core/defines.hpp"
 #include "core/UUID.hpp"
 #include "core/command_line_args.hpp"
-namespace YE {
+
+namespace EngineY {
 
     class Logger;
-    class ProjectManager;
     class ScriptEngine;
     class PhysicsEngine;
     class Renderer;
@@ -32,65 +33,60 @@ namespace YE {
     };
 
     class Engine {
-        static Engine* singleton;
         
         EngineStats* stats = nullptr;
 
         Logger* logger = nullptr;
-        ProjectManager* project_manager = nullptr;
         ScriptEngine* script_engine = nullptr;
         PhysicsEngine* physics_engine = nullptr;
-        Renderer* renderer = nullptr;
         TaskManager* task_manager = nullptr;
         EventManager* event_manager = nullptr;
         ResourceHandler* resource_handler = nullptr;
         SceneManager* scene_manager = nullptr;
 
-        CmndLineHandler cmnd_line_handler;
-
-        time::DeltaTime delta_time;
+        Renderer* renderer = nullptr;
         time::FrameRateEnforcer<kTargetFps> frame_rate;
+        time::DeltaTime delta_time;
 
+        CreateAppFunc create_app_func = nullptr;
         App* app = nullptr;
-        EngineConfig app_config;
+        ApplicationConfig app_config;
         std::string project_file_src;
 
+
+        std::condition_variable render_ready_cv;
+        bool render_ready = false;
+
         UUID32 root_window_id{ 0 };
+
+        bool app_registered = false;
+        bool initialized = false;
 
         bool app_loaded = false;
         bool running = false;
 
         bool ValidateConfiguration();
-        void InitializeSubSytems();
-        void Update(float dt);
         void HandleShutdownEvent();
-
-        Engine();
-        ~Engine();
         
-        Engine(Engine&&) = delete;
-        Engine(const Engine&) = delete;
-        Engine& operator=(Engine&&) = delete;
-        Engine& operator=(const Engine&) = delete;
+        void RegisterApplication();
+        void Initialize();
+        void Run();
+        void Shutdown();
 
         public:
+            Engine() {}
+            ~Engine() {}
 
-            static Engine* Instance();
-
-            bool CmndLine(int argc , char* argv[]);
-            void RegisterApplication(App* app);
-            void Initialize();
-            void Run();
-            void Shutdown();
+            void CoreInitialize(CreateAppFunc func);
+            uint32_t Main(int argc , char* argv[]);
 
             inline EngineStats* GetStats() const { return stats; }
             inline float TargetTimeStep() const { return frame_rate.TimeStep(); }
             inline const bool AppLoaded() const { return app_loaded; }
-            inline CmndLineHandler& CmndLineHandler() { return cmnd_line_handler; }
     };
 
 }
     
-extern YE::App* CreateApp();
+extern  EngineY::App* CreateApp();
 
 #endif // !YE_ENGINE_HPP

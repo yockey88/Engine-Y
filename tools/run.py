@@ -16,7 +16,17 @@ ret = 0
 
 if globals.IsWindows():
     print("Running: {}\\run.bat {} {}".format(globals.TOOLS_DIR , config , project))
-    ret = subprocess.call(["cmd.exe" , "/c" , "{}\\run.bat".format(globals.TOOLS_DIR) , config , project] , cwd=os.getcwd())
+    ret = subprocess.call(
+        [
+            "cmd.exe" , "/c" , "{}\\run.bat".format(globals.TOOLS_DIR) , 
+            config , project ,
+            "--project-name" , "editor" ,
+            "--project-path" , "./editor" ,
+            "--modules-path" , "bin/Debug/editor/editor_modules.dll" ,
+            "--project-file" , "editor/editor.yproj"
+        ] , 
+        cwd=os.getcwd()
+    )
 else:
     ret = subprocess.call(["{}".format(exepath)] , cwd=exepath)
 

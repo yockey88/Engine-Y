@@ -1,12 +1,12 @@
-#ifndef YE_GLSL_AST_HPP
-#define YE_GLSL_AST_HPP
+#ifndef ENGINEY_GLSL_AST_HPP
+#define ENGINEY_GLSL_AST_HPP
 
 #include <memory>
 #include <vector>
 
 #include "shader_lexer.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class GlslAstNode;
     class GlslExpr;

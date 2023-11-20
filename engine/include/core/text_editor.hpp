@@ -1,5 +1,5 @@
-#ifndef YE_TEXT_EDITOR_HPP
-#define YE_TEXT_EDITOR_HPP
+#ifndef ENGINEY_TEXT_EDITOR_HPP
+#define ENGINEY_TEXT_EDITOR_HPP
 
 #include <memory>
 #include <string>
@@ -11,7 +11,7 @@
 #include <config_app.h>
 #include <zep/imgui/console_imgui.h>
 
-namespace YE {
+namespace EngineY {
 
     struct ZepWrapper : public Zep::IZepComponent {
         Zep::ZepEditor_ImGui editor;

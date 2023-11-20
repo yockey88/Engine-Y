@@ -15,11 +15,11 @@ project "implot"
     }
 
     externalincludedirs {
-        "../imgui-docking"
+        "../imgui"
     }
 
     libdirs {
-        "../imgui-docking/bin/%{cfg.buildcfg}/imgui"
+        "../imgui/bin/%{cfg.buildcfg}/imgui"
     }
 
     links {

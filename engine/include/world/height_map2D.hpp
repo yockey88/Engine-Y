@@ -1,12 +1,12 @@
-#ifndef YE_HEIGHT_MAP_HPP
-#define YE_HEIGHT_MAP_HPP
+#ifndef ENGINEY_HEIGHT_MAP_HPP
+#define ENGINEY_HEIGHT_MAP_HPP
 
 #include <glm/glm.hpp>
 
 #include "noise2D.hpp"
 #include "rendering/texture.hpp"
 
-namespace YE {
+namespace EngineY {
 
     struct GeneratorArgs;
 
@@ -15,12 +15,12 @@ namespace YE {
 // for editing final color of height map if choosing colors based on height
 typedef void(*ColorEditor)(glm::vec3& rgb , float nosie_val);
 
-namespace YE {
+namespace EngineY {
 
     class HeightMap2D {
         NoiseGenerator noise_generator = nullptr;
         ColorEditor color_editor = nullptr;
-        YE::ChannelType channel_type;
+         EngineY::ChannelType channel_type;
             
         glm::ivec2  dimensions;
 
@@ -40,7 +40,7 @@ namespace YE {
         void DestroyHeightMap();
 
         public:
-            HeightMap2D(const glm::ivec2& dimensions, YE::ChannelType type = YE::ChannelType::RGBA)
+            HeightMap2D(const glm::ivec2& dimensions,  EngineY::ChannelType type =  EngineY::ChannelType::RGBA)
                 : dimensions(dimensions) , channel_type(type) {}
             ~HeightMap2D();
 

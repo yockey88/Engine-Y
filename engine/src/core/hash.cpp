@@ -1,6 +1,6 @@
 #include "core/hash.hpp"
 
-namespace YE {
+namespace EngineY {
 
 namespace Hash {
     

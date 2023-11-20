@@ -1,19 +1,20 @@
-#ifndef YE_LOGGER_HPP
-#define YE_LOGGER_HPP
+#ifndef ENGINEY_LOGGER_HPP
+#define ENGINEY_LOGGER_HPP
 
-#include <mutex>
+#include <string>
+#include <string_view>
 
 #include <spdlog/spdlog.h>
+#include <spdlog/common.h>
 #include <spdlog/pattern_formatter.h>
-
-#include "defines.hpp"
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 
-#define YE_LOG_PATH "logs/ye.log"
-#define ENGINE_LOGGER_NAME "EngineYLogger"
-#define ENGINE_CONSOLE_NAME "EngineYConsole"
+#define ENGINE_CONSOLE_NAME "EngineY-Console"
+#define ENGINE_FILE_NAME "EngineY-LogFile"
+#define ENGINE_LOGGER_NAME "EngineY-Logger"
+
+#define ENGINE_DEFAULT_LOG_PATH "logs/EngineY-LogFile.log"
 
 /**
  * Operator overloads for printing glm types
@@ -33,51 +34,74 @@ inline OStream& operator<<(OStream& os, glm::qua<T, Q> quaternion) {
     return os << glm::to_string(quaternion);
 }
 
-namespace YE {
-
-    enum class LogLevel {
-        TRACE = spdlog::level::trace ,
-        DEBUG = spdlog::level::debug ,
-        INFO = spdlog::level::info , 
-        WARN = spdlog::level::warn , 
-        ERR = spdlog::level::err ,
-    };
-
-    enum class Target {
-        FILE , 
-        CONSOLE ,
-        BOTH
-    };    
+namespace EngineY {
 
     class Logger {
+        public:
+            using spdlog_level = spdlog::level::level_enum;
+            enum LogLevel {
+                TRACE = spdlog_level::trace ,
+                DEBUG = spdlog_level::debug ,
+                INFO = spdlog_level::info ,
+                WARN = spdlog_level::warn ,
+                ERR = spdlog_level::err ,
+                CRITICAL = spdlog_level::critical ,
+                OFF = spdlog_level::off ,
+                NUM_LOG_LEVELS
+            };
 
-        static Logger* singleton;
+            enum LogType {
+                CONSOLE ,
+                FILE ,
+                ALL_LOGS
+            };
 
-        std::shared_ptr<spdlog::logger> logger = nullptr;
-        std::shared_ptr<spdlog::logger> console_logger = nullptr;
+        private:
+            static Logger* singleton;
 
-        Logger() {}
-        ~Logger() {}
+            LogLevel logger_active_log_level = LogLevel::TRACE;
+            LogLevel console_active_log_level = LogLevel::TRACE;
 
-        Logger(Logger&&) = delete;
-        Logger(const Logger&) = delete;
-        Logger& operator=(Logger&&) = delete;
-        Logger& operator=(const Logger&) = delete;
+            std::shared_ptr<spdlog::logger> logger = nullptr;
+            std::shared_ptr<spdlog::logger> file_logger = nullptr;
+            std::shared_ptr<spdlog::logger> console_logger = nullptr;
+
+            /// \todo implement file handlers
+            void BeforeLogOpen(const std::string& filename) {}
+            void AfterLogOpen(const std::string& filename , std::FILE* file) {}
+            void BeforeLogClose(const std::string& filename , std::FILE* file) {}
+            void AfterLogClose(const std::string& filename) {}
+
+            void RealSendLog(
+                std::shared_ptr<spdlog::logger>& logger , LogLevel level , 
+                const std::string& msg
+            );
+
+            Logger();
+            ~Logger();
+
+            Logger (Logger&&) = delete;
+            Logger (const Logger&) = delete;
+            Logger& operator= (Logger&&) = delete;
+            Logger& operator= (const Logger&) = delete;
 
         public:
-
             static Logger* Instance();
 
-            void OpenLog();
-            void OpenConsole();
+            void SetLogLevel(LogLevel level , LogType type = ALL_LOGS);
 
-            void ChangeLogLevel(LogLevel level , Target target);
-            void DumpBacktrace();
+            void TurnOff(LogType type = ALL_LOGS);
 
-            void CloseLog();
+            void SendLog(
+                LogLevel level , LogType type , 
+                const std::string& function , const std::string& line ,
+                const std::string& msg
+            );
 
+            /// \brief sets to last active log level
+            void TurnOn();
     };
 
-}
+} // namespace EngineY
 
-#endif
+#endif // !ENGINEY_LOGGER_HPP

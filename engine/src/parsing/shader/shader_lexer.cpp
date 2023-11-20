@@ -1,9 +1,9 @@
 #include "parsing/shader/shader_lexer.hpp"
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "core/hash.hpp"
 
-namespace YE {
+namespace EngineY {
 
     /// for keywords view https://registry.khronos.org/OpenGL/specs/gl/GLSLangSpec.4.60.pdf
     void GlslLexer::InitKeywordMaps() {

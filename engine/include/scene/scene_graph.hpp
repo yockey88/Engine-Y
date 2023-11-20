@@ -1,11 +1,11 @@
-#ifndef YE_SCENE_GRAPH_HPP
-#define YE_SCENE_GRAPH_HPP
+#ifndef ENGINEY_SCENE_GRAPH_HPP
+#define ENGINEY_SCENE_GRAPH_HPP
 
 #include <vector>
 
 #include "scene/scene.hpp"
 
-namespace YE {
+namespace EngineY {
 
     struct SceneNode {
         Scene* scene = nullptr;

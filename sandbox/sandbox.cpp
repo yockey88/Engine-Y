@@ -3,16 +3,16 @@
 #include "editor_glue.hpp"
 #include "test_native_script.hpp"
 
-class Sandbox : public YE::App {
-    YE::TextEditor text_editor;
+class Sandbox : public  EngineY::App {
+     EngineY::TextEditor text_editor;
     bool editor_open = false;
 
     public:
         Sandbox() {}
         virtual ~Sandbox() override {}
 
-        virtual YE::EngineConfig GetEngineConfig() override {
-            YE::EngineConfig config;
+        virtual  EngineY::EngineConfig GetEngineConfig() override {
+             EngineY::EngineConfig config;
             config.window_config.title = "Engine Y";
             config.window_config.size.x = 1920;
             config.window_config.size.y = 1080;
@@ -26,19 +26,19 @@ class Sandbox : public YE::App {
 
         virtual void Initialize() override {
             EngineY::RegisterKeyPressCallback(
-                [&](YE::KeyPressed* event) -> bool {
-                    if (event->Key() == YE::Keyboard::Key::YE_ESCAPE && !editor_open)
-                        EngineY::DispatchEvent(ynew YE::ShutdownEvent);
-                    if (event->Key() == YE::Keyboard::Key::YE_F1) {
+                [&]( EngineY::KeyPressed* event) -> bool {
+                    if (event->Key() ==  EngineY::Keyboard::Key::YE_ESCAPE && !editor_open)
+                        EngineY::DispatchEvent(ynew(EngineY::ShutdownEvent , 0));
+                    if (event->Key() ==  EngineY::Keyboard::Key::YE_F1) {
                         if (editor_open) {
                             text_editor.Shutdown();
                             editor_open = false;
                         } else {
                             text_editor.Initialize(
-                                YE::Filesystem::GetCWD() ,
+                                 EngineY::Filesystem::GetCWD() ,
                                 Zep::NVec2f(1.f , 1.f)
                             );
-                            text_editor.LoadFile(YE::Filesystem::GetCWD() + "\\sandbox\\sandbox.yproj");
+                            text_editor.LoadFile( EngineY::Filesystem::GetCWD() + "\\sandbox\\sandbox.yproj");
                             editor_open = true;
                         }
                     }
@@ -65,6 +65,6 @@ class Sandbox : public YE::App {
         }
 };
 
-YE::App* CreateApp() {
+ EngineY::App* CreateApp() {
     return ynew Sandbox;
 }

@@ -1,12 +1,13 @@
-#ifndef YE_TASK_MANAGER_HPP
-#define YE_TASK_MANAGER_HPP
+#ifndef ENGINEY_TASK_MANAGER_HPP
+#define ENGINEY_TASK_MANAGER_HPP
 
 #include <queue>
 
-#include "tasks.hpp"
-#include "log.hpp"
+#include "core/tasks.hpp"
+#include "core/defines.hpp"
+#include "core/log.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class TaskManager {
 
@@ -28,9 +29,11 @@ namespace YE {
 
             void DispatchTask(BaseTask* task);
 
-        template<typename C , typename... Args>
+            // Update this so that when the task is detached it sends a message to 
+            //  the right place to alert them that the task is done
+            template<typename C , typename... Args>
             void DispatchTask(C&& callable , Args&&... args)  {
-                BaseTask* task = ynew Task(
+                BaseTask* task = new Task(
                     std::forward<C>(callable) , 
                     std::forward<Args>(args)...
                 );

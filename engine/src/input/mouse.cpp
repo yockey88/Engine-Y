@@ -2,13 +2,14 @@
 
 #include <memory>
 
-#include "core/window.hpp"
-#include "core/event_manager.hpp"
+#include "core/defines.hpp"
+#include "rendering/window.hpp"
+#include "event/event_manager.hpp"
 #include "event/events.hpp"
 #include "event/mouse_events.hpp"
 #include "rendering/renderer.hpp"
 
-namespace YE {
+namespace EngineY {
 
     Mouse::MouseState Mouse::state{};
     std::map<Mouse::Button , Mouse::ButtonState> Mouse::buttons{};
@@ -41,7 +42,7 @@ namespace YE {
                 buttons[static_cast<Button>(b)].current_state = State::RELEASED;
                 buttons[static_cast<Button>(b)].frames_held = 0;
 
-                event_manager->DispatchEvent(new MouseButtonReleased(static_cast<Button>(b)));
+                event_manager->DispatchEvent(ynew(MouseButtonReleased , static_cast<Button>(b)));
                 continue;
             }
             
@@ -49,7 +50,7 @@ namespace YE {
                 buttons[static_cast<Button>(b)].current_state = State::PRESSED;
                 ++buttons[static_cast<Button>(b)].frames_held;
 
-                event_manager->DispatchEvent(new MouseButtonPressed(static_cast<Button>(b)));
+                event_manager->DispatchEvent(ynew(MouseButtonPressed , static_cast<Button>(b)));
                 continue;
             }
             
@@ -76,7 +77,7 @@ namespace YE {
             if (curr_state & SDL_BUTTON(b) && buttons[static_cast<Button>(b)].current_state == State::HELD) {
                 ++buttons[static_cast<Button>(b)].frames_held;
 
-                event_manager->DispatchEvent(new MouseButtonHeld(static_cast<Button>(b)));
+                event_manager->DispatchEvent(ynew(MouseButtonHeld , static_cast<Button>(b)));
                 continue;
             }
         }

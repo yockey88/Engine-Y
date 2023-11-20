@@ -7,11 +7,11 @@
 #include <imguizmo/ImGuizmo.h>
 #include <implot/implot.h>
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "engine.hpp"
 #include "core/filesystem.hpp"
 
-namespace YE {
+namespace EngineY {
     
     void Gui::Initialize(Window* window) {
         IMGUI_CHECKVERSION();

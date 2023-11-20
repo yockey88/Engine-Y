@@ -1,10 +1,10 @@
-#ifndef YE_SCENE_EVENTS_HPP
-#define YE_SCENE_EVENTS_HPP
+#ifndef ENGINEY_SCENE_EVENTS_HPP
+#define ENGINEY_SCENE_EVENTS_HPP
 
 #include "events.hpp"
 #include "scene/scene.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class SceneEvent : public Event {
         protected:

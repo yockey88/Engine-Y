@@ -1,19 +1,19 @@
-#ifndef YE_SCRIPT_UTILS_HPP
-#define YE_SCRIPT_UTILS_HPP
+#ifndef ENGINEY_SCRIPT_UTILS_HPP
+#define ENGINEY_SCRIPT_UTILS_HPP
 
 #include <vector>
 #include <string>
 
 #include <mono/metadata/metadata.h>
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "core/UUID.hpp"
 #include "garbage_collector.hpp"
 
 #define CHECK_MONO_EXCEPTION(exc)                                                                        \
     if (exc != nullptr) {                                                                                \
         ENGINE_ERROR("Exception thrown by mono [{0} | {1}::{2}]" , __FILE__ , __FUNCTION__ , __LINE__);      \
-        YE_CRITICAL_ASSERTION(                                                                           \
+        ENGINE_ASSERT(                                                                           \
             false , "Exception message: {0}" , mono_string_to_utf8(mono_object_to_string(exc , nullptr)) \
         );                                                                                               \
     }
@@ -26,7 +26,7 @@
         unsigned int error_code = mono_error_get_error_code(&error);                            \
         const char* error_name = mono_error_get_error_name(&error);                             \
         ENGINE_ERROR("Error code: {0} | Error name: {1}" , error_code , error_name);                \
-        YE_CRITICAL_ASSERTION(                                                                  \
+        ENGINE_ASSERT(                                                                  \
             false , "Error message: {0}" , mono_error_get_message(error)                        \
         );                                                                                      \
     }
@@ -38,7 +38,7 @@ typedef void* MethodHandle;
 typedef void* FieldHandle;
 typedef void* PropertyHandle;
 
-namespace YE {
+namespace EngineY {
 
     enum class FieldAccess {
         NONE = -1 ,

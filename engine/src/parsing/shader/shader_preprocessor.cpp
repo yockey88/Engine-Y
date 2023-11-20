@@ -2,10 +2,10 @@
 
 #include <filesystem>
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "core/filesystem.hpp"
 
-namespace YE {
+namespace EngineY {
 
     glsl_preprocessor_error GlslPreprocessor::GetError(const std::string& msg) const {
         return glsl_preprocessor_error(tokens[index].line , tokens[index].column , msg);

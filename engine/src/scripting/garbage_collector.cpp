@@ -6,10 +6,11 @@
 #include <mono/metadata/mono-gc.h>
 #include <mono/metadata/profiler.h>
 
-#include "log.hpp"
+#include "core/defines.hpp"
+#include "core/log.hpp"
 #include "core/defines.hpp"
 
-namespace YE {
+namespace EngineY {
 
     typedef std::unordered_map<GCHandle , MonoObject*> RefMap;
 
@@ -21,8 +22,8 @@ namespace YE {
     static GCState* gc_state = nullptr;
 
     void ScriptGC::Initialize() {
-        YE_CRITICAL_ASSERTION(gc_state == nullptr , "ScriptGC already initialized");
-        gc_state = ynew GCState();
+        ENGINE_ASSERT(gc_state == nullptr , "ScriptGC already initialized");
+        gc_state = ynew(GCState);
     }
     
     void ScriptGC::Shutdown() {
@@ -48,7 +49,7 @@ namespace YE {
         mono_gc_collect(mono_gc_max_generation());
         while (mono_gc_pending_finalizers() > 0);
 
-        ydelete gc_state;
+        ydelete(gc_state);
         gc_state = nullptr;
     }
 
@@ -64,14 +65,14 @@ namespace YE {
             mono_gchandle_new_weakref_v2(object , weak_ref) :
             mono_gchandle_new_v2(object , weak_ref);
 
-        YE_CRITICAL_ASSERTION(handle != 0 , "Failed to create GCHandle");
+        ENGINE_ASSERT(handle != 0 , "Failed to create GCHandle");
 
         if (track) {
             if (weak_ref) {
-                YE_CRITICAL_ASSERTION(gc_state->weak_refs.find(handle) == gc_state->weak_refs.end() , "GCHandle already tracked");
+                ENGINE_ASSERT(gc_state->weak_refs.find(handle) == gc_state->weak_refs.end() , "GCHandle already tracked");
                 gc_state->weak_refs[handle] = object;
             } else {
-                YE_CRITICAL_ASSERTION(gc_state->strong_refs.find(handle) == gc_state->strong_refs.end() , "GCHandle already tracked");
+                ENGINE_ASSERT(gc_state->strong_refs.find(handle) == gc_state->strong_refs.end() , "GCHandle already tracked");
                 gc_state->strong_refs[handle] = object;
             }
         }
@@ -102,7 +103,7 @@ namespace YE {
     }
 
     void ScriptGC::FreeHandle(GCHandle handle) {
-        YE_CRITICAL_ASSERTION(handle != nullptr , "GCHandle is null");
+        ENGINE_ASSERT(handle != nullptr , "GCHandle is null");
 
         // uint32_t ghandle = mono_object_get_(handle);
         if (mono_gchandle_get_target_v2(handle) != nullptr) {

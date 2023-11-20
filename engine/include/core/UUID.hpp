@@ -1,10 +1,10 @@
-#ifndef YE_UUID_HPP
-#define YE_UUID_HPP
+#ifndef ENGINEY_UUID_HPP
+#define ENGINEY_UUID_HPP
 
 #include "hash.hpp"
 #include "RNG.hpp"
 
-namespace YE {
+namespace EngineY {
 
     static RNG::RngEngineU32 k32Rng;
     static RNG::RngEngineU64 k64Rng;
@@ -78,39 +78,39 @@ namespace YE {
 }
 
 template<typename stream>
-inline stream& operator<<(stream& strm , YE::UUID32& uuid) {
+inline stream& operator<<(stream& strm ,  EngineY::UUID32& uuid) {
     return strm << uuid.uuid;
 }
 
 template<typename stream>
-inline stream& operator<<(stream& strm , YE::UUID& uuid) {
+inline stream& operator<<(stream& strm ,  EngineY::UUID& uuid) {
     return strm << uuid.uuid;
 }
 
 template<>
-struct std::hash<YE::UUID32> {
-    std::size_t operator()(const YE::UUID32& uuid) const {
-        return YE::Hash::CRC32(&uuid, sizeof(YE::UUID32));
+struct std::hash< EngineY::UUID32> {
+    std::size_t operator()(const  EngineY::UUID32& uuid) const {
+        return  EngineY::Hash::CRC32(&uuid, sizeof( EngineY::UUID32));
     }
 };
 
 template<>
-struct std::less<YE::UUID32> {
-    bool operator()(const YE::UUID32& lhs , const YE::UUID32& rhs) const {
+struct std::less< EngineY::UUID32> {
+    bool operator()(const  EngineY::UUID32& lhs , const  EngineY::UUID32& rhs) const {
         return lhs.uuid < rhs.uuid;
     }
 };
 
 template<>
-struct std::hash<YE::UUID> {
-    std::size_t operator()(const YE::UUID& uuid) const {
-        return YE::Hash::CRC32(&uuid, sizeof(YE::UUID));
+struct std::hash< EngineY::UUID> {
+    std::size_t operator()(const  EngineY::UUID& uuid) const {
+        return  EngineY::Hash::CRC32(&uuid, sizeof( EngineY::UUID));
     }
 };
 
 template<>
-struct std::less<YE::UUID> {
-    bool operator()(const YE::UUID& lhs , const YE::UUID& rhs) const {
+struct std::less< EngineY::UUID> {
+    bool operator()(const  EngineY::UUID& lhs , const  EngineY::UUID& rhs) const {
         return lhs.uuid < rhs.uuid;
     }
 };

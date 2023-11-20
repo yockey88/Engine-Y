@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace YE {
+namespace EngineY {
     public class Entity : IEquatable<Entity> {
 
         private Entity parent;

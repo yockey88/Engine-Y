@@ -1,13 +1,14 @@
 #include "rendering/vertex_array.hpp"
 
 #include <vector>
+#include <stacktrace>
 
 #include <glm/glm.hpp>
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "rendering/gl_error_helper.hpp"
 
-namespace YE {
+namespace EngineY {
 
     void VertexArray::Generate() {
         glGenVertexArrays(1, &VAO);
@@ -115,7 +116,6 @@ namespace YE {
 
         Bind();
         BufferData(VBO , size , nullptr);
-
     }
 
     VertexArray::VertexArray(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) 

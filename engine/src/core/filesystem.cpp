@@ -5,27 +5,24 @@
 #include <fstream>
 #include <sstream>
 
-#include "log.hpp"
+#include "core/log.hpp"
 
-namespace YE {
+namespace EngineY {
     std::string Filesystem::build_config = "";
-    std::string Filesystem::script_engine_mono_path = "";
-    std::string Filesystem::script_engine_mono_config_path = "";
+    std::string Filesystem::script_engine_mono_path = "external";
+    std::string Filesystem::script_engine_mono_config_path = "external"; 
     
     std::string Filesystem::internal_modules_path = ""; 
     std::string Filesystem::project_modules_path = "";
 
-    std::string Filesystem::engine_root = "";
-    std::string Filesystem::engine_code_dir = "";
-    std::string Filesystem::engine_respath = "";
-    std::string Filesystem::engine_modulepath = "";
-    std::string Filesystem::engine_shaderpath = "";
-    std::string Filesystem::engine_texturepath = "";
-    std::string Filesystem::engine_modelpath = "";
-    std::string Filesystem::gui_ini_path = "";
+    std::string Filesystem::engine_respath = "engine/resources";
+    std::string Filesystem::engine_modulepath = "modules";
+    std::string Filesystem::engine_shaderpath = "engine/resources/shaders";
+    std::string Filesystem::engine_texturepath = "engine/resources/textures";
+    std::string Filesystem::engine_modelpath = "engine/resources/models";
+    std::string Filesystem::gui_ini_path = "engine/imgui.ini";
     
     std::string Filesystem::project_directory = ""; 
-    std::string Filesystem::project_code_dir = "";
     std::string Filesystem::project_bin = "";
     std::string Filesystem::respath = "";
     std::string Filesystem::modulepath = "";
@@ -34,40 +31,30 @@ namespace YE {
     std::string Filesystem::texturepath = "";
     std::string Filesystem::modelpath = "";
 
-    void Filesystem::Initialize(const EngineConfig& config) {
-#ifdef YE_DEBUG_BUILD
+    void Filesystem::Initialize(const ApplicationConfig& config) {
+#ifdef ENGINEY_DEBUG
         build_config = "Debug";
-#elif YE_RELEASE_BUILD
+#elif ENGINEY_RELEASE
         build_config = "Release";
 #else
-        YE_CRITICAL_ASSERTION(false , "UNREACHABLE | NON-EXHAUSTIVE MATCH");
+        ENGINE_ASSERT(false , "UNREACHABLE | NON-EXHAUSTIVE MATCH");
 #endif
-        script_engine_mono_path = config.MonoDllPath();
-        script_engine_mono_config_path = config.mono_config_path;
-
-        engine_root = config.engine_root; 
-
-        project_bin =  config.project_path + "/bin/"+ build_config + "/" + config.project_name;
         
-        internal_modules_path = engine_root + "/bin/" + build_config + "/modules" + "/modules.dll";
-        project_modules_path = project_bin + "/" + config.project_name + "_modules.dll";
+        internal_modules_path = "bin/" + build_config + "/EngineModules/EngineModules.dll";
+        project_modules_path = config.modules_path;
 
-        engine_code_dir = engine_root + "/engine";
-        engine_respath = engine_code_dir + "/resources";
-        engine_modulepath = engine_respath + "/modules";
-        engine_shaderpath = engine_respath + "/shaders";
-        engine_texturepath = engine_respath + "/textures";
-        engine_modelpath = engine_respath + "/models";
-        gui_ini_path = engine_respath + "/imgui.ini";
+        engine_respath = "engine/resources";
+        engine_shaderpath = "engine/resources/shaders";
+        engine_texturepath = "engine/resources/textures";
+        engine_modelpath = "engine/resources/models";
+        gui_ini_path = "engine/imgui.ini";
 
         project_directory = config.project_path;
-        project_code_dir = project_directory + "/" + config.project_name;
-        respath = project_code_dir + "/resources";    
-        modulepath = project_code_dir + "/modules";
+        respath = project_directory + "/resources";    
+        modulepath = project_directory + "/modules";
         shaderpath = respath + "/shaders";
         texturepath = respath + "/textures";
         modelpath = respath + "/models";
-
     }
 
     /// \todo make this check engine directories and project dirs it knows about
@@ -100,7 +87,7 @@ namespace YE {
     std::vector<char> Filesystem::ReadFileAsSBytes(const std::string& path) {
         std::ifstream file(path , std::ios::binary | std::ios::ate);
 
-        YE_CRITICAL_ASSERTION(file.is_open() , "Failed to open file: {0}" , path);
+        ENGINE_ASSERT(file.is_open() , "Failed to open file: {0}" , path);
 
         std::streampos end = file.tellg();
         file.seekg(0 , std::ios::beg);
@@ -114,26 +101,6 @@ namespace YE {
         file.close();
 
         return buffer;
-    }
-
-    void Filesystem::OverrideResourcePath(const std::string& path) {
-        if (!std::filesystem::exists(path)) {
-            ENGINE_ERROR("Attempting to override resource path with nonexistent path :: [{0}]" , path);
-            return;
-        }        
-        respath = path;       
-        shaderpath = respath + "/shaders";
-        texturepath = respath + "/textures";
-        modelpath = respath + "/models";
-    }
-
-    void Filesystem::OverrideProjectModulePath(const std::string& path) {
-        if (!std::filesystem::exists(path)) {
-            ENGINE_ERROR("Attempting to override module path with nonexistent path :: [{0}]" , path);
-            return;
-        }
-
-        project_modules_path = path;
     }
 
 }

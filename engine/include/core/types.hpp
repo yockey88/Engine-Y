@@ -1,12 +1,12 @@
-#ifndef YE_TYPES_HPP
-#define YE_TYPES_HPP
+#ifndef ENGINEY_TYPES_HPP
+#define ENGINEY_TYPES_HPP
 
 #include <type_traits>
 #include <string>
 
 #include "hash.hpp"
 
-namespace YE {
+namespace EngineY {
 
     template<typename T , bool NS>
     class TypeDataBase {

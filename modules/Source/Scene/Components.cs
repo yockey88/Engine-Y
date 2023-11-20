@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace YE {
+namespace EngineY {
 
     public abstract class Component {
         public Entity Entity { get; internal set; }

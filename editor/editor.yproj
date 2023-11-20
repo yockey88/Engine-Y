@@ -1,22 +1,31 @@
-project EngineYEditor {
+project "Engine Y Editor" {
     author: "Y" ,
-    version: 0.1 ,
+    version: "0.1" ,
     description: "Editor for Engine Y" ,
-    path: C:\Yock\Projects\code\engine2.2\engine ,
+    path: "./editor" ,
 }
 
-window _ {
-    title: "Engine Y Editor";
-    scale: { 1920 , 1080 };
-    min_scale: { 200 , 200 };
-    clear_color: { 0.2 , 0.3 , 0.3 , 1.0 };
-    flags: 0;
-    color_bits: { 8 , 8 , 8 , 8 };
-    stencil_size: 8;
-    multisample_buffers: 1;
-    multisample_samples: 16;
-    fullscreen: false;
-    vsync: false;
-    rendering_to_screen: true;
-    accelerated_visual: true;
+window "EY Editor" {
+    scale: { 1920 , 1080 } ,
+    min_scale: { 200 , 200 } ,
+    clear_color: { 0.1 , 0.2 , 0.3 , 1.0 } ,
+    flags: 0 ,
+    color_bits: { 8 , 8 , 8 , 8 } ,
+    stencil_size: 8 ,
+    multisample_buffers: 1 ,
+    multisample_samples: 16 ,
+    fullscreen: false ,
+    vsync: false ,
+    rendering_to_screen: true ,
+    accelerated_visual: true ,
+}
+
+resources { 
+    shaders: "resources/shaders" ,
+    textures: "resources/textures" ,
+}
+
+scenes {
+    "scenes/test_scene.ysc" , 
+    "scenes/test_scene2.ysc"
 }

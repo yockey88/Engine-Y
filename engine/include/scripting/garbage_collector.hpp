@@ -1,9 +1,9 @@
-#ifndef YE_SCRIPT_GARBAGE_COLLECTOR_HPP
-#define YE_SCRIPT_GARBAGE_COLLECTOR_HPP
+#ifndef ENGINEY_SCRIPT_GARBAGE_COLLECTOR_HPP
+#define ENGINEY_SCRIPT_GARBAGE_COLLECTOR_HPP
 
 #include <mono/metadata/object.h>
 
-namespace YE {
+namespace EngineY {
     
     typedef void* GCHandle;
     // typedef uint32_t GCHandle;

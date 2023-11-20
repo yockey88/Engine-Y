@@ -2,12 +2,12 @@
 
 #include <imgui/imgui.h>
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "core/filesystem.hpp"
 #include "core/resource_handler.hpp"
 #include "rendering/renderer.hpp"
 
-namespace YE {
+namespace EngineY {
 
     std::vector<ConsoleMessage> EngineConsole::command_history;
     std::vector<ConsoleMessage> EngineConsole::message_history;
@@ -29,7 +29,7 @@ namespace YE {
                 break;
         }
 
-        YE_CRITICAL_ASSERTION(false , "UNREACHABLE");
+        ENGINE_ASSERT(false , "UNREACHABLE");
         return ImVec4(0.f , 0.f , 0.f , 0.f);
     }
     
@@ -47,12 +47,12 @@ namespace YE {
                 break;
         }
 
-        YE_CRITICAL_ASSERTION(false , "UNREACHABLE");
+        ENGINE_ASSERT(false , "UNREACHABLE");
         return "";
     }
 
     void EngineConsole::ExecuteCommand(const ConsoleMessage& cmd) {
-        ENTER_FUNCTION_TRACE_MSG("{}" , cmd.message);
+         ("{}" , cmd.message);
 
         std::string c = cmd.message;
         if (c == "clear") { 
@@ -64,19 +64,19 @@ namespace YE {
         
         command_history.push_back(cmd);
         messages.push_back(cmd);
-        if (c == "dump") Logger::Instance()->DumpBacktrace();
+        // if (c == "dump") Logger::Instance()->DumpBacktrace();
         if (c == "dump-msg")
             for (const auto& m : message_history) SinkMessage(m);
 
-        EXIT_FUNCTION_TRACE();
+         ;
     }
     
     void EngineConsole::Initialize() {
-        ENTER_FUNCTION_TRACE();
+         ;
 
         is_initialized = true;
 
-        EXIT_FUNCTION_TRACE();
+         ;
     }
     
     void EngineConsole::Update() {}
@@ -102,12 +102,12 @@ namespace YE {
             ENGINE_WARN("Failed to load BlexMono font");
         }
 
-        ImGui::SetNextWindowSize(ImVec2(win_size.x , (win_size.y / 2) - 200), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(win_size.x , ((float)win_size.y / 2) - 200), ImGuiCond_FirstUseEver);
         if (ImGui::Begin("Editor Console" , nullptr , window_flags)) {
             if (ImGui::BeginMenuBar()) {
                 if (ImGui::BeginMenu("Options")) {
                     if (ImGui::MenuItem("Clear")) { messages.clear(); }
-                    if (ImGui::MenuItem("Dump History")) { Logger::Instance()->DumpBacktrace(); }
+                    if (ImGui::MenuItem("Dump History")) { /* Logger::Instance()->DumpBacktrace(); */ }
                     ImGui::EndMenu();
                 }
                 ImGui::EndMenuBar();
@@ -150,7 +150,7 @@ namespace YE {
                     size_t range = end - beginning + 1;
                     input = input.substr(beginning , range);
 
-                    YE::EngineConsole::SinkMessage({ YE::ConsoleMessageType::COMMAND , input });
+                     EngineY::EngineConsole::SinkMessage({  EngineY::ConsoleMessageType::COMMAND , input });
                     std::strcpy(cmnd_buffer , "$>  ");    
                 }
             }
@@ -174,4 +174,4 @@ namespace YE {
         }
     }
 
-} // namespace YE 
+} // namespace EngineY 

@@ -1,5 +1,5 @@
-#ifndef YE_TERRAIN_GENERATOR_HPP
-#define YE_TERRAIN_GENERATOR_HPP
+#ifndef ENGINEY_TERRAIN_GENERATOR_HPP
+#define ENGINEY_TERRAIN_GENERATOR_HPP
 
 #include <glm/glm.hpp>
 
@@ -9,7 +9,7 @@
 #include "rendering/shader.hpp"
 #include "rendering/camera.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class TerrainGenerator {
         VertexArray* vao = nullptr;

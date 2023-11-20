@@ -1,5 +1,5 @@
-#ifndef YE_EDITOR_EDITOR_GLUE_HPP
-#define YE_EDITOR_EDITOR_GLUE_HPP
+#ifndef ENGINEY_EDITOR_EDITOR_GLUE_HPP
+#define ENGINEY_EDITOR_EDITOR_GLUE_HPP
 
 #include "mono/metadata/object.h"
 

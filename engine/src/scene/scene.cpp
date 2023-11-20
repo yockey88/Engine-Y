@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "core/defines.hpp"
 #include "core/task_manager.hpp"
 #include "core/resource_handler.hpp"
 #include "scene/entity.hpp"
@@ -13,11 +14,7 @@
 #include "rendering/texture.hpp"
 #include "rendering/camera.hpp"
 
-namespace YE {
-
-    void UpdateTest(entt::registry& registry , float dt) {
-        std::cout << "UpdateTest: " << dt << std::endl;
-    }
+namespace EngineY {
 
     Entity* Scene::CreateEntity(const std::string& name) {
         Systems::entity_created_signal.publish(this , std::ref(name));
@@ -62,6 +59,14 @@ namespace YE {
     std::unordered_map<UUID , Entity*>* Scene::Entities() {
         return &entities;
     }
+    
+    SceneMapU64<Shader>* Scene::Shaders() {
+        return &shaders;
+    }
+   
+    SceneMapU32<Camera>* Scene::Cameras() {
+        return &cameras;
+    }
 
     bool Scene::IsEntityValid(UUID id) {
         return (std::find(living_entities.begin() , living_entities.end() , id.uuid) != living_entities.end());
@@ -69,24 +74,22 @@ namespace YE {
 
     void Scene::InitializeScene() {
         Systems::SetSceneContext(this);
-    }
-
-    void Scene::LoadScene(/* not sure what would be passed here */) {
         ScriptEngine::Instance()->SetSceneContext(this);
         PhysicsEngine::Instance()->SetSceneContext(this);
         Renderer::Instance()->RegisterSceneContext(this);
+    }
+
+    void Scene::LoadScene(/* not sure what would be passed here */) {
         Systems::scene_load_signal.publish(this);
     }
 
     void Scene::UnloadScene(/* not sure what would be passed here */) {
-        PhysicsEngine::Instance()->UnsetSceneContext();
-        ScriptEngine::Instance()->UnsetSceneContext();
         Systems::scene_unload_signal.publish(this);
     }
 
     Camera* Scene::AttachCamera(const std::string& name , CameraType type) {
         UUID32 id = Hash::FNV32(name);
-        Camera* camera = ynew Camera(type);
+        Camera* camera = ynew(Camera , name , type);
         
         cameras[id] = camera;
 
@@ -318,12 +321,18 @@ namespace YE {
     }
 
     void Scene::Shutdown() {
+        PhysicsEngine::Instance()->UnsetSceneContext();
+        ScriptEngine::Instance()->UnsetSceneContext();
+        
         Systems::CleanupContext(this);
 
-        for (auto& [id , entity] : entities)
-            ydelete entity;
-        for (auto& [id , camera] : cameras)
-            ydelete camera;
+        for (auto& [id , entity] : entities) {
+            ydelete(entity);
+        }
+        
+        for (auto& [id , camera] : cameras) {
+            ydelete(camera);
+        }
         
         auto view = registry.view<components::ID>();
         for (auto& entity : view)

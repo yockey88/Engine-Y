@@ -1,5 +1,5 @@
-#ifndef YE_CSHARP_GLUE_HPP
-#define YE_CSHARP_GLUE_HPP
+#ifndef ENGINEY_CSHARP_GLUE_HPP
+#define ENGINEY_CSHARP_GLUE_HPP
 
 #include <iostream>
 #include <string>
@@ -9,9 +9,9 @@
 #include <mono/jit/jit.h>
 #include <glm/glm.hpp>
 
-namespace YE {
+namespace EngineY {
 
-#define YE_ADD_SCRIPT_FUNCTION(call) mono_add_internal_call("YE.Engine::"#call , (void*)ScriptInternalCalls::call)
+#define ENGINEY_ADD_SCRIPT_FUNCTION(call) mono_add_internal_call("YE.Engine::"#call , (void*)ScriptInternalCalls::call)
 
     class Entity;
 

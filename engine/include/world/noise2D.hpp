@@ -1,9 +1,9 @@
-#ifndef YE_NOISE2D_HPP
-#define YE_NOISE2D_HPP
+#ifndef ENGINEY_NOISE2D_HPP
+#define ENGINEY_NOISE2D_HPP
 
 #include <glm/glm.hpp>
 
-namespace YE {
+namespace EngineY {
 
     struct GeneratorArgs {
         float amplitude = 1.f;
@@ -15,9 +15,9 @@ namespace YE {
 }
 
 // for switching out noise generators
-typedef float(*NoiseGenerator)(const glm::vec2& position , YE::GeneratorArgs arguments);
+typedef float(*NoiseGenerator)(const glm::vec2& position ,  EngineY::GeneratorArgs arguments);
 
-namespace YE {
+namespace EngineY {
 
     class Noise2D {
         public:

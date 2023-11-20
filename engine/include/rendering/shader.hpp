@@ -1,5 +1,5 @@
-#ifndef YE_SHADER_HPP
-#define YE_SHADER_HPP
+#ifndef ENGINEY_SHADER_HPP
+#define ENGINEY_SHADER_HPP
 
 #include <string>
 #include <unordered_map>
@@ -10,7 +10,7 @@
 
 #include "core/UUID.hpp"
 
-namespace YE {
+namespace EngineY {
 
     struct Material {
         glm::vec3 ambient = glm::vec3(1.0f);

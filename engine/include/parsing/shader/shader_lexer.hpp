@@ -1,5 +1,5 @@
-#ifndef YE_GLSL_LEXER_HPP
-#define YE_GLSL_LEXER_HPP
+#ifndef ENGINEY_GLSL_LEXER_HPP
+#define ENGINEY_GLSL_LEXER_HPP
 
 #include <string>
 #include <vector>
@@ -24,7 +24,7 @@
 // inline static constexpr strings (DO NOT INCLUDE ANYWHERE ELSE)
 #include "shader_builtins.hpp"
 
-namespace YE {
+namespace EngineY {
     
     class glsl_lexer_error : public std::exception {
         std::string msg;

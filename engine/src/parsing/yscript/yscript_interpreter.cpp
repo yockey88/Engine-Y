@@ -9,7 +9,7 @@
 #include "rendering/texture.hpp"
 #include "rendering/camera.hpp"
 
-namespace YE {
+namespace EngineY {
 
 namespace YS {
     
@@ -24,18 +24,20 @@ namespace YS {
         return vec;
     }
 
-    void Interpreter::ProcessScene(Node* node) {
+    void Interpreter::ProcessScene(NodePtr& node) {
         if (node->type != NodeType::SCENE)
             throw yscript_interpreter_error("UNDEFINED BEHAVIOR | PROCESSING NON SCENE AS SCENE" /*, node->id , node->type */);
         
-        current_scene = ynew Scene(node->id); // Scene* new_scene = scene_graph.CreateScene(n->id);
+        current_scene = ynew(Scene , node->id); // Scene* new_scene = scene_graph.CreateScene(n->id);
         current_scene->InitializeScene();
-        for (auto& c : node->children) 
+        for (auto& c : node->children) {
             ProcessNode(current_scene , c);
+        }
     }
 
-    void Interpreter::ProcessNode(Scene* scene , Node* node) {
+    void Interpreter::ProcessNode(Scene* scene , NodePtr& node) {
         switch (node->type) {
+            
             case NodeType::SCENE:
                 throw yscript_interpreter_error("Scene node must be a root node" /*, node->id , node->type */);
             case NodeType::ENTITY: 
@@ -56,13 +58,13 @@ namespace YS {
                 throw yscript_interpreter_error("Invalid node type" /*, node->id , node->type */);
         }
 
-        node_stack.push(node);
-        for (auto& c : node->children) 
+        for (auto& c : node->children) {
             ProcessNode(scene , c);
+        }
         node_stack.pop();
     }
     
-    void Interpreter::ConstructTransform(Entity* entity , Node* node) {
+    void Interpreter::ConstructTransform(Entity* entity , NodePtr& node) {
         if (node_stack.empty())
             throw yscript_interpreter_error("Transform node must be a child of an entity" /*, node->id , node->type */);
         
@@ -78,7 +80,7 @@ namespace YS {
         }
     }
 
-    void Interpreter::ConstructRenderable(Entity* entity , Node* node) {
+    void Interpreter::ConstructRenderable(Entity* entity , NodePtr& node) {
         if (node_stack.empty())
             throw yscript_interpreter_error("Renderable node must be a child of an entity" /*, node->id , node->type */);
         
@@ -106,8 +108,11 @@ namespace YS {
                     for (uint32_t i = 0; i < prop.values.size(); ++i) {
                         Texture* tex = ResourceHandler::Instance()->GetTexture(*prop.values[i].value.string);
                         if (tex == nullptr) {
-                            ENGINE_WARN("Invalid texture name {}" , *prop.values[i].value.string);
-                            continue;
+                            tex = ResourceHandler::Instance()->GetCoreTexture(*prop.values[i].value.string);
+                            if (tex == nullptr) {
+                                ENGINE_WARN("Invalid texture name {}" , *prop.values[i].value.string);
+                                continue;
+                            }
                         }
                         textures.push_back(tex);
                     }
@@ -141,7 +146,7 @@ namespace YS {
         }
     }
 
-    void Interpreter::ConstructLight(Entity* entity , Node* node) {
+    void Interpreter::ConstructLight(Entity* entity , NodePtr& node) {
         if (node_stack.empty())
             throw yscript_interpreter_error("Light node must be a child of an entity" /*, node->id , node->type */);
         
@@ -168,7 +173,7 @@ namespace YS {
         auto& light = current_entity->AddComponent<components::PointLight>(color , ambient , diffuse , specular , constant , linear , quadratic);
     }
     
-    void Interpreter::ConstructCamera(Node* node) {
+    void Interpreter::ConstructCamera(NodePtr& node) {
         if (current_scene == nullptr)
             throw yscript_interpreter_error("Camera node must be a child of a scene" /*, node->id , node->type */);
 
@@ -195,7 +200,7 @@ namespace YS {
         }
     }
     
-    void Interpreter::AttachScript(Entity* entity , Node* node) {
+    void Interpreter::AttachScript(Entity* entity , NodePtr& node) {
         if (node_stack.empty())
             throw yscript_interpreter_error("Script node must be a child of an entity" /*, node->id , node->type */);
         
@@ -218,7 +223,7 @@ namespace YS {
         }
     }
 
-    void Interpreter::ConstructPhysics(Entity* entity , Node* node) {
+    void Interpreter::ConstructPhysics(Entity* entity , NodePtr& node) {
         if (node_stack.empty())
             throw yscript_interpreter_error("Physics node must be a child of an entity" /*, node->id , node->type */);
 
@@ -250,7 +255,7 @@ namespace YS {
         auto& body = entity->AddComponent<components::PhysicsBody>(type);
     }
 
-    void Interpreter::AttachCollider(Entity* entity , Node* node) {
+    void Interpreter::AttachCollider(Entity* entity , NodePtr& node) {
         if (node_stack.empty())
             throw yscript_interpreter_error("Collider node must be a child of an entity" /*, node->id , node->type */);
 
@@ -296,36 +301,27 @@ namespace YS {
         }
     }
 
-    Scene* Interpreter::InterpretScript(bool dump_nodes) { 
-        // YScriptTreePrinter printer;
-        // for (const auto& node : ast)
-        //     node->Walk(&printer);
-
-        NodeBuilder builder;
-        try {
-            for (const auto& node : ast)
-                node->Walk(&builder);
-        } catch (const node_builder_exception& e) {
-            ENGINE_ERROR("{}" , e.what());
-            return nullptr;
-        }
+    void Interpreter::InterpretScript(bool dump_nodes) { 
         
-        project_metadata = builder.ProjectMetadata();
-        
-        try {
-            nodes = builder.Nodes();
-
-            for (auto& n : nodes) {
-                if (n->type == NodeType::SCENE) {
-                    ProcessScene(n);
-                }
+        /* the builder will give its nodes to this when the scope exits */ {
+            NodeBuilder builder(this);
+            try {
+                for (const auto& node : ast)
+                    node->Walk(&builder);
+            } catch (const node_builder_exception& e) {
+                ENGINE_ERROR("{}" , e.what());
+                return;
             }
-        } catch (const yscript_interpreter_error& e) {
-            ENGINE_ERROR("{}" , e.what());
-            return nullptr;
+            
+            project_metadata = builder.ProjectMetadata();
         }
-        
-        return current_scene;
+
+        if (nodes.size() > 0)
+            nodes_built = true;
+    }
+
+    void Interpreter::GiveNodes(std::vector<YS::NodePtr>& nodes) {
+        nodes = std::move(nodes);
     }
 
 } // namespace YS

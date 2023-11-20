@@ -4,12 +4,13 @@
 
 #include <glad/glad.h>
 
-#include "log.hpp"
+#include "core/defines.hpp"
+#include "core/log.hpp"
 
-namespace YE {
+namespace EngineY {
 
     void TerrainGenerator::GenerateHeightMap(const GeneratorArgs& args) {
-        height_map = ynew HeightMap2D(dimensions);
+        height_map = ynew(HeightMap2D , dimensions);
         height_map->AttachNoiseGenerator(noise_generator);
         height_map->AttachColorEditor(color_editor);
         height_map->GenerateHeightMap(args);
@@ -49,7 +50,7 @@ namespace YE {
             }
         }
 
-        vao = ynew VertexArray(vertices , indices , { 3 , 2 });
+        vao = ynew(VertexArray , vertices , indices , std::vector<uint32_t>{ 3 , 2 });
 
         generated = true;
     }
@@ -66,13 +67,13 @@ namespace YE {
 
     void TerrainGenerator::DestroyHeightMap() {
         if (height_map != nullptr)
-            ydelete height_map;
+            ydelete(height_map);
         height_map = nullptr;
     }
 
     void TerrainGenerator::DestroyMesh() {
         if (vao != nullptr)
-            ydelete vao;
+            ydelete(vao);
         vao = nullptr;
     }
 

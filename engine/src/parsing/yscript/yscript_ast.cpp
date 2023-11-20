@@ -1,6 +1,6 @@
 #include "parsing/yscript/yscript_ast.hpp"
 
-namespace YE {
+namespace EngineY {
 
     void YScriptTreePrinter::WalkLiteral(LiteralExpr& literal) {
         std::cout << "(";
@@ -80,6 +80,18 @@ namespace YE {
         std::cout << ")\n";
     }
 
+    void YScriptTreePrinter::WalkResource(ResourceStmnt& resource) {
+        std::cout << "(";
+        resource.Print(data);
+        std::cout << ")\n";
+    }
+    
+    void YScriptTreePrinter::WalkSceneList(SceneListStmnt& scene_list) {
+        std::cout << "(";
+        scene_list.Print(data);
+        std::cout << ")\n";
+    }
+    
     void YScriptTreePrinter::WalkNodeDecl(NodeDeclStmnt& node_decl) {
         std::cout << "(";
         node_decl.Print(data);
@@ -210,6 +222,48 @@ namespace YE {
         std::cout << "window " << identifier.value << " {\n";
         data.indent_stack.push('\t');
         
+        if (description.size() > 0) {
+            std::cout << "\n";
+
+            for (uint32_t i = 0; i < description.size(); ++i) {
+                for (uint32_t i = 0; i < data.indent_stack.size(); ++i)
+                    std::cout << "    ";
+                description[i]->Print(data);
+                
+                if (i != description.size() - 1)
+                    std::cout << "\n";
+            }
+        }
+
+        data.indent_stack.pop();
+        std::cout << "}";
+    }
+
+    void ResourceStmnt::Print(PrinterData& data) {
+        std::cout << "resource {\n";
+        data.indent_stack.push('\t');
+
+        if (description.size() > 0) {
+            std::cout << "\n";
+
+            for (uint32_t i = 0; i < description.size(); ++i) {
+                for (uint32_t i = 0; i < data.indent_stack.size(); ++i)
+                    std::cout << "    ";
+                description[i]->Print(data);
+                
+                if (i != description.size() - 1)
+                    std::cout << "\n";
+            }
+        }
+
+        data.indent_stack.pop();
+        std::cout << "}";
+    }
+    
+    void SceneListStmnt::Print(PrinterData& data) {
+        std::cout << "scenes {\n";
+        data.indent_stack.push('\t');
+
         if (description.size() > 0) {
             std::cout << "\n";
 

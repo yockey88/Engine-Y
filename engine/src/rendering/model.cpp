@@ -5,13 +5,14 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 
-#include "log.hpp"
+#include "core/defines.hpp"
+#include "core/log.hpp"
 
-namespace YE {
+namespace EngineY {
     
     void Model::ProcessNode(aiNode* node , const aiScene* scene) {
-        YE_CRITICAL_ASSERTION(node != nullptr , "Error: Invalid mesh");
-        YE_CRITICAL_ASSERTION(scene != nullptr , "Error: Invalid scene");
+        ENGINE_ASSERT(node != nullptr , "Error: Invalid mesh");
+        ENGINE_ASSERT(scene != nullptr , "Error: Invalid scene");
 
         for (uint32_t i = 0; i < node->mNumMeshes; i++) {
             aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
@@ -74,7 +75,7 @@ namespace YE {
         }
 
 
-        VertexArray* vertex_array = ynew VertexArray(yvertices , indices);
+        VertexArray* vertex_array = ynew(VertexArray ,yvertices , indices);
         vaos.push_back(vertex_array);
 
         this->yvertices.insert(this->yvertices.end() , yvertices.begin() , yvertices.end()); // = yvertices;
@@ -103,7 +104,7 @@ namespace YE {
 
             if (std::find(texture_paths.begin() , texture_paths.end() , directory + "/" + str.C_Str()) == texture_paths.end()) {
                 texture_paths.push_back(directory + "/" + str.C_Str());
-                Texture* texture = ynew Texture(directory + "/" + str.C_Str());
+                Texture* texture = ynew(Texture , directory + "/" + str.C_Str());
                 texture->SetTextureType(TextureType::diffuse);
                 textures.push_back(texture);
             } else {
@@ -117,7 +118,7 @@ namespace YE {
 
             if (std::find(texture_paths.begin() , texture_paths.end() , directory + "/" + str.C_Str()) == texture_paths.end()) {
                 texture_paths.push_back(directory + "/" + str.C_Str());
-                Texture* texture = ynew Texture(directory + "/" + str.C_Str());
+                Texture* texture = ynew(Texture , directory + "/" + str.C_Str());
                 texture->SetTextureType(TextureType::specular);
                 textures.push_back(texture);
             } else {
@@ -131,7 +132,7 @@ namespace YE {
 
             if (std::find(texture_paths.begin() , texture_paths.end() , directory + "/" + str.C_Str()) == texture_paths.end()) {
                 texture_paths.push_back(directory + "/" + str.C_Str());
-                Texture* texture = ynew Texture(directory + "/" + str.C_Str());
+                Texture* texture = ynew(Texture , directory + "/" + str.C_Str());
                 texture->SetTextureType(TextureType::height);
                 textures.push_back(texture);
             } else {
@@ -145,7 +146,7 @@ namespace YE {
 
             if (std::find(texture_paths.begin() , texture_paths.end() , directory + "/" + str.C_Str()) == texture_paths.end()) {
                 texture_paths.push_back(directory + "/" + str.C_Str());
-                Texture* texture = ynew Texture(directory + "/" + str.C_Str());
+                Texture* texture = ynew(Texture , directory + "/" + str.C_Str());
                 texture->SetTextureType(TextureType::normal);
                 textures.push_back(texture);
             } else {
@@ -197,10 +198,13 @@ namespace YE {
     }
 
     void Model::Cleanup() {
-        for (auto& vao : vaos)
-            ydelete vao;
-        for (auto& texture : textures)
-            ydelete texture;
+        for (auto& vao : vaos) {
+            ydelete(vao);
+        }
+        
+        for (auto& texture : textures) {
+            ydelete(texture);
+        }
     }
     
 }

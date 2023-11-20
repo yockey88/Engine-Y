@@ -2,10 +2,10 @@
 
 #include "glad/glad.h"
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "core/RNG.hpp"
 
-namespace YE {
+namespace EngineY {
     
     void HeightMap2D::CreateTexture() {
         glGenTextures(1 , &texture);
@@ -23,8 +23,8 @@ namespace YE {
 
         RNG::RngEngineF32 rng(0.f , 1.f);
 
-        height_data = ynew float[height_dim]; // regular height data
-        height_texture_data = ynew float[text_dim]; // texture height data with r/rgb/rgba channels
+        height_data = new float[height_dim]; // regular height data
+        height_texture_data = new float[text_dim]; // texture height data with r/rgb/rgba channels
         for (uint32_t i = 0; i < text_dim; ++i)
             height_texture_data[i] = 0.f;
 
@@ -71,11 +71,11 @@ namespace YE {
 
     void HeightMap2D::DestroyHeightMap() {
         if (height_data != nullptr) {
-            ydelete[] height_data;
+            delete[] height_data;
             height_data = nullptr;
         }
         if (height_texture_data != nullptr) {
-            ydelete[] height_texture_data;
+            delete[] height_texture_data;
             height_texture_data = nullptr;
         }
         glDeleteTextures(1 , &texture);
@@ -100,10 +100,10 @@ namespace YE {
 
         num_channels = 0;
         switch (channel_type) {   
-            case YE::ChannelType::RED: num_channels = 1; break;    
-            case YE::ChannelType::RGB: num_channels = 3; break;
-            case YE::ChannelType::RGBA: num_channels = 4; break;
-            default: YE_CRITICAL_ASSERTION(false , "Invalid number of channels for height map");
+            case  EngineY::ChannelType::RED: num_channels = 1; break;    
+            case  EngineY::ChannelType::RGB: num_channels = 3; break;
+            case  EngineY::ChannelType::RGBA: num_channels = 4; break;
+            default: ENGINE_ASSERT(false , "Invalid number of channels for height map");
         }
 
         Generate(num_channels , args);

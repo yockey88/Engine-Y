@@ -11,12 +11,13 @@
 #include <mono/metadata/debug-helpers.h>
 #include <mono/metadata/appdomain.h>
 
-#include "log.hpp"
+#include "core/defines.hpp"
+#include "core/log.hpp"
 #include "core/defines.hpp"
 #include "core/UUID.hpp"
 #include "scripting/script_engine.hpp"
 
-namespace YE {
+namespace EngineY {
 
     struct ScriptObjectMap {
         std::unordered_map<UUID32 , ScriptObject> script_objs;
@@ -50,16 +51,21 @@ namespace YE {
         CACHE_MSCORLIB_CLASS("Void");
 
 #undef CACHE_MSCORLIB_CLASS
-#define CACHE_YENGINE_CLASS(name) StoreClass(                                                                                         \
-                                        "YE." ##name , mono_class_from_name(ScriptEngine::Instance()->internal_script_data.image ,    \
-                                                                            "YE" , name))
+#define CACHE_ENGINEY_CLASS(name) \
+        StoreClass( \
+            "EngineY." ##name ,\
+            mono_class_from_name( \
+                ScriptEngine::Instance()->internal_script_data.image ,    \
+                "EngineY" , name \
+            ) \
+        )
         
-        CACHE_YENGINE_CLASS("Vec2");
-        CACHE_YENGINE_CLASS("Vec3");
-        CACHE_YENGINE_CLASS("Vec4");
-        CACHE_YENGINE_CLASS("Entity");
+        CACHE_ENGINEY_CLASS("Vec2");
+        CACHE_ENGINEY_CLASS("Vec3");
+        CACHE_ENGINEY_CLASS("Vec4");
+        CACHE_ENGINEY_CLASS("Entity");
 
-#undef CACHE_YENGINE_CLASS
+#undef CACHE_ENGINEY_CLASS
     }
         
     void ScriptMap::StoreClass(std::string_view name , MonoClass* klass) {
@@ -72,7 +78,7 @@ namespace YE {
         obj.size = mono_class_value_size(klass , &alignment);
         obj.klass = klass;
         script_map->script_objs[obj.IDU32] = obj;
-        if (obj.name.find("YE.") != std::string::npos) {
+        if (obj.name.find("EngineY.") != std::string::npos) {
             StoreClassMethods(obj);
             StoreClassFields(obj);
             StoreClassProperties(obj);
@@ -80,7 +86,7 @@ namespace YE {
     }
     
     void ScriptMap::StoreClassMethods(ScriptObject& klass) {
-        YE_CRITICAL_ASSERTION(klass.klass != nullptr , "Retrieving methods from null class!");
+        ENGINE_ASSERT(klass.klass != nullptr , "Retrieving methods from null class!");
         MonoMethod* method = nullptr;
         MethodHandle iter = nullptr;
 
@@ -113,7 +119,7 @@ namespace YE {
     }
     
     void ScriptMap::StoreClassFields(ScriptObject& klass) {
-        YE_CRITICAL_ASSERTION(klass.klass != nullptr , "Attempting to retrieve fields from null class");
+        ENGINE_ASSERT(klass.klass != nullptr , "Attempting to retrieve fields from null class");
 
         std::string name = std::string{ mono_class_get_name(klass.klass) };
         std::string name_space = std::string{ mono_class_get_namespace(klass.klass) };
@@ -314,14 +320,14 @@ namespace YE {
     }
 
     ScriptObject* ScriptMap::GetClassByName(const std::string& name) {
-        YE_CRITICAL_ASSERTION(script_map != nullptr , "Attempting to access script map before creation");
+        ENGINE_ASSERT(script_map != nullptr , "Attempting to access script map before creation");
 
         uint32_t id = Hash::FNV32(name);
         return GetClassByID(id);
     }
 
     ScriptObject* ScriptMap::GetClassByID(UUID32 id) {
-        YE_CRITICAL_ASSERTION(script_map != nullptr , "Attempting to access script map before creation");
+        ENGINE_ASSERT(script_map != nullptr , "Attempting to access script map before creation");
 
         if (script_map->script_objs.find(id) != script_map->script_objs.end())
             return &script_map->script_objs[id];
@@ -330,7 +336,7 @@ namespace YE {
     }
 
     ScriptObject* ScriptMap::GetClass(MonoClass* klass) {
-        YE_CRITICAL_ASSERTION(script_map != nullptr , "Attempting to access script map before creation");
+        ENGINE_ASSERT(script_map != nullptr , "Attempting to access script map before creation");
 
         if (klass == nullptr) 
             return nullptr;
@@ -339,7 +345,7 @@ namespace YE {
     }
 
     ScriptObject* ScriptMap::GetObjectFromClass(MonoObject* obj) {
-        YE_CRITICAL_ASSERTION(script_map != nullptr , "Attempting to access script map before creation");
+        ENGINE_ASSERT(script_map != nullptr , "Attempting to access script map before creation");
 
         MonoClass* obj_class = mono_object_get_class(obj);
         if (obj_class == nullptr)
@@ -350,8 +356,8 @@ namespace YE {
 
 
     ScriptMethod* ScriptMap::GetMethodByName(ScriptObject* obj , const std::string& name , bool virtualm) {
-        YE_CRITICAL_ASSERTION(script_map != nullptr , "Attempting to access script map before creation");
-        YE_CRITICAL_ASSERTION(obj != nullptr , "Attempting to access method from null object");
+        ENGINE_ASSERT(script_map != nullptr , "Attempting to access script map before creation");
+        ENGINE_ASSERT(obj != nullptr , "Attempting to access method from null object");
 
         uint32_t id = Hash::FNV32(obj->name + ":" + name);
         if (script_map->script_methods.find(id) != script_map->script_methods.end())
@@ -360,13 +366,13 @@ namespace YE {
         if (!virtualm && obj->parent != 0) 
             return GetMethodByName(&script_map->script_objs.at(obj->parent) , name);
 
-        YE_FATAL("Failed to find method: {0} in class: {1}" , name , obj->name);
+        ENGINE_FATAL("Failed to find method: {0} in class: {1}" , name , obj->name);
         return nullptr;
     }
 
     ScriptMethod* ScriptMap::GetMethod(ScriptObject* obj , const std::string& name , uint32_t num_params , bool virtualm) {
-        YE_CRITICAL_ASSERTION(script_map != nullptr , "Attempting to access script map before creation");
-        YE_CRITICAL_ASSERTION(obj != nullptr , "Attempting to access method from null object");
+        ENGINE_ASSERT(script_map != nullptr , "Attempting to access script map before creation");
+        ENGINE_ASSERT(obj != nullptr , "Attempting to access method from null object");
 
         ScriptMethod* method = nullptr;
         uint32_t id = Hash::FNV32(obj->name + ":" + name);
@@ -385,7 +391,7 @@ namespace YE {
         // if (method == nullptr && virtualm)
         
         if (method == nullptr) {
-            YE_FATAL("Failed to find method: {0} in class: {1}" , name , obj->name);
+            ENGINE_FATAL("Failed to find method: {0} in class: {1}" , name , obj->name);
             return nullptr;
         }
 
@@ -467,8 +473,8 @@ namespace YE {
     // }
 
     ScriptField* ScriptMap::GetFieldByName(const ScriptObject* obj , const std::string& name) {
-        YE_CRITICAL_ASSERTION(script_map != nullptr , "Attempting to access script map before creation");
-        YE_CRITICAL_ASSERTION(obj != nullptr , "Attempting to access field from null object");
+        ENGINE_ASSERT(script_map != nullptr , "Attempting to access script map before creation");
+        ENGINE_ASSERT(obj != nullptr , "Attempting to access field from null object");
         
         uint32_t id = Hash::FNV32(obj->name + ":" + name);
         if (script_map->script_fields.find(id) != script_map->script_fields.end())
@@ -478,8 +484,8 @@ namespace YE {
     }
 
     ScriptField* ScriptMap::GetFieldByID(const ScriptObject* obj , UUID32 id) {
-        YE_CRITICAL_ASSERTION(script_map != nullptr , "Attempting to access script map before creation");
-        YE_CRITICAL_ASSERTION(obj != nullptr , "Attempting to access field from null object");
+        ENGINE_ASSERT(script_map != nullptr , "Attempting to access script map before creation");
+        ENGINE_ASSERT(obj != nullptr , "Attempting to access field from null object");
 
         if (script_map->script_fields.find(id) != script_map->script_fields.end())
             return &script_map->script_fields[id];
@@ -489,34 +495,34 @@ namespace YE {
 
     MonoClass* ScriptMap::GetFieldClass(FieldType field) {
         switch (field) {
-            case FieldType::BOOL: return YE_CACHED_CLASS("System.Boolean")->klass;
-            case FieldType::CHAR: return YE_CACHED_CLASS("System.Char")->klass;
-            case FieldType::BYTE: return YE_CACHED_CLASS("System.Int8")->klass;
-            case FieldType::SHORT: return YE_CACHED_CLASS("System.Int16")->klass;
-            case FieldType::INT: return YE_CACHED_CLASS("System.Int32")->klass;
-            case FieldType::LONG: return YE_CACHED_CLASS("System.Int64")->klass;
-            case FieldType::UBYTE: return YE_CACHED_CLASS("System.UInt8")->klass;
-            case FieldType::USHORT: return YE_CACHED_CLASS("System.UInt16")->klass;
-            case FieldType::UINT: return YE_CACHED_CLASS("System.UInt32")->klass;
-            case FieldType::ULONG: return YE_CACHED_CLASS("System.UInt64")->klass;
-            case FieldType::FLOAT: return YE_CACHED_CLASS("System.Single")->klass;
-            case FieldType::DOUBLE: return YE_CACHED_CLASS("System.Double")->klass;
-            case FieldType::STRING: return YE_CACHED_CLASS("System.String")->klass;
-            case FieldType::VECTOR2: return YE_CACHED_CLASS("YE.Vec2")->klass;
-            case FieldType::VECTOR3: return YE_CACHED_CLASS("YE.Vec3")->klass;
-            case FieldType::VECTOR4: return YE_CACHED_CLASS("YE.Vec4")->klass;
-            case FieldType::ENTITY: return YE_CACHED_CLASS("YE.Entity")->klass;
+            case FieldType::BOOL: return ENGINEY_CACHED_CLASS("System.Boolean")->klass;
+            case FieldType::CHAR: return ENGINEY_CACHED_CLASS("System.Char")->klass;
+            case FieldType::BYTE: return ENGINEY_CACHED_CLASS("System.Int8")->klass;
+            case FieldType::SHORT: return ENGINEY_CACHED_CLASS("System.Int16")->klass;
+            case FieldType::INT: return ENGINEY_CACHED_CLASS("System.Int32")->klass;
+            case FieldType::LONG: return ENGINEY_CACHED_CLASS("System.Int64")->klass;
+            case FieldType::UBYTE: return ENGINEY_CACHED_CLASS("System.UInt8")->klass;
+            case FieldType::USHORT: return ENGINEY_CACHED_CLASS("System.UInt16")->klass;
+            case FieldType::UINT: return ENGINEY_CACHED_CLASS("System.UInt32")->klass;
+            case FieldType::ULONG: return ENGINEY_CACHED_CLASS("System.UInt64")->klass;
+            case FieldType::FLOAT: return ENGINEY_CACHED_CLASS("System.Single")->klass;
+            case FieldType::DOUBLE: return ENGINEY_CACHED_CLASS("System.Double")->klass;
+            case FieldType::STRING: return ENGINEY_CACHED_CLASS("System.String")->klass;
+            case FieldType::VECTOR2: return ENGINEY_CACHED_CLASS("EngineY.Vec2")->klass;
+            case FieldType::VECTOR3: return ENGINEY_CACHED_CLASS("EngineY.Vec3")->klass;
+            case FieldType::VECTOR4: return ENGINEY_CACHED_CLASS("EngineY.Vec4")->klass;
+            case FieldType::ENTITY: return ENGINEY_CACHED_CLASS("EngineY.Entity")->klass;
 
             /// \todo implement the rest
-            // case FieldType::QUATERNION: return YE_CACHED_CLASS("YE.Quaternion")->klass;
-            // case FieldType::MATRIX4: return YE_CACHED_CLASS("YE.Mat4")->klass;
-            // case FieldType::ASSET: return YE_CACHED_CLASS("YE.Asset")->klass;
-            // case FieldType::PREFAB: return YE_CACHED_CLASS("YE.Prefab")->klass;
-            // case FieldType::MESH: return YE_CACHED_CLASS("YE.Mesh")->klass;
-            // case FieldType::STATICMESH: return YE_CACHED_CLASS("YE.StaticMesh")->klass;
-            // case FieldType::MATERIAL: return YE_CACHED_CLASS("YE.Material")->klass;
-            // case FieldType::PHYSICSMATERIAL: return YE_CACHED_CLASS("YE.PhysicsMaterial")->klass;
-            // case FieldType::TEXTURE: return YE_CACHED_CLASS("YE.Texture")->klass;
+            // case FieldType::QUATERNION: return ENGINEY_CACHED_CLASS("YE.Quaternion")->klass;
+            // case FieldType::MATRIX4: return ENGINEY_CACHED_CLASS("YE.Mat4")->klass;
+            // case FieldType::ASSET: return ENGINEY_CACHED_CLASS("YE.Asset")->klass;
+            // case FieldType::PREFAB: return ENGINEY_CACHED_CLASS("YE.Prefab")->klass;
+            // case FieldType::MESH: return ENGINEY_CACHED_CLASS("YE.Mesh")->klass;
+            // case FieldType::STATICMESH: return ENGINEY_CACHED_CLASS("YE.StaticMesh")->klass;
+            // case FieldType::MATERIAL: return ENGINEY_CACHED_CLASS("YE.Material")->klass;
+            // case FieldType::PHYSICSMATERIAL: return ENGINEY_CACHED_CLASS("YE.PhysicsMaterial")->klass;
+            // case FieldType::TEXTURE: return ENGINEY_CACHED_CLASS("YE.Texture")->klass;
             default: break;
         }
         return nullptr;
@@ -563,8 +569,8 @@ namespace YE {
     }
 
     void ScriptMap::Generate() {
-        YE_CRITICAL_ASSERTION(script_map == nullptr , "Generating script map twice!");
-        script_map = ynew ScriptObjectMap;
+        ENGINE_ASSERT(script_map == nullptr , "Generating script map twice!");
+        script_map = ynew(ScriptObjectMap);
         StoreCoreClasses();
     }
 
@@ -624,14 +630,16 @@ namespace YE {
         script_map->script_objs.clear();
         script_map->script_fields.clear();
         script_map->script_methods.clear();
-        if (script_map == nullptr) return;
-        ydelete script_map;
+        if (script_map == nullptr) 
+            return;
+            
+        ydelete(script_map);
         script_map = nullptr;
     }
 
-#ifdef YE_DEBUG_BUILD
+#ifdef ENGINEY_DEBUG 
     void ScriptMap::PrintAll() {
-        YE_CRITICAL_ASSERTION(script_map != nullptr , "Attempting to access script map before creation");
+        ENGINE_ASSERT(script_map != nullptr , "Attempting to access script map before creation");
         for (auto& obj : script_map->script_objs) {
             ENGINE_INFO("[Object {0}] :: {1}" , obj.first.uuid , obj.second.name);
         }

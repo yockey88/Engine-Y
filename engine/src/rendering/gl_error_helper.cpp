@@ -2,9 +2,9 @@
 
 #include <glad/glad.h>
 
-#include "log.hpp"
+#include "core/log.hpp"
 
-namespace YE {
+namespace EngineY {
 
     void CheckGLError(const char* file, int line) {
         GLenum err = glGetError();
@@ -43,7 +43,7 @@ namespace YE {
             err = glGetError();
         }
 
-        YE_CRITICAL_ASSERTION(!halt, "OpenGL Error | Fatal");
+        ENGINE_ASSERT(!halt, "OpenGL Error | Fatal");
     }
 
 }

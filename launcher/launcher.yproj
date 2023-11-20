@@ -2,6 +2,4 @@ project sandbox {
     author: "Y" , 
     version: 0.1 ,
     description: "Launcher to select or create a project" ,
-    // path: "launcher" , // eventually want #engine_root .. "/launcher"
-    resources: "/resources"
 }

@@ -2,7 +2,9 @@
 
 #include <spdlog/fmt/fmt.h>
 
-namespace YE {
+#include "parsing/yscript/yscript_interpreter.hpp"
+
+namespace EngineY {
 
 namespace YS {
 
@@ -11,6 +13,8 @@ namespace util {
     NodeType NodeTypeFromToken(const YScriptToken& token) {
         switch (token.type) {
             case YScriptTokenType::WINDOW: return NodeType::WINDOW;
+            case YScriptTokenType::RESOURCES: return NodeType::RESOURCES;
+            case YScriptTokenType::SCENES: return NodeType::SCENES;
             case YScriptTokenType::SCENE: return NodeType::SCENE;
             case YScriptTokenType::ENTITY: return NodeType::ENTITY;
             case YScriptTokenType::TRANSFORM: return NodeType::TRANSFORM;
@@ -37,6 +41,7 @@ namespace util {
             case YScriptTokenType::DESCRIPTION: return PropertyType::DESCRIPTION;
             case YScriptTokenType::RESOURCES: return PropertyType::RESOURCES;
             case YScriptTokenType::PATH: return PropertyType::PATH;
+            case YScriptTokenType::TITLE: return PropertyType::TITLE;
             case YScriptTokenType::MIN_SCALE: return PropertyType::MIN_SCALE;
             case YScriptTokenType::CLEAR_COLOR: return PropertyType::CLEAR_COLOR;  
             case YScriptTokenType::FLAGS: return PropertyType::FLAGS;
@@ -48,6 +53,9 @@ namespace util {
             case YScriptTokenType::VSYNC: return PropertyType::VSYNC;
             case YScriptTokenType::RENDERING_TO_SCREEN: return PropertyType::RENDERING_TO_SCREEN;
             case YScriptTokenType::ACCELERATED_VISUAL: return PropertyType::ACCELERATED_VISUAL; 
+            case YScriptTokenType::SHADERS: return PropertyType::SHADERS;
+            case YScriptTokenType::TEXTURES: return PropertyType::TEXTURES;
+            case YScriptTokenType::MODELS: return PropertyType::MODELS;
             case YScriptTokenType::POSITION: return PropertyType::POSITION;
             case YScriptTokenType::ROTATION: return PropertyType::ROTATION;
             case YScriptTokenType::SCALE: return PropertyType::SCALE;
@@ -87,7 +95,7 @@ namespace util {
 } // namespace YS
 
     /// ************ Node Builder ************ /// 
-    void NodeBuilder::PrintNode(YS::Node* node , uint32_t depth) const {
+    void NodeBuilder::PrintNode(const YS::NodePtr& node , uint32_t depth) const {
         std::string indent = "";
         for (uint32_t i = 0; i < depth; ++i) indent += "  ";
 
@@ -110,21 +118,21 @@ namespace util {
 
         std::string node_properties; // = fmt::format("Properties (size {}) : " , node->properties.size());
         if (node->properties.size() > 0) {
-            node_properties += "\n" + indent + fmt::format("  |>> Properties (size {}) : " , node->properties.size());
+            node_properties += "\n" + indent + fmt::format(fmt::runtime("  |>> Properties (size {}) : ") , node->properties.size());
             for (uint32_t j = 0; j < node->properties.size(); ++j) {
                 YS::Property prop = node->properties[j];
-                node_properties += fmt::format("{} ({}) : [ " , magic_enum::enum_name(prop.type) , prop.values.size());
+                node_properties += fmt::format(fmt::runtime("{} ({}) : [ ") , magic_enum::enum_name(prop.type) , prop.values.size());
                 for (uint32_t i = 0; i < prop.values.size(); ++i) {
-                    YE::YS::Literal val = prop.values[i];
+                     EngineY::YS::Literal val = prop.values[i];
                     switch (val.type) {
                         case YS::LiteralType::BOOLEAN:
-                            node_properties += fmt::format("{}" , val.value.boolean);
+                            node_properties += fmt::format(fmt::runtime("{}") , val.value.boolean);
                         break;
                         case YS::LiteralType::FLOAT:
-                            node_properties += fmt::format("{}" , val.value.floating_point);
+                            node_properties += fmt::format(fmt::runtime("{}") , val.value.floating_point);
                         break;
                         case YS::LiteralType::STRING: node_properties += *val.value.string; break;
-                        default: node_properties += fmt::format("Invalid\n"); break;
+                        default: node_properties += fmt::format(fmt::runtime("Invalid\n")); break;
                     }
                     if (i != prop.values.size() - 1) node_properties += " , ";
                 }
@@ -133,36 +141,32 @@ namespace util {
             }
         }
 
-        std::cout << fmt::format("{}{} [{}] : {}\n" , indent , node_type , node_id , node_properties);
+        std::cout << fmt::format(fmt::runtime("{}{} [{}] : {}\n") , indent , node_type , node_id , node_properties);
 
         for (uint32_t i = 0; i < node->children.size(); ++i) {
             PrintNode(node->children[i] , depth + 1);
         }
     }
 
-    void NodeBuilder::DeleteNode(YS::Node* node) {
-        for (auto& child : node->children) {
-            DeleteNode(child);
-        }
-
-        if (node != nullptr)
-            ydelete node;
-    }
-
     NodeBuilder::~NodeBuilder() {
-        for (auto& node : nodes) {
-            DeleteNode(node);
-        }
+        interpreter->GiveNodes(nodes);
     }
 
     void NodeBuilder::WalkLiteral(LiteralExpr& literal) {
-        std::cout << "LiteralExpr\n";
         YS::Literal lit;
         switch (literal.value.type) {
             case YScriptTokenType::TRUE_TKN: [[fallthrough]];
             case YScriptTokenType::FALSE_TKN: 
                 lit.type = YS::LiteralType::BOOLEAN;
                 lit.value.boolean = (literal.value.value == "true");
+            break;
+            case YScriptTokenType::INTEGER:
+                lit.type = YS::LiteralType::INTEGER;
+                try {
+                    lit.value.integer = std::stoi(literal.value.value);
+                } catch (const std::invalid_argument&) {
+                    throw node_builder_exception("Invalid integer literal" , literal.value.line , literal.value.col);
+                }
             break;
             case YScriptTokenType::FLOAT:
                 lit.type = YS::LiteralType::FLOAT;
@@ -184,7 +188,6 @@ namespace util {
     }
 
     void NodeBuilder::WalkProperty(PropertyExpr& property) {
-        std::cout << "PropertyExpr\n";
         YS::Property prop;
         prop.type = YS::util::PropertyTypeFromToken(property.type);
         for (auto& v : property.values) {
@@ -219,16 +222,12 @@ namespace util {
     }
 
     void NodeBuilder::WalkAccess(AccessExpr& access) {
-        std::cout << "AccessExpr\n";
     }
 
     void NodeBuilder::WalkLogical(LogicalExpr& logical) {
-        std::cout << "LogicalExpr\n";
     }
 
     void NodeBuilder::WalkUnary(UnaryExpr& unary) {
-        std::cout << "UnaryExpr\n";
-
         unary.right->Walk(this);
         if (literal_stack.empty())
             throw node_builder_exception("Unary expression must have a literal" , unary.op.line , unary.op.col);
@@ -257,30 +256,24 @@ namespace util {
     }
 
     void NodeBuilder::WalkBinary(BinaryExpr& binary) {
-        std::cout << "BinaryExpr\n";
     }
 
     void NodeBuilder::WalkCall(CallExpr& call) {
-        std::cout << "CallExpr\n";
     }
 
     void NodeBuilder::WalkGrouping(GroupingExpr& grouping) {
-        std::cout << "GroupingExpr\n";
     }
 
     void NodeBuilder::WalkVar(VarExpr& var) {
-        std::cout << "VarExpr\n";
     }
 
     void NodeBuilder::WalkAssign(AssignExpr& assign) {
-        std::cout << "AssignExpr\n";
     }
+    
     void NodeBuilder::WalkExpr(ExprStmnt& expr) {
-        std::cout << "ExprStmnt\n";
     }
     
     void NodeBuilder::WalkProject(ProjectMetadataStmnt& project) {
-        std::cout << "ProjectMetadataStmnt\n";
         std::vector<YS::Property> proj_properties;
 
         for (auto& property : project.metadata) {
@@ -294,64 +287,84 @@ namespace util {
     }
 
     void NodeBuilder::WalkWindow(WindowStmnt& window) {
-        std::cout << "WindowStmnt\n";
-        std::vector<YS::Property> window_properties;
-
         for (auto& property : window.description) {
             property->Walk(this);
-            window_properties.push_back(property_stack.top());
+            project_metadata.window_properties.push_back(property_stack.top());
             property_stack.pop();
         }
-        // project_metadata.window_properties = window_properties;
+
+        project_metadata.window_title = window.identifier.value;
+    }
+
+    void NodeBuilder::WalkResource(ResourceStmnt& resource) {
+        for (auto& property : resource.description) {
+            property->Walk(this);
+            project_metadata.resource_properties.push_back(property_stack.top());
+            property_stack.pop();
+        }
+    }
+    
+    void NodeBuilder::WalkSceneList(SceneListStmnt& scene_list) {
+        for (auto& path : scene_list.description) {
+            path->Walk(this);
+            project_metadata.scene_list.push_back(literal_stack.top());
+            literal_stack.pop();
+        }
     }
 
     void NodeBuilder::WalkFunction(FunctionStmnt& function_decl) {
-        std::cout << "FunctionStmnt\n";    
     }
 
     void NodeBuilder::WalkVarDecl(VarDeclStmnt& var_decl) {
-        std::cout << "VarDeclStmnt\n";
     }
 
     void NodeBuilder::WalkNodeDecl(NodeDeclStmnt& node_decl) {
-        std::cout << "NodeDeclStmnt\n";
-        YS::Node* node = ynew YS::Node;
+        YS::NodePtr node = std::make_unique<YS::Node>();
         node->type = YS::util::NodeTypeFromToken(node_decl.type);
         node->id = node_decl.identifier.value;
+        
+        // walk the current node
+        //  we push a pointer to the unique ptr bc there is no reason to move the unique ptr 
+        //  (we might actually be able to push a dummy object just to signify that we are in a node)
+        {  
+            node_stack.push(&node);
 
-        node_stack.push(node);
-        current_node = node_stack.top();
+            // dummy object might be the way to go this is a little gross right here
+            YS::NodePtr*& current_node = node_stack.top();
 
-        if (node_decl.initializer != nullptr) {
-            node_decl.initializer->Walk(this);
+            if (node_decl.initializer != nullptr) {
+                node_decl.initializer->Walk(this);
+            }
+
+            node_stack.pop();
         }
-
-        node_stack.pop();
-        current_node = node_stack.empty() ? 
-            nullptr : node_stack.top();
 
         while (property_stack.size() > 0) {
             node->properties.push_back(property_stack.top());
             property_stack.pop();
         }
-
-        if (current_node == nullptr) {
-            nodes.push_back(node);
-        } else {
-            node->parent = current_node;
-            current_node->children.push_back(node);
+        
+        {
+            if (node_stack.empty()) {
+                // these are the final nodes so we can move the pointer here 
+                nodes.push_back(std::move(node));
+            } else {
+                // first move the node into the children so it has a permanent home
+                YS::NodePtr* current_node = std::move(node_stack.top());
+                node->parent = current_node;
+                (*current_node)->children.push_back(std::move(node));
+                
+            }
         }
     }
 
     void NodeBuilder::WalkNodeBody(NodeBodyStmnt& node_assign) {
-        std::cout << "NodeBodyStmnt\n";
         for (auto& stmnt : node_assign.description) {
             stmnt->Walk(this);
         }
     }
     
     void NodeBuilder::WalkBlock(BlockStmnt& scene) {
-        std::cout << "BlockStmnt\n";
     }
 
     void NodeBuilder::DumpNodes() const {

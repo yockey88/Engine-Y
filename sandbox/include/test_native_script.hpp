@@ -1,9 +1,9 @@
-#ifndef YE_EDITOR_TEST_NATIVE_SCRIPT_HPP
-#define YE_EDITOR_TEST_NATIVE_SCRIPT_HPP
+#ifndef ENGINEY_EDITOR_TEST_NATIVE_SCRIPT_HPP
+#define ENGINEY_EDITOR_TEST_NATIVE_SCRIPT_HPP
 
 #include "scripting/native_script_entity.hpp"
 
-class Foo : public YE::NativeScriptEntity {
+class Foo : public  EngineY::NativeScriptEntity {
     
     void Hello() {}
 

@@ -1,18 +1,18 @@
-#ifndef YE_NATIVE_SCRIPT_ENTITY_HPP
-#define YE_NATIVE_SCRIPT_ENTITY_HPP
+#ifndef ENGINEY_NATIVE_SCRIPT_ENTITY_HPP
+#define ENGINEY_NATIVE_SCRIPT_ENTITY_HPP
 
 #include "entt/entt.hpp"
 
 #include "scene/entity.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class NativeScriptEntity {
         public:
             Entity entity;
 
             NativeScriptEntity() {}
-            ~NativeScriptEntity() {}
+            virtual ~NativeScriptEntity() {}
 
             Entity& Get() { return entity; }
             Entity& operator->() { return entity; }

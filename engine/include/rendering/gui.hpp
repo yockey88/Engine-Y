@@ -1,14 +1,14 @@
-#ifndef YE_GUI_HPP
-#define YE_GUI_HPP
+#ifndef ENGINEY_GUI_HPP
+#define ENGINEY_GUI_HPP
 
 #include <map>
 
 #include <SDL.h>
 #include <imgui/imgui.h>
 
-#include "core/window.hpp"
+#include "rendering/window.hpp"
 
-namespace YE {
+namespace EngineY {
     
     class Gui {
         public:

@@ -1,22 +1,19 @@
 #include "rendering/framebuffer.hpp"
 
-#include "log.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "engine.hpp"
+#include "core/log.hpp"
+#include "core/memory/memory_manager.hpp"
+#include "rendering/renderer.hpp"
 
-namespace YE {
-
-    Framebuffer::~Framebuffer() {
-        glDeleteTextures(1 , &color_attachment);
-        glDeleteRenderbuffers(1 , &rbo);
-        glDeleteFramebuffers(1 , &fbo);
-
-        ydelete vao;
-    }
+namespace EngineY {
 
     void Framebuffer::Create() {
         complete = true;
 
-        vao = ynew VertexArray(vertices , indices , layout);
+        vao = ynew(VertexArray ,vertices , indices , layout);
         model = glm::mat4(1.0f);
         clear_color = glm::vec4(0.1f , 0.1f , 0.1f , 1.0f);
 
@@ -63,6 +60,13 @@ namespace YE {
 
         glBindFramebuffer(GL_FRAMEBUFFER , 0);
     }
+    
+    Framebuffer::Framebuffer(
+        const std::vector<float>& vertices , const std::vector<uint32_t> indices ,
+        const std::vector<uint32_t>& layout , const glm::ivec2& size
+    ) : vertices(vertices) , indices(indices) , layout(layout) , size(size) {
+        Create();
+    }
 
     void Framebuffer::Draw(DrawMode mode) {
         if (!complete) {
@@ -70,15 +74,20 @@ namespace YE {
         } else {
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D , color_attachment);
+            
             if (shader != nullptr) {
+                glm::ivec2 win_size = Renderer::Instance()->ActiveWindow()->GetSize();
+                glm::ivec2 scale = size / glm::ivec2{ win_size.x , win_size.y };
+                glm::mat4 model = glm::mat4(1.0f);
+                model = glm::scale(model , glm::vec3(scale , 1.0f));
+            
                 shader->Bind();
                 shader->SetUniformInt("screen_tex" , 0);
                 shader->SetUniformMat4("model" , model);
+            } else {
+                ENGINE_FERROR("Framebuffer shader is nullptr");
             }
             vao->Draw(mode);
-            if (shader != nullptr)
-                shader->Unbind();
-            glBindTexture(GL_TEXTURE_2D , 0);
         }
     }
 
@@ -94,7 +103,9 @@ namespace YE {
         glDeleteTextures(1 , &color_attachment);
         glDeleteRenderbuffers(1 , &rbo);
         glDeleteFramebuffers(1 , &fbo);
-
+        glDeleteFramebuffers(1 , &intermediate_fbo);
+        glDeleteTextures(1 , &screen_texture);
+        
         glGenFramebuffers(1 , &fbo);
         glBindFramebuffer(GL_FRAMEBUFFER , fbo);
 
@@ -136,6 +147,16 @@ namespace YE {
         glClearColor(clear_color.x , clear_color.y , clear_color.z , clear_color.w);
         glClear(buffer_type);
         glDisable(GL_DEPTH_TEST);
+    }
+    
+    void Framebuffer::Destroy() {
+        glDeleteTextures(1 , &color_attachment);
+        glDeleteRenderbuffers(1 , &rbo);
+        glDeleteFramebuffers(1 , &fbo);
+        glDeleteFramebuffers(1 , &intermediate_fbo);
+        glDeleteTextures(1 , &screen_texture);
+
+        ydelete(vao);
     }
 
 }

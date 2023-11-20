@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "log.hpp"
+#include "core/log.hpp"
 #include "engine.hpp"
 #include "core/resource_handler.hpp"
 #include "scene/scene.hpp"
@@ -10,12 +10,12 @@
 #include "rendering/renderer.hpp"
 #include "rendering/render_commands.hpp"
 
-namespace YE {
+namespace EngineY {
         
     PhysicsEngine* PhysicsEngine::singleton = nullptr;
     
     glm::vec3 PhysicsEngine::HexColorToRGB(uint32_t hex) {
-        ENTER_FUNCTION_TRACE();
+         ;
 
         return glm::vec3(
             (hex >> 16 & 0xFF) / 255.f ,
@@ -25,9 +25,9 @@ namespace YE {
     }
 
     void PhysicsEngine::SubmitDebugRendering() {
-        ENTER_FUNCTION_TRACE();
+         ;
 
-        YE_CRITICAL_ASSERTION(physics_world != nullptr , "Attempting to submit debug rendering without a physics world");
+        ENGINE_ASSERT(physics_world != nullptr , "Attempting to submit debug rendering without a physics world");
 
         rp3d::DebugRenderer& debug_renderer = physics_world->getDebugRenderer();
         uint32_t num_lines = debug_renderer.getNbLines();
@@ -116,18 +116,18 @@ namespace YE {
         // Renderer::Instance()->SubmitDebugRenderCmnd(debug_lines);
         // end temporary
 
-        EXIT_FUNCTION_TRACE();
+         ;
     }
 
 
     PhysicsEngine* PhysicsEngine::Instance() {
         if (singleton == nullptr)
-            singleton = ynew PhysicsEngine;
+            singleton = new PhysicsEngine;
         return singleton;
     }
 
     void PhysicsEngine::ToggleDebugRendering() {
-        ENTER_FUNCTION_TRACE();
+         ;
 
         // debug_rendering = !debug_rendering;
         // if (physics_world != nullptr)
@@ -139,7 +139,7 @@ namespace YE {
     }
 
     void PhysicsEngine::SetSceneContext(Scene* scene) {
-        ENTER_FUNCTION_TRACE();
+         ;
 
         current_context = scene;
 
@@ -176,7 +176,7 @@ namespace YE {
         debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::CONTACT_NORMAL , true);
         debug_renderer.setIsDebugItemDisplayed(rp3d::DebugRenderer::DebugItem::COLLIDER_BROADPHASE_AABB , true);
 
-        EXIT_FUNCTION_TRACE();
+         ;
     }
     
     void PhysicsEngine::UnsetSceneContext() {
@@ -193,7 +193,7 @@ namespace YE {
     }
 
     rp3d::RigidBody* PhysicsEngine::CreateRigidBody(components::Transform& transform) {
-        ENTER_FUNCTION_TRACE();
+         ;
 
         rp3d::Vector3 position = rp3d::Vector3(transform.position.x , transform.position.y , transform.position.z);
         
@@ -202,34 +202,34 @@ namespace YE {
 
         rp3d::Transform physics_transform(position , orientation);
 
-        EXIT_FUNCTION_TRACE();
+         ;
         return physics_world->createRigidBody(physics_transform);
     }
 
     rp3d::BoxShape* PhysicsEngine::CreateBoxShape(components::Transform& transform) {
-        ENTER_FUNCTION_TRACE();
+         ;
 
         rp3d::Vector3 half_extents = rp3d::Vector3((transform.scale.x + 0.1f) / 2.f , (transform.scale.y + 0.1f) / 2.f , (transform.scale.z + 0.1f) / 2.f);
         
-        EXIT_FUNCTION_TRACE();
+         ;
         return physics_common.createBoxShape(half_extents);
     }
 
     rp3d::SphereShape* PhysicsEngine::CreateSphereShape(float radius) {
-        ENTER_FUNCTION_TRACE();
+         ;
         return physics_common.createSphereShape(radius);
     }
 
     rp3d::CapsuleShape* PhysicsEngine::CreateCapsuleShape(float radius , float height) {
-        ENTER_FUNCTION_TRACE();
+         ;
         return physics_common.createCapsuleShape(radius , height);
     }
 
     rp3d::PolyhedronMesh* PhysicsEngine::CreatePolygonMesh(
         const std::vector<float>& vertices , const std::vector<uint32_t>& indices , uint32_t num_faces
     ) {
-        ENTER_FUNCTION_TRACE();
-        rp3d::PolygonVertexArray::PolygonFace* faces = ynew rp3d::PolygonVertexArray::PolygonFace[num_faces];
+         ;
+        rp3d::PolygonVertexArray::PolygonFace* faces = new rp3d::PolygonVertexArray::PolygonFace[num_faces];
         rp3d::PolygonVertexArray::PolygonFace* face = faces;
 
         for (uint32_t i = 0; i < indices.size(); i += 3) {
@@ -242,17 +242,16 @@ namespace YE {
 uint32 nbVertices, const void* verticesStart, uint32 verticesStride ,const void* indexesStart, uint32 indexesStride, uint32 nbFaces, PolygonFace* facesStart,
 VertexDataType vertexDataType, IndexDataType indexDataType
 */
-        rp3d::PolygonVertexArray* pva = ynew rp3d::PolygonVertexArray(
+        rp3d::PolygonVertexArray* pva = ynew(
+            rp3d::PolygonVertexArray , 
             vertices.size() / 3 , vertices.data() , sizeof(float) * 3 , indices.data() , sizeof(uint32_t) , num_faces , faces ,
             rp3d::PolygonVertexArray::VertexDataType::VERTEX_FLOAT_TYPE , rp3d::PolygonVertexArray::IndexDataType::INDEX_INTEGER_TYPE
         ); 
 
-        EXIT_FUNCTION_TRACE();
         return physics_common.createPolyhedronMesh(pva);
     }
 
     rp3d::ConvexMeshShape* PhysicsEngine::CreateConvexMeshShape(rp3d::PolyhedronMesh* mesh) {
-        ENTER_FUNCTION_TRACE();
         return physics_common.createConvexMeshShape(mesh);
     }
 
@@ -261,60 +260,50 @@ VertexDataType vertexDataType, IndexDataType indexDataType
             return;
         }
         
-        float time_step = Engine::Instance()->TargetTimeStep();
-        accumulator += time_step;
+        // float time_step = Engine::Instance()->TargetTimeStep();
+        // accumulator += time_step;
 
-        while (accumulator >= time_step) {
-            physics_world->update(time_step);
-            accumulator -= time_step;
-        }
+        // while (accumulator >= time_step) {
+        //     physics_world->update(time_step);
+        //     accumulator -= time_step;
+        // }
 
-        alpha = accumulator / time_step;
+        // alpha = accumulator / time_step;
 
         // if (debug_rendering)
             // SubmitDebugRendering();
     }
 
     void PhysicsEngine::DestroyRigidBody(rp3d::RigidBody* body) {
-        ENTER_FUNCTION_TRACE();
         physics_world->destroyRigidBody(body);
     }
     
     void PhysicsEngine::DestroyBoxShape(rp3d::BoxShape* shape) {
-        ENTER_FUNCTION_TRACE();
         physics_common.destroyBoxShape(shape);
     }
 
     void PhysicsEngine::DestroySphereShape(rp3d::SphereShape* shape) {
-        ENTER_FUNCTION_TRACE();
         physics_common.destroySphereShape(shape);
     }
 
     void PhysicsEngine::DestroyCapsuleShape(rp3d::CapsuleShape* shape) {
-        ENTER_FUNCTION_TRACE();
         physics_common.destroyCapsuleShape(shape);
     }
     
     void PhysicsEngine::DestroyPolygonMesh(rp3d::PolyhedronMesh* shape) {
-        ENTER_FUNCTION_TRACE();
         physics_common.destroyPolyhedronMesh(shape);
     }
     
     void PhysicsEngine::DestroyConvexMeshShape(rp3d::ConvexMeshShape* shape) {
-        ENTER_FUNCTION_TRACE();
         physics_common.destroyConvexMeshShape(shape);
     }
 
     void PhysicsEngine::Cleanup() {
-        ENTER_FUNCTION_TRACE();
-
         if (physics_world != nullptr)
             physics_common.destroyPhysicsWorld(physics_world);
         
         if (singleton != nullptr)
-            ydelete singleton;
-
-        EXIT_FUNCTION_TRACE();
+            delete singleton;
     }
     
 }

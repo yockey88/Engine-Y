@@ -1,8 +1,9 @@
 #include "scene/scene_graph.hpp"
 
+#include "core/defines.hpp"
 #include "parsing/yscript/node_builder.hpp"
 
-namespace YE {
+namespace EngineY {
 
     SceneGraph::SceneGraph(const std::string& ys_file) {
     }
@@ -13,9 +14,9 @@ namespace YE {
                 if (node->scene != nullptr) {
                     node->scene->UnloadScene();
                     node->scene->Shutdown();
-                    ydelete node->scene;
+                    ydelete(node->scene);
                 }
-                ydelete node;
+                ydelete(node);
             }
         }
     }

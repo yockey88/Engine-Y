@@ -2,7 +2,7 @@
 
 #include "mono/metadata/attrdefs.h"
 
-namespace YE {
+namespace EngineY {
     
 
 namespace ScriptUtils {
@@ -106,7 +106,7 @@ namespace ScriptUtils {
             default: break;
         }
 
-        YE_CRITICAL_ASSERTION(false , "Unknown script type encountered!");
+        ENGINE_ASSERT(false , "Unknown script type encountered!");
         return "Unknown";
     }
     
@@ -140,7 +140,7 @@ namespace ScriptUtils {
             default: break;
         }
 
-        YE_CRITICAL_ASSERTION(false , "Unknown script type encountered!");
+        ENGINE_ASSERT(false , "Unknown script type encountered!");
         return 0;
     }
 
@@ -163,7 +163,7 @@ namespace ScriptUtils {
             default: return true;
         }
 
-        YE_CRITICAL_ASSERTION(false , "UNREACHABLE CODE!");
+        ENGINE_ASSERT(false , "UNREACHABLE CODE!");
         return false;
     }
 
@@ -179,7 +179,7 @@ namespace ScriptUtils {
             default: return false;
         }
 
-        YE_CRITICAL_ASSERTION(false , "UNREACHABLE CODE!");
+        ENGINE_ASSERT(false , "UNREACHABLE CODE!");
         return false;
     }
     

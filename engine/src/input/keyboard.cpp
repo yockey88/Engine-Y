@@ -4,12 +4,13 @@
 
 #include <SDL.h>
 
-#include "log.hpp"
-#include "core/event_manager.hpp"
+#include "core/defines.hpp"
+#include "core/log.hpp"
+#include "event/event_manager.hpp"
 #include "event/events.hpp"
 #include "event/keyboard_events.hpp"
 
-namespace YE {
+namespace EngineY {
 
     std::map<Keyboard::Key , Keyboard::KeyState> Keyboard::keys{};
 
@@ -31,7 +32,7 @@ namespace YE {
                 keys[static_cast<Key>(k)].current_state = State::RELEASED;
                 keys[static_cast<Key>(k)].frames_held = 0;
 
-                event_manager->DispatchEvent(ynew KeyReleased(static_cast<Key>(k)));
+                event_manager->DispatchEvent(ynew(KeyReleased , static_cast<Key>(k)));
                 continue;
             }
 
@@ -39,7 +40,7 @@ namespace YE {
                 keys[static_cast<Key>(k)].current_state = State::PRESSED;
                 ++keys[static_cast<Key>(k)].frames_held;
 
-                event_manager->DispatchEvent(ynew KeyPressed(static_cast<Key>(k)));
+                event_manager->DispatchEvent(ynew(KeyPressed , static_cast<Key>(k)));
                 continue;
             }
 
@@ -59,14 +60,14 @@ namespace YE {
                 keys[static_cast<Key>(k)].current_state = State::HELD;
                 ++keys[static_cast<Key>(k)].frames_held;
 
-                event_manager->DispatchEvent(ynew KeyHeld(static_cast<Key>(k) , keys[static_cast<Key>(k)]));
+                event_manager->DispatchEvent(ynew(KeyHeld , static_cast<Key>(k) , keys[static_cast<Key>(k)]));
                 continue;
             }
 
             if (state[k] && keys[static_cast<Key>(k)].current_state == State::HELD) {
                 ++keys[static_cast<Key>(k)].frames_held;
 
-                event_manager->DispatchEvent(ynew KeyHeld(static_cast<Key>(k) , keys[static_cast<Key>(k)]));
+                event_manager->DispatchEvent(ynew(KeyHeld , static_cast<Key>(k) , keys[static_cast<Key>(k)]));
                 continue;
             }
         

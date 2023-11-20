@@ -1,12 +1,12 @@
-#ifndef YE_SCENE_MANAGER_HPP
-#define YE_SCENE_MANAGER_HPP
+#ifndef ENGINEY_SCENE_MANAGER_HPP
+#define ENGINEY_SCENE_MANAGER_HPP
 
 #include <string>
 #include <map>
 
 #include <core/UUID.hpp>
 
-namespace YE {
+namespace EngineY {
 
     class Scene;
 

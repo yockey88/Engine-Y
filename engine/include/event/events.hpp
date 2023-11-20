@@ -1,12 +1,12 @@
-#ifndef YE_EVENTS_HPP
-#define YE_EVENTS_HPP
+#ifndef ENGINEY_EVENTS_HPP
+#define ENGINEY_EVENTS_HPP
 
 #include <string>
 #include <functional>
 
 #include "core/defines.hpp"
 
-namespace YE {
+namespace EngineY {
 
     enum class EventType {
         EMPTY = 0 ,
@@ -80,8 +80,11 @@ namespace YE {
     };
 
     class ShutdownEvent : public Event {
+        uint32_t exit_code = 0;
+
         public:
-            ShutdownEvent() {}
+            ShutdownEvent(uint32_t exit_code)
+                : exit_code(exit_code) {}
 
             EVENT_TYPE(SHUTDOWN)
             EVENT_CATEGORY(EventCategory::SHUTDOWN_EVENT)

@@ -1,5 +1,5 @@
-#ifndef YE_MODEL_HPP
-#define YE_MODEL_HPP
+#ifndef ENGINEY_MODEL_HPP
+#define ENGINEY_MODEL_HPP
 
 #include <string>
 
@@ -10,7 +10,7 @@
 #include "rendering/shader.hpp"
 #include "rendering/texture.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class Model;
 
@@ -94,4 +94,4 @@ namespace YE {
     
 }
 
-#endif // !YE_MODEL_HPP
+#endif // !ENGINEY_MODEL_HPP

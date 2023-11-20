@@ -1,5 +1,5 @@
-#ifndef YE_SCRIPT_ENGINE_HPP
-#define YE_SCRIPT_ENGINE_HPP
+#ifndef ENGINEY_SCRIPT_ENGINE_HPP
+#define ENGINEY_SCRIPT_ENGINE_HPP
 
 #include <memory>
 #include <string>
@@ -28,13 +28,13 @@
 // it does allow me to avoid copies though so I guess it's not that bad
 // maps entity UUID -> map of their fields (UUID -> field)
 typedef std::unordered_map<
-    YE::UUID , 
+     EngineY::UUID , 
     std::unordered_map<
-        YE::UUID32 , std::unique_ptr<YE::FieldBase>
+         EngineY::UUID32 , std::unique_ptr< EngineY::FieldBase>
     >
 > EntityFieldMap; 
 
-namespace YE {
+namespace EngineY {
 
     class ScriptEngine {
 

@@ -1,6 +1,6 @@
 #include "parsing/shader/shader_ast.hpp"
 
-namespace YE {
+namespace EngineY {
 
     /// Generator 
     void GlslTreePrinter::VisitLiteral(GlslLiteral& expr) {

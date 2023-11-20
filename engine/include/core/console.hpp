@@ -1,5 +1,5 @@
-#ifndef YE_CONSOLE_HPP
-#define YE_CONSOLE_HPP
+#ifndef ENGINEY_CONSOLE_HPP
+#define ENGINEY_CONSOLE_HPP
 
 #include <sstream>
 #include <string>
@@ -8,9 +8,9 @@
 
 #include <imgui/imgui.h>
 
-#include "defines.hpp"
+#include "core/defines.hpp"
 
-namespace YE {
+namespace EngineY {
 
     enum ConsoleMessageType : uint16_t {
         TRACE   = ybit(0),
@@ -64,6 +64,6 @@ namespace YE {
             static void SinkMessage(const ConsoleMessage& msg); 
     };
 
-} // namespace YE 
+} // namespace EngineY 
 
 #endif // !YE_CONSOLE_HPP

@@ -1,5 +1,5 @@
-#ifndef YE_MOUSE_HPP
-#define YE_MOUSE_HPP
+#ifndef ENGINEY_MOUSE_HPP
+#define ENGINEY_MOUSE_HPP
 
 #include <map>
 #include <sstream>
@@ -8,7 +8,7 @@
 
 #include "core/UUID.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class Mouse {
         public:

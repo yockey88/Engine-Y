@@ -1,11 +1,11 @@
-#ifndef YE_TERRAIN_MESH_HPP
-#define YE_TERRAIN_MESH_HPP
+#ifndef ENGINEY_TERRAIN_MESH_HPP
+#define ENGINEY_TERRAIN_MESH_HPP
 
 #include <glm/glm.hpp>
 
 #include "rendering/vertex_array.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class TerrainMesh {
 

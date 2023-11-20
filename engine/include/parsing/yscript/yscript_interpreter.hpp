@@ -1,5 +1,5 @@
-#ifndef YE_YSCRIPT_INTERPRETER_HPP
-#define YE_YSCRIPT_INTERPRETER_HPP
+#ifndef ENGINEY_YSCRIPT_INTERPRETER_HPP
+#define ENGINEY_YSCRIPT_INTERPRETER_HPP
 
 #include <stdexcept>
 
@@ -8,7 +8,7 @@
 #include "yscript_ast.hpp"
 #include "node_builder.hpp"
 
-namespace YE {
+namespace EngineY {
 
     class Entity;
     class Scene;
@@ -20,7 +20,7 @@ namespace YS {
 
         public:
             yscript_interpreter_error(const std::string& msg) 
-                : msg(fmt::format("[YScript Interpreter Error] :: {}" , msg)) {}
+                : msg(fmt::format(fmt::runtime("[YScript Interpreter Error] :: {}") , msg)) {}
             ~yscript_interpreter_error() {}
 
             const char* what() const noexcept override { return msg.c_str(); }
@@ -30,37 +30,42 @@ namespace YS {
 
     class Interpreter {
         std::vector<std::unique_ptr<ASTNode>> ast = {};
-        std::vector<Node*> nodes = {};
+        std::vector<YS::NodePtr> nodes = {};
         
-        std::stack<Node*> node_stack;
+        std::stack<YS::Node*> node_stack;
 
         // SceneGraph scene_graph;
         Scene* current_scene = nullptr;
         Entity* current_entity = nullptr;
         RawProjectMetadata project_metadata;
 
+        bool nodes_built = false;
+
         glm::vec3 Vec3FromProperty(const Property& property) const;
 
-        void ProcessScene(Node* node);
-        void ProcessNode(Scene* scene , Node* node);
+        void ProcessScene(NodePtr& node);
+        void ProcessNode(Scene* scene , NodePtr& node);
 
-        void ConstructTransform(Entity* entity , Node* node);
-        void ConstructRenderable(Entity* entity , Node* node);
-        void ConstructLight(Entity* entity , Node* node);
-        void ConstructCamera(Node* node);
-        void AttachScript(Entity* entity , Node* node);
-        void ConstructPhysics(Entity* entity , Node* node);
-        void AttachCollider(Entity* entity , Node* node);
+        void ConstructTransform(Entity* entity , NodePtr& node);
+        void ConstructRenderable(Entity* entity , NodePtr& node);
+        void ConstructLight(Entity* entity , NodePtr& node);
+        void ConstructCamera(NodePtr& node);
+        void AttachScript(Entity* entity , NodePtr& node);
+        void ConstructPhysics(Entity* entity , NodePtr& node);
+        void AttachCollider(Entity* entity , NodePtr& node);
 
         public:
-            Interpreter(std::vector<std::unique_ptr<ASTNode>>& ast) 
+            Interpreter(std::vector<std::unique_ptr<ASTNode>>& ast)
                 : ast(std::move(ast)) {}
             ~Interpreter() {}
 
-            Scene* InterpretScript(bool dump_nodes = false);
+            void InterpretScript(bool dump_nodes = false);
             // SceneGraph BuildScene(bool dump_nodes = false);
 
+            void GiveNodes(std::vector<YS::NodePtr>& nodes);
+
             inline const RawProjectMetadata ProjectMetadata() const { return project_metadata; }
+            inline const bool NodesBuilt() const { return nodes_built; }
     };
 
 } // namespace YS

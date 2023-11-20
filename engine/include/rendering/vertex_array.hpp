@@ -1,5 +1,5 @@
-#ifndef YE_VERTEX_ARRAY_HPP
-#define YE_VERTEX_ARRAY_HPP
+#ifndef ENGINEY_VERTEX_ARRAY_HPP
+#define ENGINEY_VERTEX_ARRAY_HPP
 
 #include <vector>
 #include <string>
@@ -8,7 +8,7 @@
 
 #include "vertex.hpp"
 
-namespace YE {
+namespace EngineY {
 
     enum BufferType {
         STATIC = GL_STATIC_DRAW ,

@@ -2,8 +2,9 @@
 
 #include <mono/utils/mono-publib.h>
 
+#include "core/defines.hpp"
 #include "scripting/script_engine.hpp"
-#include "log.hpp"
+#include "core/log.hpp"
 #include "core/types.hpp"
 #include "input/keyboard.hpp"
 #include "input/mouse.hpp"
@@ -14,7 +15,7 @@
 #include "scene/systems.hpp"
 #include "physics/physics_engine.hpp"
 
-namespace YE {
+namespace EngineY {
 
     static FunctionMaps* func_map = nullptr;
 
@@ -36,10 +37,10 @@ namespace YE {
             name.remove_prefix(components + std::strlen("components::"));
         }
 
-        std::string full_name = "YE." + std::string(name);
+        std::string full_name = "EngineY." + std::string(name);
 
         MonoType* type = mono_reflection_type_from_name(full_name.data() , ScriptEngine::Instance()->GetInternalScriptData()->image);
-        YE_CRITICAL_ASSERTION(type != nullptr , "Failed to get type from name: " + full_name);
+        ENGINE_ASSERT(type != nullptr , "Failed to get type from name: " + full_name);
 
         func_map->component_builders[type] = [](Entity* entity) { entity->AddComponent<T>(); };
         func_map->component_checkers[type] = [](Entity* entity) { return entity->HasComponent<T>(); };
@@ -98,117 +99,117 @@ namespace YE {
     }
 
     void ScriptGlue::BindMethods() {
-        YE_ADD_SCRIPT_FUNCTION(EntityNameFromId);
-        YE_ADD_SCRIPT_FUNCTION(SetEntityName);
+        ENGINEY_ADD_SCRIPT_FUNCTION(EntityNameFromId);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetEntityName);
 
-        YE_ADD_SCRIPT_FUNCTION(GetEntityTransform);
-        YE_ADD_SCRIPT_FUNCTION(SetEntityTransform);
-        YE_ADD_SCRIPT_FUNCTION(GetEntityPosition);
-        YE_ADD_SCRIPT_FUNCTION(SetEntityPosition);
-        YE_ADD_SCRIPT_FUNCTION(GetEntityScale);
-        YE_ADD_SCRIPT_FUNCTION(SetEntityScale);
-        YE_ADD_SCRIPT_FUNCTION(GetEntityRotation);
-        YE_ADD_SCRIPT_FUNCTION(SetEntityRotation);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetEntityTransform);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetEntityTransform);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetEntityPosition);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetEntityPosition);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetEntityScale);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetEntityScale);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetEntityRotation);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetEntityRotation);
 
-        YE_ADD_SCRIPT_FUNCTION(GetPhysicsBodyType);
-        YE_ADD_SCRIPT_FUNCTION(SetPhysicsBodyType);
-        YE_ADD_SCRIPT_FUNCTION(GetPhysicsBodyPosition);
-        YE_ADD_SCRIPT_FUNCTION(SetPhysicsBodyPosition);
-        YE_ADD_SCRIPT_FUNCTION(GetPhysicsBodyRotation);
-        YE_ADD_SCRIPT_FUNCTION(SetPhysicsBodyRotation);
-        YE_ADD_SCRIPT_FUNCTION(GetPhysicsBodyMass);
-        YE_ADD_SCRIPT_FUNCTION(SetPhysicsBodyMass);
-        YE_ADD_SCRIPT_FUNCTION(ApplyForceCenterOfMass);
-        YE_ADD_SCRIPT_FUNCTION(ApplyForce);
-        YE_ADD_SCRIPT_FUNCTION(ApplyTorque);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetPhysicsBodyType);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetPhysicsBodyType);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetPhysicsBodyPosition);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetPhysicsBodyPosition);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetPhysicsBodyRotation);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetPhysicsBodyRotation);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetPhysicsBodyMass);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetPhysicsBodyMass);
+        ENGINEY_ADD_SCRIPT_FUNCTION(ApplyForceCenterOfMass);
+        ENGINEY_ADD_SCRIPT_FUNCTION(ApplyForce);
+        ENGINEY_ADD_SCRIPT_FUNCTION(ApplyTorque);
 
-        YE_ADD_SCRIPT_FUNCTION(Mat4LookAt);
+        ENGINEY_ADD_SCRIPT_FUNCTION(Mat4LookAt);
 
-        YE_ADD_SCRIPT_FUNCTION(GetCameraType);     
-        YE_ADD_SCRIPT_FUNCTION(SetCameraType);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraType);     
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetCameraType);
         
-        YE_ADD_SCRIPT_FUNCTION(RecalculateCameraViewProjectionMatrix);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraView);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraProjection);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraViewProjection);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraPosition);
-        YE_ADD_SCRIPT_FUNCTION(SetCameraPosition);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraFront);
-        YE_ADD_SCRIPT_FUNCTION(SetCameraFront);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraUp);
-        YE_ADD_SCRIPT_FUNCTION(SetCameraUp);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraRight);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraWorldUp);
-        YE_ADD_SCRIPT_FUNCTION(SetCameraWorldUp);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraEulerAngles);
-        YE_ADD_SCRIPT_FUNCTION(SetCameraEulerAngles);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraViewportSize);
-        YE_ADD_SCRIPT_FUNCTION(SetCameraViewportSize);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraClip);
-        YE_ADD_SCRIPT_FUNCTION(SetCameraClip);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraMousePos);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraLastMousePos);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraDeltaMouse);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraSpeed);
-        YE_ADD_SCRIPT_FUNCTION(SetCameraSpeed);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraSensitivity);
-        YE_ADD_SCRIPT_FUNCTION(SetCameraSensitivity);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraFov);
-        YE_ADD_SCRIPT_FUNCTION(SetCameraFov);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraZoom);
-        YE_ADD_SCRIPT_FUNCTION(SetCameraZoom);
-        YE_ADD_SCRIPT_FUNCTION(GetCameraConstrainPitch);
-        YE_ADD_SCRIPT_FUNCTION(SetCameraConstrainPitch);
-        YE_ADD_SCRIPT_FUNCTION(IsCameraPrimary);
-        YE_ADD_SCRIPT_FUNCTION(SetCameraPrimary);
+        ENGINEY_ADD_SCRIPT_FUNCTION(RecalculateCameraViewProjectionMatrix);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraView);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraProjection);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraViewProjection);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraPosition);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetCameraPosition);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraFront);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetCameraFront);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraUp);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetCameraUp);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraRight);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraWorldUp);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetCameraWorldUp);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraEulerAngles);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetCameraEulerAngles);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraViewportSize);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetCameraViewportSize);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraClip);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetCameraClip);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraMousePos);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraLastMousePos);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraDeltaMouse);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraSpeed);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetCameraSpeed);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraSensitivity);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetCameraSensitivity);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraFov);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetCameraFov);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraZoom);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetCameraZoom);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetCameraConstrainPitch);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetCameraConstrainPitch);
+        ENGINEY_ADD_SCRIPT_FUNCTION(IsCameraPrimary);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetCameraPrimary);
 
-        YE_ADD_SCRIPT_FUNCTION(EntityAddComponent);
-        YE_ADD_SCRIPT_FUNCTION(EntityHasComponent);
-        YE_ADD_SCRIPT_FUNCTION(EntityRemoveComponent);
-        YE_ADD_SCRIPT_FUNCTION(GetEntityParent);
-        YE_ADD_SCRIPT_FUNCTION(SetEntityParent);
+        ENGINEY_ADD_SCRIPT_FUNCTION(EntityAddComponent);
+        ENGINEY_ADD_SCRIPT_FUNCTION(EntityHasComponent);
+        ENGINEY_ADD_SCRIPT_FUNCTION(EntityRemoveComponent);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetEntityParent);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SetEntityParent);
 
-        YE_ADD_SCRIPT_FUNCTION(CreateEntity);
-        YE_ADD_SCRIPT_FUNCTION(DestroyEntity);
-        YE_ADD_SCRIPT_FUNCTION(IsEntityValid);
-        YE_ADD_SCRIPT_FUNCTION(GetEntityByName);
+        ENGINEY_ADD_SCRIPT_FUNCTION(CreateEntity);
+        ENGINEY_ADD_SCRIPT_FUNCTION(DestroyEntity);
+        ENGINEY_ADD_SCRIPT_FUNCTION(IsEntityValid);
+        ENGINEY_ADD_SCRIPT_FUNCTION(GetEntityByName);
 
-        YE_ADD_SCRIPT_FUNCTION(KeyFramesHeld);
-        YE_ADD_SCRIPT_FUNCTION(IsKeyPressed);
-        YE_ADD_SCRIPT_FUNCTION(IsKeyBlocked);
-        YE_ADD_SCRIPT_FUNCTION(IsKeyHeld);
-        YE_ADD_SCRIPT_FUNCTION(IsKeyDown);
-        YE_ADD_SCRIPT_FUNCTION(IsKeyReleased);
+        ENGINEY_ADD_SCRIPT_FUNCTION(KeyFramesHeld);
+        ENGINEY_ADD_SCRIPT_FUNCTION(IsKeyPressed);
+        ENGINEY_ADD_SCRIPT_FUNCTION(IsKeyBlocked);
+        ENGINEY_ADD_SCRIPT_FUNCTION(IsKeyHeld);
+        ENGINEY_ADD_SCRIPT_FUNCTION(IsKeyDown);
+        ENGINEY_ADD_SCRIPT_FUNCTION(IsKeyReleased);
 
-        YE_ADD_SCRIPT_FUNCTION(SnapMouseToCenter);
-        YE_ADD_SCRIPT_FUNCTION(FreeMouse);
-        YE_ADD_SCRIPT_FUNCTION(HideMouse);
-        YE_ADD_SCRIPT_FUNCTION(MouseX);
-        YE_ADD_SCRIPT_FUNCTION(MouseY);
-        YE_ADD_SCRIPT_FUNCTION(MouseLastX);
-        YE_ADD_SCRIPT_FUNCTION(MouseLastY);
-        YE_ADD_SCRIPT_FUNCTION(MouseDX);
-        YE_ADD_SCRIPT_FUNCTION(MouseDY);
-        YE_ADD_SCRIPT_FUNCTION(MousePos);
-        YE_ADD_SCRIPT_FUNCTION(MouseLastPos);
-        YE_ADD_SCRIPT_FUNCTION(MouseDelta);
-        YE_ADD_SCRIPT_FUNCTION(MouseInWindow);
-        YE_ADD_SCRIPT_FUNCTION(ButtonFramesHeld);
-        YE_ADD_SCRIPT_FUNCTION(IsMouseButtonPressed);
-        YE_ADD_SCRIPT_FUNCTION(IsMouseButtonBlocked);
-        YE_ADD_SCRIPT_FUNCTION(IsMouseButtonHeld);
-        YE_ADD_SCRIPT_FUNCTION(IsMouseButtonReleased);
+        ENGINEY_ADD_SCRIPT_FUNCTION(SnapMouseToCenter);
+        ENGINEY_ADD_SCRIPT_FUNCTION(FreeMouse);
+        ENGINEY_ADD_SCRIPT_FUNCTION(HideMouse);
+        ENGINEY_ADD_SCRIPT_FUNCTION(MouseX);
+        ENGINEY_ADD_SCRIPT_FUNCTION(MouseY);
+        ENGINEY_ADD_SCRIPT_FUNCTION(MouseLastX);
+        ENGINEY_ADD_SCRIPT_FUNCTION(MouseLastY);
+        ENGINEY_ADD_SCRIPT_FUNCTION(MouseDX);
+        ENGINEY_ADD_SCRIPT_FUNCTION(MouseDY);
+        ENGINEY_ADD_SCRIPT_FUNCTION(MousePos);
+        ENGINEY_ADD_SCRIPT_FUNCTION(MouseLastPos);
+        ENGINEY_ADD_SCRIPT_FUNCTION(MouseDelta);
+        ENGINEY_ADD_SCRIPT_FUNCTION(MouseInWindow);
+        ENGINEY_ADD_SCRIPT_FUNCTION(ButtonFramesHeld);
+        ENGINEY_ADD_SCRIPT_FUNCTION(IsMouseButtonPressed);
+        ENGINEY_ADD_SCRIPT_FUNCTION(IsMouseButtonBlocked);
+        ENGINEY_ADD_SCRIPT_FUNCTION(IsMouseButtonHeld);
+        ENGINEY_ADD_SCRIPT_FUNCTION(IsMouseButtonReleased);
 
-        YE_ADD_SCRIPT_FUNCTION(LogTrace);
-        YE_ADD_SCRIPT_FUNCTION(LogDebug);
-        YE_ADD_SCRIPT_FUNCTION(LogInfo);
-        YE_ADD_SCRIPT_FUNCTION(LogWarn);
-        YE_ADD_SCRIPT_FUNCTION(LogError);
+        ENGINEY_ADD_SCRIPT_FUNCTION(LogTrace);
+        ENGINEY_ADD_SCRIPT_FUNCTION(LogDebug);
+        ENGINEY_ADD_SCRIPT_FUNCTION(LogInfo);
+        ENGINEY_ADD_SCRIPT_FUNCTION(LogWarn);
+        ENGINEY_ADD_SCRIPT_FUNCTION(LogError);
     }
     
     void ScriptGlue::BindAssembly() {
-        YE_CRITICAL_ASSERTION(func_map == nullptr , "Attempted to bind assembly when it is already bound");
-        func_map = ynew FunctionMaps();
+        ENGINE_ASSERT(func_map == nullptr , "Attempted to bind assembly when it is already bound");
+        func_map = ynew(FunctionMaps);
 
         BindTypes();
         BindMethods();
@@ -226,7 +227,7 @@ namespace YE {
             if (func_map->component_destroyers.size() > 0)
                 func_map->component_destroyers.clear();
 
-            ydelete func_map;
+            ydelete(func_map);
             func_map = nullptr;
         }
     }
@@ -1158,7 +1159,7 @@ namespace ScriptInternalCalls {
     }
 
     void EntityAddComponent(uint64_t entity_id , MonoReflectionType* component_name) {
-        YE::Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
+         EngineY::Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
             ENGINE_ERROR("EntityAddComponent :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
             return;
@@ -1189,7 +1190,7 @@ namespace ScriptInternalCalls {
     }
 
     bool EntityHasComponent(uint64_t entity_id , MonoReflectionType* component_name) {
-        YE::Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
+         EngineY::Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
             ENGINE_ERROR("EntityHasComponent :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
             return false;
@@ -1220,7 +1221,7 @@ namespace ScriptInternalCalls {
     }
     
     bool EntityRemoveComponent(uint64_t entity_id , MonoReflectionType* component_name) {
-        YE::Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
+         EngineY::Entity* entity = ScriptEngine::Instance()->GetSceneContext()->GetEntity(entity_id);
         if (entity == nullptr) {
             ENGINE_ERROR("EntityRemoveComponent :: Attempted to retrieve invalid entity with ID: {0}" , entity_id);
             return false;

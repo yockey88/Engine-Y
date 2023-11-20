@@ -3,7 +3,8 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "log.hpp"
+#include "core/defines.hpp"
+#include "core/log.hpp"
 #include "engine.hpp"
 #include "core/UUID.hpp"
 #include "core/hash.hpp"
@@ -14,7 +15,7 @@
 #include "rendering/shader.hpp"
 #include "physics/physics_engine.hpp"
 
-namespace YE {
+namespace EngineY {
     
     EntityCreatedSignal Systems::entity_created_signal{};
     EntityDestroyedSignal Systems::entity_destroyed_signal{};
@@ -45,8 +46,6 @@ namespace YE {
     TextComponentUpdateSink Systems::text_component_update_sink{ Systems::text_component_update_signal };
 
     void Systems::LoadShader(Shader *& shader , const std::string& entity_name , const std::string& shader_name , bool& corrupted) {
-        ENTER_FUNCTION_TRACE();
-
         shader = ResourceHandler::Instance()->GetShader(shader_name);
         if (shader == nullptr)
             shader = ResourceHandler::Instance()->GetCoreShader(shader_name);
@@ -55,13 +54,9 @@ namespace YE {
             ENGINE_WARN("Entity [{0}] has corrupt renderable, could not find shader [{1}]" , entity_name , shader_name);
             corrupted = true;
         }
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::Initialize() {
-        ENTER_FUNCTION_TRACE();
-
         create_entity_sink.connect<&EntityCreated>();
         destroy_entity_sink.connect<&EntityDestroyed>();
         scene_load_sink.connect<&LoadShaders>();
@@ -77,13 +72,9 @@ namespace YE {
         textured_renderable_update_sink.connect<&UpdateTexturedRenderable>();
         renderable_model_update_sink.connect<&UpdateRenderableModel>();
         text_component_update_sink.connect<&UpdateTextComponent>();
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::SetSceneContext(Scene* context) {
-        ENTER_FUNCTION_TRACE();
-
         auto& registry = context->registry;
         registry.on_construct<entt::entity>().connect<&EntityConstructed>();
         registry.on_construct<components::RenderableModel>().connect<&ModelCreated>();
@@ -98,41 +89,30 @@ namespace YE {
         registry.on_destroy<components::SphereCollider>().connect<&SphereColliderDestroyed>();
         registry.on_destroy<components::CapsuleCollider>().connect<&CapsuleColliderDestroyed>();
         registry.on_destroy<components::MeshCollider>().connect<&MeshColliderDestroyed>();
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::EntityConstructed(entt::registry& registry , entt::entity entity) {
-        ENTER_FUNCTION_TRACE();
-
         registry.emplace<components::ID>(entity);
         registry.emplace<components::Transform>(entity);
         registry.emplace<components::Grouping>(entity);
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::EntityCreated(Scene* context , const std::string& name) {
-        ENTER_FUNCTION_TRACE();
-
-        Entity* entity = ynew Entity(context);
+        Entity* entity = ynew(Entity , context);
         auto& id = entity->GetComponent<components::ID>();
         id.name = name;
         id.id = Hash::FNV(name);
 
         context->entities[id.id] = entity;
 
-        EXIT_FUNCTION_TRACE();
+         ;
     }
 
     void Systems::ModelCreated(entt::registry& registry , entt::entity entity) {
-        ENTER_FUNCTION_TRACE();
-    
         auto& model = registry.get<components::RenderableModel>(entity);
         auto& transform = registry.get<components::Transform>(entity);
 
         if (model.model_name == "" || model.shader_name == "") {
-            EXIT_FUNCTION_TRACE();
             return;
         }
         
@@ -140,7 +120,6 @@ namespace YE {
         if (model.model == nullptr) {
             ENGINE_WARN("Entity has corrupt renderable, could not find model [{0}]" , model.model_name);
             model.corrupted = true;
-            EXIT_FUNCTION_TRACE();
             return;
         }
 
@@ -151,16 +130,11 @@ namespace YE {
         if (model.shader == nullptr) {
             ENGINE_WARN("Entity with model [{0}] has corrupt renderable, could not find shader [{1}]" , model.model_name , model.shader_name);
             model.corrupted = true;
-            EXIT_FUNCTION_TRACE();
             return;
         }
-        
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::PhysicsBodyCreated(entt::registry& registry , entt::entity entity) {
-        ENTER_FUNCTION_TRACE();
-
         auto& transform = registry.get<components::Transform>(entity);
         auto& body = registry.get<components::PhysicsBody>(entity);
 
@@ -172,13 +146,9 @@ namespace YE {
             default:
                 ENGINE_ERROR("UNDEFINED BEHAVIOR | UNREACHABLE CODE");
         }
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::BoxColliderCreated(entt::registry& registry , entt::entity entity) {
-        ENTER_FUNCTION_TRACE();
-
         auto& transform = registry.get<components::Transform>(entity);
         auto& collider = registry.get<components::BoxCollider>(entity);
         auto& body = registry.get<components::PhysicsBody>(entity);
@@ -187,13 +157,9 @@ namespace YE {
         rp3d::Transform local_transform = reactphysics3d::Transform::identity();
 
         collider.collider = body.body->addCollider(collider.shape , local_transform);
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::SphereColliderCreated(entt::registry& registry , entt::entity entity) {
-        ENTER_FUNCTION_TRACE();
-
         auto& collider = registry.get<components::SphereCollider>(entity);
         auto& body = registry.get<components::PhysicsBody>(entity);
 
@@ -201,13 +167,9 @@ namespace YE {
         rp3d::Transform local_transform = reactphysics3d::Transform::identity();
 
         collider.collider = body.body->addCollider(collider.shape , local_transform);
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::CapsuleColliderCreated(entt::registry& registry , entt::entity entity) {
-        ENTER_FUNCTION_TRACE();
-
         auto& collider = registry.get<components::CapsuleCollider>(entity);
         auto& body = registry.get<components::PhysicsBody>(entity);
 
@@ -215,13 +177,9 @@ namespace YE {
         rp3d::Transform local_transform = reactphysics3d::Transform::identity();
 
         collider.collider = body.body->addCollider(collider.shape , local_transform);
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::MeshColliderCreated(entt::registry& registry , entt::entity entity) {
-        ENTER_FUNCTION_TRACE();
-
         auto& transform = registry.get<components::Transform>(entity);
         auto& model = registry.get<components::RenderableModel>(entity);
         auto& collider = registry.get<components::MeshCollider>(entity);
@@ -233,13 +191,9 @@ namespace YE {
         rp3d::Transform local_transform = reactphysics3d::Transform::identity();
 
         collider.collider = body.body->addCollider(collider.shape , local_transform);
-
-        EXIT_FUNCTION_TRACE();
     } 
 
     void Systems::LoadShaders(Scene* context) {
-        ENTER_FUNCTION_TRACE();
-
         auto& registry = context->registry;
 
         registry.view<components::ID , components::Renderable>().each([](auto& id , auto& renderable) {
@@ -253,21 +207,15 @@ namespace YE {
         registry.view<components::ID , components::RenderableModel>().each([](auto& id , auto& script) {
             LoadShader(script.shader , id.name , script.shader_name , script.corrupted);
         });
-
-        EXIT_FUNCTION_TRACE();
     }
             
     void Systems::BindScripts(Scene* context) {
-        ENTER_FUNCTION_TRACE();
-
         ScriptEngine* script_engine = ScriptEngine::Instance();
         auto& registry = context->registry;
 
         registry.view<components::Script>().each([script_engine](auto& script) {
             script.Bind(script.class_name);
         });
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::UpdateScene(Scene* context , float dt) {
@@ -357,8 +305,6 @@ namespace YE {
     }
 
     void Systems::UnbindScripts(Scene* context) {
-        ENTER_FUNCTION_TRACE();
-
         ScriptEngine* script_engine = ScriptEngine::Instance();
         auto& registry = context->registry;
 
@@ -366,22 +312,20 @@ namespace YE {
             if (script.bound)
                 script.Unbind();
         });
-
-        EXIT_FUNCTION_TRACE();
     }
 
     // Dont't need to remove every component because Entt does that on destruction,
     //  we only need to remove the ones that have extra cleanup triggered by their removal
     //  or that is required to avoid leaks
     void Systems::EntityDestroyed(Scene* context , Entity* entity) {
-        ENTER_FUNCTION_TRACE();
+         ;
 
         auto& id = entity->GetComponent<components::ID>();
 
         if (entity->HasComponent<components::TextComponent>()) {
             auto& text = entity->GetComponent<components::TextComponent>();
             if (text.vao != nullptr) {
-                ydelete text.vao;
+                ydelete(text.vao);
                 text.vao = nullptr;
             }
         }
@@ -420,63 +364,37 @@ namespace YE {
     }
 
     void Systems::ModelDestroyed(entt::registry& registry , entt::entity entity) {
-        ENTER_FUNCTION_TRACE();
-
         auto& model = registry.get<components::RenderableModel>(entity);
         model.model = nullptr;
         model.shader = nullptr;
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::PhysicsBodyDestroyed(entt::registry& context , entt::entity entity) {
-        ENTER_FUNCTION_TRACE();
-
         auto& body = context.get<components::PhysicsBody>(entity);
         PhysicsEngine::Instance()->DestroyRigidBody(body.body);
-
-        EXIT_FUNCTION_TRACE();
     }
     
     void Systems::BoxColliderDestroyed(entt::registry& context , entt::entity entity) {
-        ENTER_FUNCTION_TRACE();
-
         auto& collider = context.get<components::BoxCollider>(entity);
         PhysicsEngine::Instance()->DestroyBoxShape(collider.shape);
-
-        EXIT_FUNCTION_TRACE();
     }
     
     void Systems::SphereColliderDestroyed(entt::registry& context , entt::entity entity) {
-        ENTER_FUNCTION_TRACE();
-
         auto& collider = context.get<components::SphereCollider>(entity);
         PhysicsEngine::Instance()->DestroySphereShape(collider.shape);
-
-        EXIT_FUNCTION_TRACE();
     }
     
     void Systems::CapsuleColliderDestroyed(entt::registry& context , entt::entity entity) {
-        ENTER_FUNCTION_TRACE();
-
         auto& collider = context.get<components::CapsuleCollider>(entity);
         PhysicsEngine::Instance()->DestroyCapsuleShape(collider.shape);
-
-        EXIT_FUNCTION_TRACE();
     }
     
     void Systems::MeshColliderDestroyed(entt::registry& context , entt::entity entity) {
-        ENTER_FUNCTION_TRACE();
-
         auto& collider = context.get<components::MeshCollider>(entity);
         PhysicsEngine::Instance()->DestroyConvexMeshShape(collider.shape);
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::SceneUnload(Scene* context) {
-        ENTER_FUNCTION_TRACE();
-
         PhysicsEngine* physics_engine = PhysicsEngine::Instance();
 
         auto& registry = context->registry;
@@ -499,13 +417,9 @@ namespace YE {
         registry.view<components::MeshCollider>().each([physics_engine](auto& collider) {
             physics_engine->DestroyConvexMeshShape(collider.shape);
         });
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::ScenePlay(Scene* context) {
-        ENTER_FUNCTION_TRACE();
-
         ScriptEngine::Instance()->StartScene();
 
         auto& registry = context->registry;
@@ -516,21 +430,13 @@ namespace YE {
 
             body.body->setTransform(starting_transform);
         });
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::StopScene(Scene* context) {
-        ENTER_FUNCTION_TRACE();
-
         ScriptEngine::Instance()->StopScene();
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::CleanupContext(Scene* context) {
-        ENTER_FUNCTION_TRACE();
-
         auto& registry = context->registry;
         registry.on_destroy<components::MeshCollider>().disconnect<&MeshColliderDestroyed>();
         registry.on_destroy<components::CapsuleCollider>().disconnect<&CapsuleColliderDestroyed>();
@@ -546,13 +452,9 @@ namespace YE {
         registry.on_construct<components::PhysicsBody>().disconnect<&PhysicsBodyCreated>();
         registry.on_construct<components::RenderableModel>().disconnect<&ModelCreated>();
         registry.on_construct<entt::entity>().disconnect<&EntityConstructed>();
-
-        EXIT_FUNCTION_TRACE();
     }
 
     void Systems::Teardown() {
-        ENTER_FUNCTION_TRACE();
-
         text_component_update_sink.disconnect<&UpdateTextComponent>();
         renderable_model_update_sink.disconnect<&UpdateRenderableModel>();
         textured_renderable_update_sink.disconnect<&UpdateTexturedRenderable>();
@@ -567,8 +469,6 @@ namespace YE {
         scene_load_sink.disconnect<&LoadShaders>();
         destroy_entity_sink.disconnect<&EntityDestroyed>();
         create_entity_sink.disconnect<&EntityCreated>();
-
-        EXIT_FUNCTION_TRACE();
     }
 
 }

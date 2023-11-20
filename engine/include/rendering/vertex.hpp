@@ -1,11 +1,11 @@
-#ifndef YE_VERTEX_HPP
-#define YE_VERTEX_HPP
+#ifndef ENGINEY_VERTEX_HPP
+#define ENGINEY_VERTEX_HPP
 
 #include <vector>
 
 #include <glm/glm.hpp>
 
-namespace YE {
+namespace EngineY {
 
     struct Vertex {
         glm::vec3 position{ 0.f , 0.f , 0.f };
