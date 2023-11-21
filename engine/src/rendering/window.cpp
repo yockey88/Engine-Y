@@ -84,23 +84,23 @@ namespace EngineY {
     }
 
     void Window::Clear() {
-        if (rendering_to_screen) {
-            framebuffer->BindFrame();
+        // if (rendering_to_screen) {
+        //     framebuffer->BindFrame();
+        //     glClearColor(clear_color.r , clear_color.g , clear_color.b , clear_color.a);
+        //     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        //     glViewport(0 , 0 , size.x , size.y);
+        // } else {
             glClearColor(clear_color.r , clear_color.g , clear_color.b , clear_color.a);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
             glViewport(0 , 0 , size.x , size.y);
-        } else {
-            glClearColor(clear_color.r , clear_color.g , clear_color.b , clear_color.a);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-            glViewport(0 , 0 , size.x , size.y);
-        }
+        // }
     }
 
     void Window::Draw() {
-        if (rendering_to_screen) { 
-            framebuffer->UnbindFrame();
-            framebuffer->Draw();
-        }
+        // if (rendering_to_screen) { 
+        //     framebuffer->UnbindFrame();
+        //     framebuffer->Draw();
+        // }
     }
     
     void Window::SwapBuffers() {

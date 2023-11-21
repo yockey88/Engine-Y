@@ -2,6 +2,10 @@
 #define ENGINEY_REFERENCE_HPP
 
 #include <atomic>
+#include <unordered_set>
+
+
+///> Reference class is taken from Hazel Engine (sorry Cherno im learning :D I took a lot of inspo from Hazel) 
 
 namespace EngineY {
 
@@ -17,8 +21,16 @@ namespace EngineY {
             uint32_t GetRefCount() const { return ref_count; }
     };
 
+namespace RefUtils {
+
+    void RegisterReference(void* ref); 
+    void RemoveReference(void* ref); 
+    bool IsReferenceValid(void* ref);
+
+}
+
     template <typename T>
-    class Ref : public RefCounted {
+    class Ref {
         mutable T* instance = nullptr;
 
         template <typename U>
@@ -27,7 +39,7 @@ namespace EngineY {
         void IncRef() const {
             if (instance != nullptr) {
                 instance->IncRefCount();
-                // add to living refs
+                RefUtils::RegisterReference(instance); 
             }
         }
 
@@ -36,8 +48,8 @@ namespace EngineY {
                 instance->DecRefCount();
 
                 if (instance->GetRefCount() == 0) {
+                    RefUtils::RemoveReference(instance);
                     delete instance;
-                    // remove from living refs
                     instance = nullptr;
                 }
             }

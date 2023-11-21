@@ -84,7 +84,7 @@ namespace YS {
         if (node_stack.empty())
             throw yscript_interpreter_error("Renderable node must be a child of an entity" /*, node->id , node->type */);
         
-        VertexArray* vao = nullptr;
+        Ref<VertexArray> vao = nullptr;
         Material material;
         std::vector<Texture*> textures;
         std::string shader_name;

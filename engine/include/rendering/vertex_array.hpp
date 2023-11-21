@@ -6,7 +6,8 @@
 
 #include <glad/glad.h>
 
-#include "vertex.hpp"
+#include "core/reference.hpp"
+#include "rendering/vertex.hpp"
 
 namespace EngineY {
 
@@ -28,11 +29,12 @@ namespace EngineY {
     class VertexArray;
 
     struct VertexArrayResource {
+        Ref<VertexArray> _vao;
         VertexArray* vao = nullptr;
         std::string name;
     };
 
-    class VertexArray {
+    class VertexArray : public RefCounted {
 
         uint32_t VAO = 0;
         uint32_t VBO = 0;

@@ -78,12 +78,15 @@ class Editor
 
     ImVec4 color = { 0.0f , 0.0f , 0.0f , 1.0f };
 
-    std::vector<float> fb_verts;
-    std::vector<uint32_t> fb_indices;
-    std::vector<uint32_t> fb_layout;
-    EngineY::Framebuffer* framebuffer = nullptr; 
-    EngineY::Shader* fb_shader = nullptr;
-    
+    EngineY::Ref<EngineY::VertexArray> vao = nullptr;
+    EngineY::Shader* shader = nullptr;
+
+    glm::mat4 model = glm::mat4(1.0f);
+   
+    EngineY::components::Renderable renderable;
+
+    EngineY::Camera* camera = nullptr;
+
     public:
         Editor() : EngineY::App("Editor") {}
         ~Editor() override {}
@@ -100,70 +103,45 @@ class Editor
             main_menu_bar = std::make_unique<editor::MainMenuBar>();
             scene_panel = std::make_unique<editor::ScenePanel>();
 
-            fb_verts = {
-                 1.f ,  1.f , 1.f , 1.f ,
-                 1.f , -1.f , 1.f , 0.f ,
-                -1.f , -1.f , 0.f , 0.f ,
-                -1.f ,  1.f , 0.f , 1.f
-            };
+            vao = EY::ResourceHandler()->GetPrimitiveVAO("icosahedron"); 
 
-            fb_indices = {
-                0 , 1 , 3 ,
-                1 , 2 , 3
-            };
+            shader = EY::ResourceHandler()->GetShader("default");
 
-            fb_layout = {
-                2 , 2
-            };
-            
-            fb_shader = EY::ResourceHandler()->GetShader("default_framebuffer");
-
-            if (fb_shader == nullptr) {
-                ENGINE_ERROR("Failed to load default framebuffer shader");
+            if (shader == nullptr) {
+                ENGINE_ERROR("Failed to load default shader");
             }
 
-            framebuffer = ynew(
-                EngineY::Framebuffer ,
-                fb_verts , fb_indices , 
-                fb_layout , 
-                glm::ivec2{ 200 , 200 }
-            );    
+            renderable.vao = EngineY::Ref<EngineY::VertexArray>::WriteTo(vao);
+            renderable.shader = shader; 
+            renderable.shader_name = "default";
+
+            camera = ynew(
+                EngineY::Camera ,
+                "editor-camera" 
+            );
+            
+            glLineWidth(16.f);
+    
             return true;
         }
 
         void Start() override {
-            framebuffer->SetBufferType({
-                EngineY::BufferBit::COLOR_BUFFER ,
-                EngineY::BufferBit::DEPTH_BUFFER ,
-                EngineY::BufferBit::STENCIL_BUFFER
-            });
-
-            framebuffer->SetClearColor({ 0.3f , 0.2f , 0.1f , 1.0f });
-
-            framebuffer->AttachShader(fb_shader);
-
-            // EY::Renderer()->PushFramebuffer("editor-fb" , framebuffer);
         }
 
         void Update(float dt) override {
+            model = glm::rotate(model , glm::radians(1.0f) , glm::vec3(0.0f , 1.0f , 0.0f));
         }
 
         void Draw() override {
+            EY::Renderer()->PushCamera(camera);
+            DRAW(
+                EngineY::DrawRenderable ,
+                renderable , model
+            );
         }
 
         void DrawGui() override {
             main_menu_bar->DrawGui(scene_panel_open);
-    
-            uint32_t fb_tex = framebuffer->GetColorAttachment();
-            ImGui::Begin("Framebuffer");
-            ImGui::Image(
-                (void*)(intptr_t)fb_tex ,
-                ImVec2(ImGui::GetWindowWidth() , ImGui::GetWindowHeight()) ,
-                ImVec2(0 , 1) ,
-                ImVec2(1 , 0)
-            );
-            ImGui::End();
-
             // scene_panel->DrawGui(scene_panel_open);
             // console->DrawGui();
         }
@@ -172,6 +150,7 @@ class Editor
         }
 
         void Shutdown() override {
+            ydelete(camera);
         }
 };
 

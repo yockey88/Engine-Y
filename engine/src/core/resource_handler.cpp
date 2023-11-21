@@ -1,5 +1,8 @@
 #include "core/resource_handler.hpp"
 
+#include <array>
+#include <algorithm>
+
 #include <stb_image.h>
 #include <imgui/imgui.h>
 #include <msdfgen/msdfgen-ext.h>
@@ -8,8 +11,8 @@
 #include "core/log.hpp"
 #include "core/filesystem.hpp"
 #include "core/task_manager.hpp"
-#include "core/primitive_vao_data.hpp"
 #include "core/memory/memory_manager.hpp"
+#include "rendering/primitive_vao_data.hpp"
 
 namespace EngineY {
 
@@ -108,17 +111,24 @@ namespace EngineY {
         fonts[Hash::FNV(blex_mono.name)] = blex_mono;
     }
 
-    // quad , cube , sphere , icosphere , cylinder , cone , torus , plane
+    // quad , cube , sphere , icosahedron , icosphere , cubesphere , cylinder , cone , torus
     void ResourceHandler::GeneratePrimitiveVAOs(ResourceMap<VertexArrayResource>& vaos) {
-        // VertexArrayResource quad_vao;
-        // quad_vao.name = "quad";
-        // quad_vao.vao = ynew(VertexArray , primitives::quad_verts , primitives::quad_indices);
-        // vaos[Hash::FNV(quad_vao.name)] = quad_vao;
+        VertexArrayResource quad_vao;
+        quad_vao.name = "quad";
+        quad_vao.vao = ynew(VertexArray , primitives::quad_verts , primitives::quad_indices);
+        vaos[Hash::FNV(quad_vao.name)] = quad_vao;
 
-        // VertexArrayResource cube_vao;
-        // cube_vao.name = "cube";
-        // cube_vao.vao = ynew(VertexArray , primitives::cube_verts , std::vector<uint32_t>{});
-        // vaos[Hash::FNV(cube_vao.name)] = cube_vao;
+        VertexArrayResource cube_vao;
+        cube_vao.name = "cube";
+        cube_vao.vao = ynew(VertexArray , primitives::cube_verts , std::vector<uint32_t>{});
+        vaos[Hash::FNV(cube_vao.name)] = cube_vao;
+
+        VertexArrayResource icosadren_vao;
+        icosadren_vao.name = "icosahedron";
+        std::vector<float> icosahedron_verts = primitives::VertexBuilder::BuildIcosahedronVerts();
+        std::vector<uint32_t> icosahedron_indices = primitives::VertexBuilder::GetIcosahedronIndices();
+        icosadren_vao.vao = ynew(VertexArray , icosahedron_verts , icosahedron_indices , { 3 });
+        vaos[Hash::FNV(icosadren_vao.name)] = icosadren_vao;
     }
 
     void ResourceHandler::StoreModels(const std::string& dir_path , ResourceMap<ModelResource>& models) {
@@ -168,9 +178,6 @@ namespace EngineY {
             t->SetName(texture.name);
             texture.texture = t;
         }
-    }
-    
-    void ResourceHandler::UploadPrimitiveVAOs(ResourceMap<VertexArrayResource>& vaos) {
     }
 
     void ResourceHandler::LoadModels(ResourceMap<ModelResource>& models) {
@@ -258,7 +265,6 @@ namespace EngineY {
         StoreFonts(font_dir , engine_fonts);
 
         GeneratePrimitiveVAOs(primitive_vaos);
-        UploadPrimitiveVAOs(primitive_vaos);
 
         StoreModels(engine_model_dir , engine_models);
         StoreModels(app_model_dir , app_models);
@@ -357,9 +363,35 @@ namespace EngineY {
         return nullptr;
     }
 
-    VertexArray* ResourceHandler::GetPrimitiveVAO(const std::string& name) {
-        for (auto& [id , vao] : primitive_vaos)
-            if (vao.name == name) return vao.vao;
+    Ref<VertexArray> ResourceHandler::GetPrimitiveVAO(const std::string& name) {
+        UUID id = Hash::FNV(name);
+        auto itr = cached_vaos.find(id);
+
+        if (itr != cached_vaos.end()) {
+            return itr->second;
+        } else {
+            auto end = primitives::VertexBuilder::primitive_ids.end();
+            auto it = std::find(primitives::VertexBuilder::primitive_ids.begin() , end , id);
+            if (it != end) {
+                primitives::VaoData data = primitives::VertexBuilder::GetPrimitiveData(id);
+                ENGINE_ASSERT(
+                    data.first.size() != 0 && data.second.size() != 0 ,
+                    "Failed to get primitive data :: [{0}]" , name
+                );
+
+                ///> Need to fix how im handling layouts here, probably should buffer pos, normal, tangent, bitangents, and uvs,
+                ///     and add in a different system for custom layouts?
+                Ref<VertexArray> vao = Ref<VertexArray>::Create(data.first , data.second , std::vector<uint32_t>{ 3 });
+                cached_vaos[id] = vao;
+
+                return vao;
+            } else {
+                ENGINE_INFO("Failed to get primitive data (did you spell the name right?) :: [{0}]" , name);
+                return nullptr;
+            }
+        }
+
+        ENGINE_ASSERT(false , "UNREACHABLE");
         return nullptr;
     }
 

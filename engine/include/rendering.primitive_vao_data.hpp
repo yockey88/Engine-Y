@@ -183,36 +183,9 @@ namespace primitives {
         tvd.v33 , tvd.v34 , tvd.v35 , tvd.v36
     };
 
-    // static const std::vector< EngineY::Vertex> cube_verts2{
-    //     tvd.tv1 , tvd.tv2 , tvd.tv3 , tvd.tv4 ,
-    //     tvd.tv5 , tvd.tv6 , tvd.tv7 , tvd.tv8
-    // };
-
-    // static const std::vector<uint32_t> cube_indices {        
-    //     //Top
-    //     2, 6, 7, // 3 , 7 , 8
-    //     2, 3, 7, // 3 , 4 , 8
-
-    //     //Bottom
-    //     0, 4, 5, // 1 , 5 , 6
-    //     0, 1, 5, // 1 , 2 , 6
-
-    //     //Left
-    //     0, 2, 6, // 1 , 3 , 7
-    //     0, 4, 6, // 1 , 5 , 7
-
-    //     //Right
-    //     1, 3, 7, // 2 , 4 , 8
-    //     1, 5, 7, // 2 , 6 , 8
-
-    //     //Front
-    //     0, 2, 3, // 1 , 3 , 4
-    //     0, 1, 3, // 1 , 2 , 4
-
-    //     //Back
-    //     4, 6, 7, // 5 , 7 , 8
-    //     4, 5, 7  // 5 , 6 , 8
-    // };
+    static const std::vector<float> GenerateIcosahedronVerts();
+    static const std::vector<float> BuildIcosahedronVerts();
+    static const std::vector<uint32_t> GetIcosahedronIndices();
 
 } // namespace primitives
 

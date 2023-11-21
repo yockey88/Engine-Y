@@ -150,7 +150,7 @@ namespace EY {
      EngineY::Shader* GetShader(const std::string& name);
      EngineY::Texture* GetCoreTexture(const std::string& name);
      EngineY::Texture* GetTexture(const std::string& name);
-     EngineY::VertexArray* GetPrimitiveVAO(const std::string& name);
+     EngineY::Ref<EngineY::VertexArray> GetPrimitiveVAO(const std::string& name);
      EngineY::Model* GetCoreModel(const std::string& name);
      EngineY::Model* GetModel(const std::string& name);
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

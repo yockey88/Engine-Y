@@ -73,7 +73,7 @@ namespace components {
     };
 
     struct Renderable {
-        VertexArray* vao = nullptr;
+        Ref<VertexArray> vao = nullptr;
         Material material;
         Shader* shader = nullptr;
         std::string shader_name;
@@ -84,12 +84,12 @@ namespace components {
         Renderable(const Renderable& other) 
             : vao(other.vao) , shader_name(other.shader_name) , 
             material(other.material) , corrupted(other.corrupted) {}
-        Renderable(VertexArray* vao , Material material , const std::string& shader_name)
+        Renderable(Ref<VertexArray> vao , Material material , const std::string& shader_name)
             : vao(vao) , material(material) , shader_name(shader_name) {}
     };
 
     struct TexturedRenderable {
-        VertexArray* vao = nullptr;
+        Ref<VertexArray> vao = nullptr;
         Shader* shader = nullptr;
         Material material;
         std::string shader_name;
@@ -102,7 +102,7 @@ namespace components {
             : vao(other.vao) , shader_name(other.shader_name) , textures(other.textures) ,
             corrupted(other.corrupted) {}
         TexturedRenderable(
-            VertexArray* vao , Material material , const std::string& shader_name , 
+            Ref<VertexArray> vao , Material material , const std::string& shader_name , 
             const std::vector<Texture*>& textures
         ) : vao(vao) , material(material) , 
             shader_name(shader_name) , textures(textures) {}

@@ -26,8 +26,8 @@ namespace EngineY {
         inline bool operator>(const uint32_t& other) const { return uuid > other; }
         inline bool operator<=(const uint32_t& other) const { return uuid <= other; }
         inline bool operator>=(const uint32_t& other) const { return uuid >= other; }
-        UUID32() : uuid(0) {}
-        UUID32(uint32_t uuid) : uuid(uuid) {}
+        constexpr UUID32() : uuid(0) {}
+        constexpr UUID32(uint32_t uuid) : uuid(uuid) {}
     };
 
     /// \todo Register UUID with engine
@@ -58,9 +58,9 @@ namespace EngineY {
         inline bool operator>(const uint64_t& other) const { return uuid > other; }
         inline bool operator<=(const uint64_t& other) const { return uuid <= other; }
         inline bool operator>=(const uint64_t& other) const { return uuid >= other; }
-        UUID() : uuid(0) {}
-        UUID(uint64_t uuid) : uuid(uuid) {}
-        UUID(UUID32 uuid) : uuid(uuid.uuid) {}
+        constexpr UUID() : uuid(0) {}
+        constexpr UUID(uint64_t uuid) : uuid(uuid) {}
+        constexpr UUID(UUID32 uuid) : uuid(uuid.uuid) {}
     };
 
     /// \todo Register UUID with engine

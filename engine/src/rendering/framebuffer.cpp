@@ -42,23 +42,23 @@ namespace EngineY {
 
         SetBufferType({ BufferBit::COLOR_BUFFER , BufferBit::DEPTH_BUFFER , BufferBit::STENCIL_BUFFER });
 
-        glGenFramebuffers(1 , &intermediate_fbo);
-        glBindFramebuffer(GL_FRAMEBUFFER , intermediate_fbo);
-        
-        glGenTextures(1 , &screen_texture);
-        glBindTexture(GL_TEXTURE_2D , screen_texture);
+        // glGenFramebuffers(1 , &intermediate_fbo);
+        // glBindFramebuffer(GL_FRAMEBUFFER , intermediate_fbo);
+        // 
+        // glGenTextures(1 , &screen_texture);
+        // glBindTexture(GL_TEXTURE_2D , screen_texture);
 
-        glTexImage2D(GL_TEXTURE_2D , 0 , GL_RGB , size.x , size.y , 0 , GL_RGB , GL_UNSIGNED_BYTE , nullptr);
-        glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MIN_FILTER , GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MAG_FILTER , GL_LINEAR);
-        glFramebufferTexture2D(GL_FRAMEBUFFER , GL_COLOR_ATTACHMENT0 , GL_TEXTURE_2D , screen_texture , 0);
+        // glTexImage2D(GL_TEXTURE_2D , 0 , GL_RGB , size.x , size.y , 0 , GL_RGB , GL_UNSIGNED_BYTE , nullptr);
+        // glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MIN_FILTER , GL_LINEAR);
+        // glTexParameteri(GL_TEXTURE_2D , GL_TEXTURE_MAG_FILTER , GL_LINEAR);
+        // glFramebufferTexture2D(GL_FRAMEBUFFER , GL_COLOR_ATTACHMENT0 , GL_TEXTURE_2D , screen_texture , 0);
 
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            ENGINE_ERROR("Intermediate Framebuffer is not complete!");
-            complete = false;
-        }
+        // if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        //     ENGINE_ERROR("Intermediate Framebuffer is not complete!");
+        //     complete = false;
+        // }
 
-        glBindFramebuffer(GL_FRAMEBUFFER , 0);
+        // glBindFramebuffer(GL_FRAMEBUFFER , 0);
     }
     
     Framebuffer::Framebuffer(
@@ -103,8 +103,8 @@ namespace EngineY {
         glDeleteTextures(1 , &color_attachment);
         glDeleteRenderbuffers(1 , &rbo);
         glDeleteFramebuffers(1 , &fbo);
-        glDeleteFramebuffers(1 , &intermediate_fbo);
-        glDeleteTextures(1 , &screen_texture);
+        // glDeleteFramebuffers(1 , &intermediate_fbo);
+        // glDeleteTextures(1 , &screen_texture);
         
         glGenFramebuffers(1 , &fbo);
         glBindFramebuffer(GL_FRAMEBUFFER , fbo);

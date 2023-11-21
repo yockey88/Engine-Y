@@ -262,15 +262,15 @@ namespace EngineY {
         ///     but the problem is that only one can be bound at a time
         ///     so either we just let there be one framebuffer or get
         ///     super creative with how we handle this
-        for (auto& [id , fb] : framebuffers) {
-            fb->BindFrame();
-        }
+        // for (auto& [id , fb] : framebuffers) {
+        //     fb->BindFrame();
+        // }
 
         app_handle->Draw();
         
-        for (auto& [id , renderable] : persistent_renderables) {
-            renderable->Execute(render_camera , ShaderUniforms{});
-        }
+        //for (auto& [id , renderable] : persistent_renderables) {
+        //    renderable->Execute(render_camera , ShaderUniforms{});
+        //}
 
         while (!commands.empty()) {
             commands.front()->Execute(render_camera , ShaderUniforms{});
@@ -279,27 +279,27 @@ namespace EngineY {
 
         glPolygonMode(GL_FRONT_AND_BACK , RenderMode::LINE);
 
-        for (auto& [id , renderable] : debug_renderables)
-            renderable->Execute(render_camera , ShaderUniforms{});
+        // for (auto& [id , renderable] : debug_renderables)
+        //     renderable->Execute(render_camera , ShaderUniforms{});
         
-        while (!debug_commands.empty()) {
-            debug_commands.front()->Execute(render_camera , ShaderUniforms{});
-            debug_commands.pop();
-        }
+        // while (!debug_commands.empty()) {
+        //     debug_commands.front()->Execute(render_camera , ShaderUniforms{});
+        //     debug_commands.pop();
+        // }
 
         PopCamera();
 
         glPolygonMode(GL_FRONT_AND_BACK , RenderMode::FILL);
 
-        for (auto& [id , fb] : framebuffers) {
-            fb->UnbindFrame();
-        }
+         // for (auto& [id , fb] : framebuffers) {
+         //     fb->UnbindFrame();
+         // }
 
-        window->Draw();
+        // window->Draw();
 
-        if (framebuffer_active && active_framebuffer.uuid != 0) {
-            framebuffers[active_framebuffer]->Draw();
-        }
+        // if (framebuffer_active && active_framebuffer.uuid != 0) {
+        //     framebuffers[active_framebuffer]->Draw();
+        // }
 
         gui->BeginRender(window->GetSDLWindow());
         app_handle->DrawGui();

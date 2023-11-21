@@ -186,8 +186,8 @@ namespace EngineY {
     }
 
     void DrawRenderable::Execute(Camera* camera , const ShaderUniforms& uniforms) {
-        if (renderable.vao == nullptr) {
-            ENGINE_WARN("Failed to execute DrawTexturedVao :: VAO is null");
+        if (renderable.vao.Raw() == nullptr) {
+            ENGINE_WARN("Failed to execute DrawRenderable :: VAO is null");
             renderable.corrupted = true;
             return;
         }
@@ -198,7 +198,7 @@ namespace EngineY {
             renderable.shader = ResourceHandler::Instance()->GetCoreShader(renderable.shader_name);
 
             if (renderable.shader == nullptr) {
-                ENGINE_WARN("Failed to execute DrawTexturedVao :: Shader [{0}] is null" , renderable.shader_name);
+                ENGINE_WARN("Failed to execute DrawRenderable :: Shader [{0}] is null" , renderable.shader_name);
                 renderable.corrupted = true;
                 return;
             }
@@ -215,14 +215,14 @@ namespace EngineY {
 
     void DrawTexturedRenderable::Execute(Camera* camera , const ShaderUniforms& uniforms) {
         if (renderable.vao == nullptr) {
-            ENGINE_WARN("Failed to execute DrawTexturedVao :: VAO is null");
+            ENGINE_WARN("Failed to execute DrawTexturedRenderable :: VAO is null");
             renderable.corrupted = true;
             return;
         }
 
         for (uint32_t i = 0; i < renderable.textures.size(); ++i)
             if (renderable.textures[i] == nullptr) {
-                ENGINE_WARN("Failed to execute DrawTexturedVao :: Texture [{0}] is null" , i);
+                ENGINE_WARN("Failed to execute DrawTexturedRenderable :: Texture [{0}] is null" , i);
                 renderable.corrupted = true;
                 return;
             }
@@ -233,7 +233,7 @@ namespace EngineY {
             renderable.shader = ResourceHandler::Instance()->GetCoreShader(renderable.shader_name);
 
             if (renderable.shader == nullptr) {
-                ENGINE_WARN("Failed to execute DrawTexturedVao :: Shader [{0}] is null" , renderable.shader_name);
+                ENGINE_WARN("Failed to execute DrawTexturedRenderable :: Shader [{0}] is null" , renderable.shader_name);
                 renderable.corrupted = true;
                 return;
             }
@@ -258,7 +258,7 @@ namespace EngineY {
     
     void DrawRenderableModel::Execute(Camera* camera , const ShaderUniforms& uniforms) {
         if (renderable.model == nullptr) {
-            ENGINE_WARN("Failed to execute DrawTexturedVao :: VAO is null");
+            ENGINE_WARN("Failed to execute DrawRenderableModel :: VAO is null");
             renderable.corrupted = true;
             return;
         }
@@ -269,7 +269,7 @@ namespace EngineY {
             renderable.shader = ResourceHandler::Instance()->GetCoreShader(renderable.shader_name);
 
             if (renderable.shader == nullptr) {
-                ENGINE_WARN("Failed to execute DrawTexturedVao :: Shader [{0}] is null" , renderable.shader_name);
+                ENGINE_WARN("Failed to execute DrawRenderableModel :: Shader [{0}] is null" , renderable.shader_name);
                 renderable.corrupted = true;
                 return;
             }
@@ -286,7 +286,7 @@ namespace EngineY {
     
     void DrawPointLight::Execute(Camera* camera , const ShaderUniforms& uniforms) {
         if (renderable.vao == nullptr) {
-            ENGINE_WARN("Failed to execute DrawTexturedVao :: VAO is null");
+            ENGINE_WARN("Failed to execute DrawPointLight :: VAO is null");
             renderable.corrupted = true;
             return;
         }
@@ -302,7 +302,7 @@ namespace EngineY {
             renderable.shader = ResourceHandler::Instance()->GetCoreShader(renderable.shader_name);
 
             if (renderable.shader == nullptr) {
-                ENGINE_WARN("Failed to execute DrawTexturedVao :: Shader [{0}] is null" , renderable.shader_name);
+                ENGINE_WARN("Failed to execute DrawPointLight :: Shader [{0}] is null" , renderable.shader_name);
                 renderable.corrupted = true;
                 return;
             }

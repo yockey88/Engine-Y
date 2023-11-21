@@ -144,7 +144,7 @@ namespace EY {
         return  EngineY::ResourceHandler::Instance()->GetTexture(name);
     }
  
-     EngineY::VertexArray* GetPrimitiveVAO(const std::string& name) {
+     EngineY::Ref<EngineY::VertexArray> GetPrimitiveVAO(const std::string& name) {
         return  EngineY::ResourceHandler::Instance()->GetPrimitiveVAO(name);
     }
 

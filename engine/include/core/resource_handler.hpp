@@ -12,6 +12,7 @@
 
 #include "core/UUID.hpp"
 #include "core/log.hpp"
+#include "core/reference.hpp"
 #include "rendering/model.hpp"
 #include "rendering/shader.hpp"
 #include "rendering/texture.hpp"
@@ -48,6 +49,7 @@ namespace EngineY {
         ResourceMap<ShaderResource> app_shaders;
         ResourceMap<TextureResource> app_textures;
 
+        std::map<UUID , Ref<VertexArray>> cached_vaos;
         ResourceMap<VertexArrayResource> primitive_vaos;
 
         ResourceMap<ModelResource> engine_models;
@@ -73,7 +75,6 @@ namespace EngineY {
 
         void CompileShaders(ResourceMap<ShaderResource>& shaders);
         void LoadTextures(ResourceMap<TextureResource>& textures);
-        void UploadPrimitiveVAOs(ResourceMap<VertexArrayResource>& vaos);
         void LoadModels(ResourceMap<ModelResource>& models);
 
         void CleanupShaders(ResourceMap<ShaderResource>& shaders);
@@ -124,7 +125,7 @@ namespace EngineY {
 
             ImFont* GetCoreFont(const std::string& name);
 
-            VertexArray* GetPrimitiveVAO(const std::string& name);
+            Ref<VertexArray> GetPrimitiveVAO(const std::string& name);
 
             Model* GetCoreModel(const std::string& name);
             Model* GetModel(const std::string& name);
