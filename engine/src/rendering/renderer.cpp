@@ -63,9 +63,11 @@ namespace EngineY {
 
         SDL_GL_SetAttribute(
             SDL_GL_MULTISAMPLESAMPLES , 
-            config.gl_multisample_samples > 16 ?
-                16 : config.gl_multisample_samples
+            24
+            // config.gl_multisample_samples > 16 ?
+            //     16 : config.gl_multisample_samples
         );
+        SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE , 1);
     }
     
     void Renderer::EnableGLSettings(WindowConfig& config) {

@@ -1,25 +1,22 @@
 #ifndef ENGINEY_RENDER_COMMANDS_HPP
 #define ENGINEY_RENDER_COMMANDS_HPP
 
-#include <memory>
-#include <vector>
-#include <utility>
-
 #include <glm/glm.hpp>
+#include <msdf-atlas-gen/msdf-atlas-gen.h>
 
-#include "core/resource_handler.hpp"
+#include "core/reference.hpp"
+#include "rendering/vertex_array.hpp"
 
 namespace EngineY {
 
-    class Font;
+    struct ShaderUniforms;
+
     class VertexArray;
     class Shader;
     class Texture;
     class Model;
     class Camera;
-    ///> Dont want to have pushing framebuffers as a render command
-    ///     I think there is a more sophisticated way to handle them
-    // class Framebuffer;
+    class Font;
 
 namespace components {
     
@@ -33,7 +30,7 @@ namespace components {
 
     class RenderCommand {
         protected:
-            void SetCameraUniforms(Shader* shader , Camera* camera);
+            void SetCameraUniforms(Ref<Shader> shader , Camera* camera);
         public:
             virtual ~RenderCommand() {}
             virtual void Execute(Camera* camera , const ShaderUniforms& uniforms) = 0;

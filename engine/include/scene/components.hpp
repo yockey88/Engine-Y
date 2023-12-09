@@ -3,7 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <limits>
 
 #include <entt/entt.hpp>
 #include <glm/glm.hpp>
@@ -12,7 +11,8 @@
 #include <mono/metadata/object.h>
 
 #include "core/UUID.hpp"
-#include "core/RNG.hpp"
+#include "rendering/shader.hpp"
+#include "rendering/texture.hpp"
 #include "physics/physics_engine.hpp"
 #include "scripting/script_engine.hpp"
 #include "scripting/native_script_entity.hpp"
@@ -63,9 +63,8 @@ namespace components {
 
         Transform() {}
         Transform(const Transform& other) 
-            : position(other.position) , scale(other.scale) ,
-            rotation(other.rotation) ,
-            model(other.model) {} 
+            : position(other.position) , rotation(other.rotation) , 
+            scale(other.scale) , model(other.model) {} 
         Transform(
             const glm::vec3& pos , const glm::vec3& scale ,
             const glm::vec3& rotation
@@ -75,25 +74,25 @@ namespace components {
     struct Renderable {
         Ref<VertexArray> vao = nullptr;
         Material material;
-        Shader* shader = nullptr;
+        Ref<Shader> shader = nullptr;
         std::string shader_name;
 
         bool corrupted = false;
 
         Renderable() {}
         Renderable(const Renderable& other) 
-            : vao(other.vao) , shader_name(other.shader_name) , 
-            material(other.material) , corrupted(other.corrupted) {}
+            : vao(other.vao) , material(other.material) ,
+            shader_name(other.shader_name) , corrupted(other.corrupted) {}
         Renderable(Ref<VertexArray> vao , Material material , const std::string& shader_name)
             : vao(vao) , material(material) , shader_name(shader_name) {}
     };
 
     struct TexturedRenderable {
         Ref<VertexArray> vao = nullptr;
-        Shader* shader = nullptr;
+        Ref<Shader> shader = nullptr;
         Material material;
         std::string shader_name;
-        std::vector<Texture*> textures{};
+        std::vector<Ref<Texture>> textures{};
 
         bool corrupted = false;
 
@@ -103,7 +102,7 @@ namespace components {
             corrupted(other.corrupted) {}
         TexturedRenderable(
             Ref<VertexArray> vao , Material material , const std::string& shader_name , 
-            const std::vector<Texture*>& textures
+            const std::vector<Ref<Texture>>& textures
         ) : vao(vao) , material(material) , 
             shader_name(shader_name) , textures(textures) {}
     };
@@ -117,7 +116,7 @@ namespace components {
 
     struct RenderableModel {
         Model* model = nullptr;
-        Shader* shader = nullptr;
+        Ref<Shader> shader = nullptr;
         Material material;
         std::string model_name = "";
         std::string shader_name = "";
@@ -140,9 +139,9 @@ namespace components {
     // };
     
     struct TextComponent {
-        VertexArray* vao = nullptr;
+        Ref<VertexArray> vao = nullptr;
         Font* font_atlas = nullptr;
-        Shader* shader = nullptr;
+        Ref<Shader> shader = nullptr;
         std::string shader_name = "";
         glm::vec4 background_color = glm::vec4(0.f);
         glm::vec4 text_color = glm::vec4(1.f);
@@ -381,7 +380,7 @@ namespace components {
             : object(other.object) , instance(other.instance) , handle(other.handle) , 
             constructor_args(other.constructor_args) , bound(other.bound) , active(other.active) {}
         Script(const std::string& class_name , const std::vector<ParamHandle>& constructor_args = {}) 
-            : class_name(class_name) , constructor_args(constructor_args) {}
+            : constructor_args(constructor_args) , class_name(class_name) {}
 
         void Bind(const std::string& class_name) {
             this->class_name = class_name;

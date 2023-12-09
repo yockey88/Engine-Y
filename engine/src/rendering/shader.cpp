@@ -7,7 +7,6 @@
 #include "core/log.hpp"
 #include "core/hash.hpp"
 #include "core/filesystem.hpp"
-#include "rendering/gl_error_helper.hpp"
 
 namespace EngineY {
 
@@ -72,7 +71,8 @@ namespace EngineY {
             glGetProgramInfoLog(program , 512 , nullptr , info_log);
             ENGINE_WARN("Failed to link shader program");
             ENGINE_ERROR("Error: {0}" , info_log);
-            valid = false;
+        } else {
+            valid = true;
         }
         
         glDeleteShader(vertex_shader);
@@ -80,24 +80,26 @@ namespace EngineY {
         if (has_geometry)
             glDeleteShader(geometry_shader);
     }
-
-    Shader::~Shader() {
+    
+    void Shader::DeleteProgram() {
         glUseProgram(0);
         glDeleteProgram(program);
+
+        valid = false;
+    }
+
+    Shader::~Shader() {
+        DeleteProgram();
     }
     
     bool Shader::Compile() {
-        valid = true;
+        vertex_src =  EngineY::Filesystem::ReadFileAsStr(vertex_path);
+        fragment_src =  EngineY::Filesystem::ReadFileAsStr(fragment_path);
+        geometry_src = has_geometry ?  EngineY::Filesystem::ReadFileAsStr(geometry_path) : "";
 
-        std::string vert_str =  EngineY::Filesystem::ReadFileAsStr(vertex_path);
-        std::string frag_str =  EngineY::Filesystem::ReadFileAsStr(fragment_path);
-        std::string geom_str = has_geometry ?  EngineY::Filesystem::ReadFileAsStr(geometry_path) : "";
-
-        const char* vert_src = vert_str.c_str();
-        const char* frag_src = frag_str.c_str();
-        const char* geom_src = geom_str.c_str();
-
-        int32_t compile_check = 0;
+        const char* vert_src = vertex_src.c_str();
+        const char* frag_src = fragment_src.c_str();
+        const char* geom_src = geometry_src.c_str();
 
         CompileShader(ShaderType::VERTEX , vertex_shader , vert_src);
         CompileShader(ShaderType::FRAGMENT , fragment_shader , frag_src);
@@ -106,6 +108,8 @@ namespace EngineY {
 
         Link();
 
+        dirty = false;
+        
         return valid;
     }
     

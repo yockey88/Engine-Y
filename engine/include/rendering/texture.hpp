@@ -2,11 +2,12 @@
 #define ENGINEY_TEXTURE_HPP
 
 #include <string>
-#include <utility>
 
 #include <glm/glm.hpp>
 
 #include <glad/glad.h>
+
+#include "core/reference.hpp"
 
 #define PIXEL_INDEX(i , j , width) (i*width + j)
 
@@ -54,12 +55,12 @@ namespace EngineY {
         ChannelType channels = ChannelType::RGB;
         TargetType target = TargetType::TEX_2D;
 
-        Texture* texture = nullptr;
+        Ref<Texture> texture = nullptr;
 
         TextureResource() {}
     };
 
-    class Texture {
+    class Texture : public RefCounted {
 
         ChannelType channels = ChannelType::RGB;
         TargetType target = TargetType::TEX_2D;

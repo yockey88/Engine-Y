@@ -72,8 +72,8 @@ namespace EngineY {
             return;
         }
 
-        ENGINE_DEBUG("Registering application: {}", app->ProjectName());
-        ENGINE_INFO("Project Dir :: {}" , app_config.project_path);
+        ENGINE_FDEBUG("Registering application: {}", app->ProjectName());
+        ENGINE_FINFO("Project Dir :: {}" , app_config.project_path);
         Filesystem::Initialize(app_config);
 
         app_registered = true;
@@ -108,10 +108,6 @@ namespace EngineY {
         renderer->Initialize(app , app_config.window_config);
 
         resource_handler->Load();
-        
-        renderer->ActiveWindow()->AttachShaderToFramebuffer(
-            resource_handler->GetShader("default_framebuffer")
-        );
 
         script_engine->Initialize();
         initialized = true;
@@ -212,11 +208,11 @@ namespace EngineY {
         ConfigBuilder builder(&cmnd_line_handler);
         app_config = builder.Build();
 
-        ENGINE_INFO("CWD :: [{}]" , Filesystem::GetCWD());
-        ENGINE_INFO("Project name :: [{}]" , app_config.project_name);
-        ENGINE_INFO("Project file :: [{}]" , app_config.project_file);
-        ENGINE_INFO("Project path :: [{}]" , app_config.project_path);
-        ENGINE_INFO("Modules path :: [{}]" , app_config.modules_path);
+        ENGINE_FINFO("CWD :: [{}]" , Filesystem::GetCWD());
+        ENGINE_FINFO("Project name :: [{}]" , app_config.project_name);
+        ENGINE_FINFO("Project file :: [{}]" , app_config.project_file);
+        ENGINE_FINFO("Project path :: [{}]" , app_config.project_path);
+        ENGINE_FINFO("Modules path :: [{}]" , app_config.modules_path);
         if (!ValidateConfiguration()) {
             ENGINE_ERROR("Failed to validate configuration | Paths may be invalid");
             return 1;

@@ -74,6 +74,12 @@ namespace RefUtils {
                 other.instance = nullptr;
             }
 
+            template<typename U>
+            Ref(Ref<U>& other) {
+                instance = (T*)other.instance;
+                IncRef();
+            }
+
             template <typename U>
             Ref(const Ref<U>& other) {
                 instance = (T*)other.instance;
@@ -84,6 +90,13 @@ namespace RefUtils {
             static Ref<T> WriteTo(const Ref<T>& other) {
                 Ref<T> ref;
                 ref.instance = other.instance;
+                return ref;
+            }
+
+            static Ref<T> Clone(const Ref<T>& other) {
+                Ref<T> ref;
+                ref.instance = other.instance;
+                ref.IncRef();
                 return ref;
             }
 
@@ -122,8 +135,6 @@ namespace RefUtils {
             template <typename U>
             Ref& operator=(const Ref<U>& other) {
                 other.IncRef();
-                DecRef();
-
                 instance = (T*)other.instance;
                 return *this;
             }

@@ -46,14 +46,14 @@ namespace EngineY {
     TextComponentUpdateSink Systems::text_component_update_sink{ Systems::text_component_update_signal };
 
     void Systems::LoadShader(Shader *& shader , const std::string& entity_name , const std::string& shader_name , bool& corrupted) {
-        shader = ResourceHandler::Instance()->GetShader(shader_name);
-        if (shader == nullptr)
-            shader = ResourceHandler::Instance()->GetCoreShader(shader_name);
-        
-        if (shader == nullptr) {
-            ENGINE_WARN("Entity [{0}] has corrupt renderable, could not find shader [{1}]" , entity_name , shader_name);
-            corrupted = true;
-        }
+        // shader = ResourceHandler::Instance()->GetShader(shader_name);
+        // if (shader == nullptr)
+        //     shader = ResourceHandler::Instance()->GetCoreShader(shader_name);
+        // 
+        // if (shader == nullptr) {
+        //     ENGINE_WARN("Entity [{0}] has corrupt renderable, could not find shader [{1}]" , entity_name , shader_name);
+        //     corrupted = true;
+        // }
     }
 
     void Systems::Initialize() {
@@ -180,7 +180,6 @@ namespace EngineY {
     }
 
     void Systems::MeshColliderCreated(entt::registry& registry , entt::entity entity) {
-        auto& transform = registry.get<components::Transform>(entity);
         auto& model = registry.get<components::RenderableModel>(entity);
         auto& collider = registry.get<components::MeshCollider>(entity);
         auto& body = registry.get<components::PhysicsBody>(entity);
@@ -196,24 +195,23 @@ namespace EngineY {
     void Systems::LoadShaders(Scene* context) {
         auto& registry = context->registry;
 
-        registry.view<components::ID , components::Renderable>().each([](auto& id , auto& renderable) {
-            LoadShader(renderable.shader , id.name , renderable.shader_name , renderable.corrupted);
-        });
+        // registry.view<components::ID , components::Renderable>().each([](auto& id , auto& renderable) {
+        //     LoadShader(renderable.shader , id.name , renderable.shader_name , renderable.corrupted);
+        // });
 
-        registry.view<components::ID , components::TexturedRenderable>().each([](auto& id , auto& renderable) {
-            LoadShader(renderable.shader , id.name , renderable.shader_name , renderable.corrupted);
-        });
+        // registry.view<components::ID , components::TexturedRenderable>().each([](auto& id , auto& renderable) {
+        //     LoadShader(renderable.shader , id.name , renderable.shader_name , renderable.corrupted);
+        // });
 
-        registry.view<components::ID , components::RenderableModel>().each([](auto& id , auto& script) {
-            LoadShader(script.shader , id.name , script.shader_name , script.corrupted);
-        });
+        // registry.view<components::ID , components::RenderableModel>().each([](auto& id , auto& script) {
+        //     LoadShader(script.shader , id.name , script.shader_name , script.corrupted);
+        // });
     }
             
     void Systems::BindScripts(Scene* context) {
-        ScriptEngine* script_engine = ScriptEngine::Instance();
         auto& registry = context->registry;
 
-        registry.view<components::Script>().each([script_engine](auto& script) {
+        registry.view<components::Script>().each([](auto& script) {
             script.Bind(script.class_name);
         });
     }
@@ -280,19 +278,19 @@ namespace EngineY {
             return; 
         }
 
-        Shader* shader = renderable.shader;
+        // Shader* shader = renderable.shader;
 
         renderable.shader->Bind();
         renderable.shader->SetUniformInt("point_light_count" ,  plights.size());
         
         for (uint32_t i = 0; i < plights.size(); ++i) {
-            shader->SetUniformVec3("plights[" + std::to_string(i) + "].position" , plights[i].position);
-            shader->SetUniformVec3("plights[" + std::to_string(i) + "].diffuse" , plights[i].diffuse);
-            shader->SetUniformVec3("plights[" + std::to_string(i) + "].ambient" , plights[i].ambient);
-            shader->SetUniformVec3("plights[" + std::to_string(i) + "].specular" , plights[i].specular);
-            shader->SetUniformFloat("plights[" + std::to_string(i) + "].constant" , plights[i].constant_attenuation);
-            shader->SetUniformFloat("plights[" + std::to_string(i) + "].linear" , plights[i].linear_attenuation);
-            shader->SetUniformFloat("plights[" + std::to_string(i) + "].quadratic" , plights[i].quadratic_attenuation);
+            // shader->SetUniformVec3("plights[" + std::to_string(i) + "].position" , plights[i].position);
+            // shader->SetUniformVec3("plights[" + std::to_string(i) + "].diffuse" , plights[i].diffuse);
+            // shader->SetUniformVec3("plights[" + std::to_string(i) + "].ambient" , plights[i].ambient);
+            // shader->SetUniformVec3("plights[" + std::to_string(i) + "].specular" , plights[i].specular);
+            // shader->SetUniformFloat("plights[" + std::to_string(i) + "].constant" , plights[i].constant_attenuation);
+            // shader->SetUniformFloat("plights[" + std::to_string(i) + "].linear" , plights[i].linear_attenuation);
+            // shader->SetUniformFloat("plights[" + std::to_string(i) + "].quadratic" , plights[i].quadratic_attenuation);
         }
         renderable.shader->SetUniformFloat("material.shininess" , renderable.material.shininess);
         renderable.shader->Unbind();
@@ -305,10 +303,9 @@ namespace EngineY {
     }
 
     void Systems::UnbindScripts(Scene* context) {
-        ScriptEngine* script_engine = ScriptEngine::Instance();
         auto& registry = context->registry;
 
-        registry.view<components::Script>().each([script_engine](auto& script) {
+        registry.view<components::Script>().each([](auto& script) {
             if (script.bound)
                 script.Unbind();
         });
@@ -318,23 +315,9 @@ namespace EngineY {
     //  we only need to remove the ones that have extra cleanup triggered by their removal
     //  or that is required to avoid leaks
     void Systems::EntityDestroyed(Scene* context , Entity* entity) {
-         ;
-
-        auto& id = entity->GetComponent<components::ID>();
-
-        if (entity->HasComponent<components::TextComponent>()) {
-            auto& text = entity->GetComponent<components::TextComponent>();
-            if (text.vao != nullptr) {
-                ydelete(text.vao);
-                text.vao = nullptr;
-            }
-        }
-
         if (entity->HasComponent<components::Script>()) {
             ScriptEngine* script_engine = ScriptEngine::Instance();
             
-            auto& script = entity->GetComponent<components::Script>();
-
             script_engine->DeactivateEntity(entity);
             script_engine->DestroyEntity(entity);
 
@@ -359,8 +342,6 @@ namespace EngineY {
 
         if (entity->HasComponent<components::PhysicsBody>()) 
             entity->RemoveComponent<components::PhysicsBody>();
-
-        Entity* parent = entity->GetParent();
     }
 
     void Systems::ModelDestroyed(entt::registry& registry , entt::entity entity) {

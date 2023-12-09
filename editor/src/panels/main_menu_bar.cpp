@@ -3,10 +3,7 @@
 #include <imgui/imgui.h>
 
 #include "core/resource_handler.hpp"
-#include "core/filesystem.hpp"
 #include "scripting/script_engine.hpp"
-
-#include "ui_utils.hpp"
 
 namespace editor {
 
@@ -23,10 +20,11 @@ namespace editor {
             }
             if (ImGui::BeginMenu("Options")) {
                 if (ImGui::MenuItem("Reload Shaders" , "Crtl+Shift+S")) { 
-                     EngineY::ResourceHandler::Instance()->ReloadShaders();
+                    ENGINE_DEBUG("Reloading Shaders");
+                    EngineY::ResourceHandler::Instance()->ReloadShaders();
                 }
                 if (ImGui::MenuItem("Reload Scripts" , "Crtl+Shift+R")) { 
-                     EngineY::ScriptEngine::Instance()->ReloadProjectModules();
+                    EngineY::ScriptEngine::Instance()->ReloadProjectModules();
                 }
                 ImGui::EndMenu();
             }

@@ -1,10 +1,8 @@
 #ifndef ENGINEY_RESOURCE_HANDLER_HPP
 #define ENGINEY_RESOURCE_HANDLER_HPP
 
-#include <optional>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 #include <msdf-atlas-gen/msdf-atlas-gen.h>
 #include <msdfgen/msdfgen-ext.h>
@@ -17,6 +15,11 @@
 #include "rendering/shader.hpp"
 #include "rendering/texture.hpp"
 #include "rendering/vertex_array.hpp"
+
+///> Todo:
+///    - Add lazy loading for the rest of the resources
+///    - convert models to Ref<Model> instead of Model*
+
 
 struct ImFont;
 
@@ -42,12 +45,23 @@ namespace EngineY {
 
         msdfgen::FreetypeHandle* freetype = nullptr;
 
-        ResourceMap<ShaderResource> engine_shaders;
-        ResourceMap<TextureResource> engine_textures;
         ResourceMap<FontResource> engine_fonts;
 
+
+        ///> Having seperator caches for app/engine shaders allows us to not deal
+        ///    with a user creating a shader with the same name as a core shader
+        ///    (there are better ways to do this but this is the easiest, will revisit)
+        ResourceMap<ShaderResource> engine_shaders;
+        std::map<UUID , Ref<Shader>> cached_core_shaders;
+
         ResourceMap<ShaderResource> app_shaders;
+        std::map<UUID , Ref<Shader>> cached_shaders;
+
+        ResourceMap<TextureResource> engine_textures;
+        std::map<UUID , Ref<Texture>> cached_core_textures;
+
         ResourceMap<TextureResource> app_textures;
+        std::map<UUID , Ref<Texture>> cached_textures;
 
         std::map<UUID , Ref<VertexArray>> cached_vaos;
         ResourceMap<VertexArrayResource> primitive_vaos;
@@ -67,20 +81,28 @@ namespace EngineY {
 
         bool shaders_reloaded = false;
 
-        void StoreShaders(const std::string& dir_path , ResourceMap<ShaderResource>& shaders);
-        void StoreTextures(const std::string& dir_path , ResourceMap<TextureResource>& textures);
+        bool StoreShader(
+            const std::string& dir_path , const std::string& name , UUID id , 
+            std::map<UUID , Ref<Shader>>& shader_refs , 
+            ResourceMap<ShaderResource>& shader_map
+        );
+        bool ReloadShader(
+            UUID id , Ref<Shader>& shader , 
+            std::map<UUID , Ref<Shader>>& shader_refs , 
+            ResourceMap<ShaderResource>& shader_map
+        );
+        bool StoreTexture(
+            const std::string& dir_path , const std::string& name , UUID id , 
+            std::map<UUID , Ref<Texture>>& shader_refs , ResourceMap<TextureResource>& textures
+        );
         void StoreFonts(const std::string& dir_path , ResourceMap<FontResource>& fonts);
         void GeneratePrimitiveVAOs(ResourceMap<VertexArrayResource>& vaos);
         void StoreModels(const std::string& dir_path , ResourceMap<ModelResource>& models);
 
-        void CompileShaders(ResourceMap<ShaderResource>& shaders);
-        void LoadTextures(ResourceMap<TextureResource>& textures);
-        void LoadModels(ResourceMap<ModelResource>& models);
-
-        void CleanupShaders(ResourceMap<ShaderResource>& shaders);
-        void CleanupTextures(ResourceMap<TextureResource>& textures);
+        void CleanupShaders(std::map<UUID , Ref<Shader>>& shader_refs , ResourceMap<ShaderResource>& shaders);
+        void CleanupTextures(std::map<UUID , Ref<Texture>>& texture_refs , ResourceMap<TextureResource>& textures);
         void CleanupFonts(ResourceMap<FontResource>& fonts);
-        void CleanupPrimitiveVAOs(ResourceMap<VertexArrayResource>& vaos);
+        void CleanupPrimitiveVAOs(std::map<UUID , Ref<VertexArray>>& vao_refs , ResourceMap<VertexArrayResource>& vaos);
         void CleanupModels(ResourceMap<ModelResource>& models);
 
         ResourceHandler() {}
@@ -106,25 +128,20 @@ namespace EngineY {
 
             void Load();
             void Offload();
-
-            void AddShader(
-                const std::string& vert_path , const std::string& frag_path ,
-                const std::string& geom_path = "" , ResourceType type = ResourceType::CORE
-            );
-            void AddShader(const std::string& name , Shader* shader , ResourceType type = ResourceType::CORE) {}
-            void AddTexture(const std::string& path , ResourceType type = ResourceType::CORE);
-            void AddTexture(const std::string& name , Texture* texture , ResourceType type = ResourceType::CORE); 
-            void AddModel(const std::string& path , ResourceType type = ResourceType::CORE);
-            void AddModel(const std::string& name , Model* model , ResourceType type = ResourceType::CORE) {}
+           
+            ///> \todo implement lazy loading for the rest of these
+            ///    and make these all references and not pointers
+            ///    to avoid the need to track with mem manager
             
-            Shader* GetCoreShader(const std::string& name);
-            Shader* GetShader(const std::string& name);
+            Ref<Shader> GetCoreShader(const std::string& name);
+            Ref<Shader> GetShader(const std::string& name);
 
-            Texture* GetCoreTexture(const std::string& name);
-            Texture* GetTexture(const std::string& name);
+            Ref<Texture> GetCoreTexture(const std::string& name);
+            Ref<Texture> GetTexture(const std::string& name);
 
             ImFont* GetCoreFont(const std::string& name);
 
+            ///> Lazy loaded implemented here
             Ref<VertexArray> GetPrimitiveVAO(const std::string& name);
 
             Model* GetCoreModel(const std::string& name);

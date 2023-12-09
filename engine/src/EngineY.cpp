@@ -1,9 +1,6 @@
 #include "EngineY.hpp"
 #include "rendering/renderer.hpp"
 
-#include <queue>
-#include <thread>
-
 namespace EY {
     /// Getters ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     EngineY::Window* Window() {
@@ -128,31 +125,31 @@ namespace EY {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
      
     /// Resource Functions ///////////////////////////////////////////////////////////////////////////////////////////////////
-     EngineY::Shader* GetCoreShader(const std::string& name) {
+    EngineY::Ref<EngineY::Shader> GetCoreShader(const std::string& name) {
         return  EngineY::ResourceHandler::Instance()->GetCoreShader(name);
     }
 
-     EngineY::Shader* GetShader(const std::string& name) {
+    EngineY::Ref<EngineY::Shader> GetShader(const std::string& name) {
         return  EngineY::ResourceHandler::Instance()->GetShader(name);
     }
 
-     EngineY::Texture* GetCoreTexture(const std::string& name) {
+    EngineY::Ref<EngineY::Texture> GetCoreTexture(const std::string& name) {
         return  EngineY::ResourceHandler::Instance()->GetCoreTexture(name);
     }
 
-     EngineY::Texture* GetTexture(const std::string& name) {
+    EngineY::Ref<EngineY::Texture> GetTexture(const std::string& name) {
         return  EngineY::ResourceHandler::Instance()->GetTexture(name);
     }
  
-     EngineY::Ref<EngineY::VertexArray> GetPrimitiveVAO(const std::string& name) {
+    EngineY::Ref<EngineY::VertexArray> GetPrimitiveVAO(const std::string& name) {
         return  EngineY::ResourceHandler::Instance()->GetPrimitiveVAO(name);
     }
 
-     EngineY::Model* GetCoreModel(const std::string& name) {
+    EngineY::Model* GetCoreModel(const std::string& name) {
         return  EngineY::ResourceHandler::Instance()->GetCoreModel(name);
     }
 
-     EngineY::Model* GetModel(const std::string& name) {
+    EngineY::Model* GetModel(const std::string& name) {
         return  EngineY::ResourceHandler::Instance()->GetModel(name);
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

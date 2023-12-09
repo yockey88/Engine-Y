@@ -63,6 +63,7 @@
 #include "scripting/script_engine.hpp"
 #include "rendering/vertex.hpp"
 #include "rendering/vertex_array.hpp"
+#include "rendering/primitive_vao_data.hpp"
 #include "rendering/shader.hpp"
 #include "rendering/texture.hpp"
 #include "rendering/font.hpp"
@@ -146,13 +147,13 @@ namespace EY {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// Resource Functions ///////////////////////////////////////////////////////////////////////////////////////////////////
-     EngineY::Shader* GetCoreShader(const std::string& name);
-     EngineY::Shader* GetShader(const std::string& name);
-     EngineY::Texture* GetCoreTexture(const std::string& name);
-     EngineY::Texture* GetTexture(const std::string& name);
-     EngineY::Ref<EngineY::VertexArray> GetPrimitiveVAO(const std::string& name);
-     EngineY::Model* GetCoreModel(const std::string& name);
-     EngineY::Model* GetModel(const std::string& name);
+    EngineY::Ref<EngineY::Shader> GetCoreShader(const std::string& name);
+    EngineY::Ref<EngineY::Shader> GetShader(const std::string& name);
+    EngineY::Ref<EngineY::Texture> GetCoreTexture(const std::string& name);
+    EngineY::Ref<EngineY::Texture> GetTexture(const std::string& name);
+    EngineY::Ref<EngineY::VertexArray> GetPrimitiveVAO(const std::string& name);
+    EngineY::Model* GetCoreModel(const std::string& name);
+    EngineY::Model* GetModel(const std::string& name);
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 namespace EngineY {

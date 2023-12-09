@@ -3,12 +3,12 @@
 
 #include <string>
 #include <unordered_map>
-#include <variant>
 
 #include <glm/glm.hpp>
 #include <glad/glad.h>
 
 #include "core/UUID.hpp"
+#include "core/reference.hpp"
 
 namespace EngineY {
 
@@ -63,12 +63,12 @@ namespace EngineY {
 
         bool has_geom = false;
 
-        Shader* shader = nullptr;
+        Ref<Shader> shader = nullptr;
 
         ShaderResource() {}
     };
 
-    class Shader {
+    class Shader : public RefCounted {
 
         enum ShaderType {
             VERTEX = GL_VERTEX_SHADER ,
@@ -79,6 +79,8 @@ namespace EngineY {
         uint32_t program = 0;
 
         bool valid = false;
+        bool dirty = false;
+
         bool has_geometry = false;
 
         uint32_t vertex_shader = 0;
@@ -89,6 +91,9 @@ namespace EngineY {
         std::string vertex_path;
         std::string fragment_path;
         std::string geometry_path;
+        std::string vertex_src;
+        std::string fragment_src;
+        std::string geometry_src;
 
         std::unordered_map<UUID32 , int32_t> uniform_locations;
 
@@ -97,6 +102,7 @@ namespace EngineY {
         void ShaderError(ShaderType type , uint32_t shader);
         void CompileShader(ShaderType type , uint32_t& shader , const char* buffer);
         void Link();
+        void DeleteProgram();
 
         Shader(Shader&&) = delete;
         Shader(const Shader&) = delete;
@@ -105,8 +111,8 @@ namespace EngineY {
 
         public:
             Shader(const std::string& vertex_path , const std::string& fragment_path , const std::string& geometry_path = "") 
-                : vertex_path(vertex_path) , fragment_path(fragment_path) , geometry_path(geometry_path) , 
-                has_geometry(geometry_path == "" ? false : true) {}
+                : has_geometry(geometry_path == "" ? false : true) , vertex_path(vertex_path) , fragment_path(fragment_path) , 
+                geometry_path(geometry_path)  {}
             ~Shader();
 
             bool Compile();
@@ -123,7 +129,16 @@ namespace EngineY {
             inline void Bind() const { glUseProgram(program); }
             inline void Unbind() const { glUseProgram(0); }
 
+            inline bool Valid() const { return valid; }
+            inline bool Dirty() const { return dirty; }
+            inline bool HasGeometry() const { return has_geometry; }
+
             inline std::string Name() const { return name; }
+            inline std::string VertexPath() const { return vertex_path; }
+            inline std::string FragmentPath() const { return fragment_path; }
+            inline std::string GeometryPath() const { return geometry_path; }
+
+            inline void MarkForReload() { dirty = true; }
             inline void SetName(const std::string& name) { this->name = name; }
 
     };

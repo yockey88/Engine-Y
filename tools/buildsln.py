@@ -48,18 +48,7 @@ if first_build:
             filename = os.fsdecode(file)
             if filename.endswith(".dll") or filename.endswith(".pdb") and not os.path.exists(os.path.join(exe_directory , filename)):
                 shutil.copy(os.path.join(mono_lib_dir , filename) , exe_directory)
-                
-        assimp_dir = "external/assimp/lib/{}".format(CONFIG)
-        if is_debug:
-            if not os.path.exists(os.path.join(exe_directory , "assimp-vc143-mtd.dll")):
-                shutil.copy(os.path.join(assimp_dir , "assimp-vc143-mtd.dll") , exe_directory)
-            if not os.path.exists(os.path.join(exe_directory , "assimp-vc143-mtd.pdb")):
-                shutil.copy(os.path.join(assimp_dir , "assimp-vc143-mtd.pdb") , exe_directory)
-        else:
-            if not os.path.exists(os.path.join(exe_directory , "assimp-vc143-mt.dll")):
-                shutil.copy(os.path.join(assimp_dir , "assimp-vc143-mt.dll") , exe_directory)
-            if not os.path.exists(os.path.join(exe_directory , "assimp-vc143-mt.pdb")):
-                shutil.copy(os.path.join(assimp_dir , "assimp-vc143-mt.pdb") , exe_directory)
+    
     else:
         print("Build failed, see output above for details")
         ret = 1

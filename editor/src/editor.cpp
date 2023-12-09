@@ -78,12 +78,9 @@ class Editor
 
     ImVec4 color = { 0.0f , 0.0f , 0.0f , 1.0f };
 
-    EngineY::Ref<EngineY::VertexArray> vao = nullptr;
-    EngineY::Shader* shader = nullptr;
-
     glm::mat4 model = glm::mat4(1.0f);
    
-    EngineY::components::Renderable renderable;
+    EngineY::components::TexturedRenderable renderable;
 
     EngineY::Camera* camera = nullptr;
 
@@ -103,25 +100,17 @@ class Editor
             main_menu_bar = std::make_unique<editor::MainMenuBar>();
             scene_panel = std::make_unique<editor::ScenePanel>();
 
-            vao = EY::ResourceHandler()->GetPrimitiveVAO("icosahedron"); 
-
-            shader = EY::ResourceHandler()->GetShader("default");
-
-            if (shader == nullptr) {
-                ENGINE_ERROR("Failed to load default shader");
-            }
-
-            renderable.vao = EngineY::Ref<EngineY::VertexArray>::WriteTo(vao);
-            renderable.shader = shader; 
-            renderable.shader_name = "default";
+            renderable.vao = EY::ResourceHandler()->GetPrimitiveVAO("cube"); 
+            renderable.shader = EY::ResourceHandler()->GetShader("simple_tex"); // GetShader("default");
+            renderable.textures = { 
+                EY::ResourceHandler()->GetTexture("container")
+            };
 
             camera = ynew(
                 EngineY::Camera ,
                 "editor-camera" 
             );
             
-            glLineWidth(16.f);
-    
             return true;
         }
 
@@ -130,12 +119,17 @@ class Editor
 
         void Update(float dt) override {
             model = glm::rotate(model , glm::radians(1.0f) , glm::vec3(0.0f , 1.0f , 0.0f));
+
+            if (renderable.shader->Dirty()) {
+                renderable.shader = EY::ResourceHandler()->GetShader("default");
+            }
         }
 
         void Draw() override {
             EY::Renderer()->PushCamera(camera);
+
             DRAW(
-                EngineY::DrawRenderable ,
+                EngineY::DrawTexturedRenderable ,
                 renderable , model
             );
         }

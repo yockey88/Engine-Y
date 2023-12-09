@@ -43,15 +43,15 @@ namespace EngineY {
 
     const void CmndLineHandler::DumpArgs() const {
         for (const auto& [f , a] : args) {
-            ENGINE_DEBUG("Flag: {} | Value: {}" , f , a.value);
+            ENGINE_FDEBUG("Flag: {} | Value: {}" , f , a.value);
         }
     }
     
     CmndLineHandler::CmndLineHandler(int argc , char* argv[]) {
         std::vector<std::string> raw_args;
 
-        ENGINE_DEBUG("Parsing {} command line arguments..." , argc);
-        ENGINE_DEBUG("Executable path: {}", argv[0]);
+        ENGINE_FDEBUG("Parsing {} command line arguments..." , argc);
+        ENGINE_FDEBUG("Executable path: {}", argv[0]);
         
         exe_path = std::string{ argv[0] };
         if (argc == 1) {

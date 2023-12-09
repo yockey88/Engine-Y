@@ -86,7 +86,7 @@ namespace YS {
         
         Ref<VertexArray> vao = nullptr;
         Material material;
-        std::vector<Texture*> textures;
+        std::vector<Ref<Texture>> textures;
         std::string shader_name;
         for (auto& prop : node->properties) {
             switch (prop.type) {
@@ -106,7 +106,7 @@ namespace YS {
                         throw yscript_interpreter_error("Texture property must be a string" /*, node->id , node->type */);
 
                     for (uint32_t i = 0; i < prop.values.size(); ++i) {
-                        Texture* tex = ResourceHandler::Instance()->GetTexture(*prop.values[i].value.string);
+                        Ref<Texture> tex = ResourceHandler::Instance()->GetTexture(*prop.values[i].value.string);
                         if (tex == nullptr) {
                             tex = ResourceHandler::Instance()->GetCoreTexture(*prop.values[i].value.string);
                             if (tex == nullptr) {

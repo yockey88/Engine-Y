@@ -7,6 +7,9 @@ out vec4 FragColor;
 
 uniform int lines;
 
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+
 void main() {
     vec4 color = vec4(frag_color, 1.0);
 
